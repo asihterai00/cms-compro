@@ -2,6 +2,15 @@
 
 require_once __DIR__ . "/../config/database.php";
 
+// Cek apakah akun admin sudah dibuat
+$check = $conn->query("SELECT COUNT(*) AS total FROM users");
+$row = $check->fetch_assoc();
+if ((int)($row['total'] ?? 0) > 0) {
+    // Jika admin sudah ada, kunci akses dan arahkan ke login
+    header("Location: login.php");
+    exit;
+}
+
 $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {

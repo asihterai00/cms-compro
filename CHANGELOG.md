@@ -32,4 +32,9 @@ Semua perubahan, penemuan, dan pembaruan arsitektur pada proyek PT Nihon Plast I
 - **Validasi file upload**: Masih berbasis ekstensi file, disarankan ditingkatkan dengan MIME verification (`finfo`) dan CSRF protection.
 - **Integrasi banner & logo**: Database menyimpan 9 baris page banner dan 1 baris company profile, namun file fisik gambar banner dan logo perlu dihubungkan secara penuh di admin panel.
 
+### Keamanan & Otentikasi (Security & Auth)
+- **Akun Admin Dibuat**: Akun admin (`username: admin`) telah didaftarkan dan diuji aktif dengan `password_hash`.
+- **Proteksi `admin/setup.php`**: Ditambahkan pengecekan `COUNT(*) FROM users`. Jika admin sudah terdaftar, file ini otomatis mengunci akses dan me-redirect pengunjung ke `login.php`.
+
 ---
+

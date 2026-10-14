@@ -1,7 +1,7 @@
 # 🧠 CMS Company Profile - Project Memory Bank
 
 > Auto-exported from MySQL Database `db_cms_compro.project_memory`
-> Generated on: 2026-10-14 06:22:36
+> Generated on: 2026-10-14 06:56:25
 
 
 ## 📂 Category: ARCHITECTURE
@@ -37,6 +37,14 @@ Initial setup performed:
 - Installed open-source MCP packages globally.
 - Configured `mcp_config.json` with memory, sequential-thinking, and mysql MCP servers.
 - Generated `PROJECT_MEMORY.md`, `CHANGELOG.md`, `GEMINI.md` workspace rules, and web development skill.
+
+---
+
+### #7 - Created Admin Account &amp; Secured setup.php
+- **Recorded At:** 2026-10-14 13:56:04
+- **Author:** antigravity-ai
+
+Created default admin account (username: admin, password verified with password_hash). Secured admin/setup.php by adding guard that automatically redirects to login.php if users table already contains at least one record.
 
 ---
 
