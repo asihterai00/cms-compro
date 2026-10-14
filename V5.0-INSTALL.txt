@@ -1,0 +1,12 @@
+PATCH V5.0 - HOME CONTENT CLICKABLE
+
+Tujuan: membuat kartu produk, galeri, kualitas, fasilitas, berita, informasi kontak, dan area profil pada Home bisa diklik untuk membuka halaman terkait.
+
+Pemasangan:
+1. Backup index.php dan assets/css/home-scroll.css.
+2. Salin index.php ke folder utama proyek.
+3. Salin assets/css/home-scroll.css ke folder assets/css/ (buat folder jika belum ada).
+4. Jangan menimpa seluruh proyek dan jangan import ulang database.
+5. Uji Home, klik satu produk, satu item galeri, satu berita, dan tautan Quality/Facility/Career/Contact.
+
+Catatan: patch ini berdasarkan backup V4.8. Untuk membuka detail produk/galeri/berita, halaman product-detail.php, gallery-detail.php, dan news-detail.php perlu tersedia dari patch sebelumnya. Jika salah satu belum terpasang, tautan akan mengarah ke halaman yang belum tersedia.

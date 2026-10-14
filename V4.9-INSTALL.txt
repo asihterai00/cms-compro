@@ -1,0 +1,21 @@
+PT NIHON PLAST INDONESIA - V4.9
+
+FITUR:
+- Detail produk: gambar lebih kecil (kolom sekitar 5/12), deskripsi di samping; pada layar kecil teks turun di bawah gambar.
+- Satu kategori Gallery dapat memiliki banyak foto, video lokal (MP4/WEBM/OGG), dan video YouTube.
+- Tabel gallery_media dibuat otomatis saat halaman admin/gallery atau gallery publik dibuka.
+- Data kategori dan gambar lama tetap dipertahankan.
+
+CARA PASANG:
+1. Backup folder project dan database terlebih dahulu.
+2. Ekstrak ZIP ini.
+3. Salin isi folder pt-nihon-plast-company-profile-v4-cms ke folder project yang sekarang, izinkan replace file jika diminta.
+4. Buka Admin > Gallery. Tabel gallery_media akan dibuat otomatis.
+5. Untuk satu kategori, upload beberapa foto/video sekaligus. Untuk menambahkan YouTube, edit kategori, isi URL YouTube lalu Simpan. Ulangi untuk setiap video YouTube tambahan.
+6. Untuk video lokal besar, jika upload ditolak PHP, sesuaikan upload_max_filesize dan post_max_size di php.ini XAMPP (misalnya 100M dan 120M), lalu restart Apache.
+
+CATATAN:
+- Tidak perlu import ulang database.
+- File upload tersimpan di uploads/gallery.
+- Video lokal maksimal 100 MB per file; foto maksimal 8 MB per file.
+- Paket ini disusun berdasarkan proyek V4.8, tetapi belum diuji langsung di instalasi XAMPP Anda. Uji dahulu di backup/staging.

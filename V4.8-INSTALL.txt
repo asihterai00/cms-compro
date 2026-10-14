@@ -1,0 +1,29 @@
+V4.8 - CONTENT CLICKABLE + NEWS IMAGE
+
+Backup project and database first.
+
+Copy these files into your project root, preserving folders:
+- includes/content_helpers.php (new)
+- product-detail.php (new)
+- gallery-detail.php (new)
+- news-detail.php (new)
+- admin/news.php (replace)
+- products.php (replace)
+- gallery.php (replace)
+- news.php (replace)
+- assets/css/content-clickable.css (new)
+
+News image:
+- Admin > News now supports JPG/JPEG/PNG/WEBP upload up to 5 MB.
+- On first opening admin/news.php, it attempts to add the `image` column to `news` if missing.
+- Uploaded images go to uploads/news/.
+
+Click behavior:
+- Product titles/details open product-detail.php.
+- Gallery title opens gallery-detail.php; clicking the image opens the original image in a new tab.
+- News title opens news-detail.php; clicking the image opens the original image in a new tab.
+- No need to re-import database.
+
+Important:
+- Test on a backup first. Automatic ALTER TABLE requires DB user permission.
+- Uploads depend on PHP folder write permission.

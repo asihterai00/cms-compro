@@ -1,0 +1,11 @@
+PATCH V5.1 - HOME CONTENT MODAL
+
+Isi patch: index.php dan assets/css/home-scroll.css saja.
+
+1. Backup kedua file yang sekarang digunakan.
+2. Salin index.php ke folder utama proyek.
+3. Salin assets/css/home-scroll.css ke assets/css/ pada proyek.
+4. Jangan timpa seluruh folder website.
+5. Buka Home dan tekan Ctrl+F5. Klik kartu/tautan konten di bagian Home untuk membuka konten di modal.
+
+Modal menampilkan halaman tujuan di dalam iframe. Navigasi menu utama dan navigasi bagian Home tidak diubah.

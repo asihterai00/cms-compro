@@ -1,0 +1,26 @@
+PT NIHON PLAST INDONESIA — PATCH V4.9 (KHUSUS FILE YANG DIPERLUKAN)
+
+Paket ini hanya mengganti 4 file:
+- admin/gallery.php
+- gallery.php
+- gallery-detail.php
+- product-detail.php
+
+File Home, banner, News, CSS utama, konfigurasi database, dan halaman admin lain TIDAK diganti.
+
+CARA PASANG:
+1. Pastikan folder website V4.8 Anda masih ada dan buat backup tambahan.
+2. Ekstrak ZIP patch ini.
+3. Salin folder admin dan file PHP ke:
+   C:\xampp\htdocs\pt-nihon-plast-company-profile-v4-cms\
+   Izinkan penggantian hanya untuk empat file yang tercantum di atas.
+4. Buka Admin > Gallery. Tabel gallery_media akan dibuat otomatis.
+5. Tes satu kategori: unggah beberapa foto, unggah video lokal (MP4/WEBM/OGG), atau tambahkan tautan YouTube.
+6. Buka halaman Gallery dan klik kategori untuk melihat semua medianya.
+
+CATATAN:
+- Jangan mengimpor ulang database.
+- Data kategori galeri lama tidak dihapus.
+- Detail produk memakai tata letak responsif: gambar lebih kecil dan deskripsi di samping pada layar besar, turun ke bawah pada layar kecil.
+- Jika upload video gagal, periksa upload_max_filesize dan post_max_size di php.ini XAMPP.
+- Patch ini belum diuji langsung di XAMPP milik Anda. Simpan backup agar dapat dikembalikan jika ada kendala.

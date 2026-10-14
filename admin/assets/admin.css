@@ -1,0 +1,111 @@
+
+:root {
+    --admin-dark: #0b1724;
+    --admin-primary: #073b66;
+    --admin-light: #f4f7fa;
+}
+
+body {
+    background: var(--admin-light);
+}
+
+.admin-sidebar {
+    width: 260px;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: var(--admin-dark);
+    z-index: 1000;
+}
+
+.admin-brand {
+    padding: 22px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.admin-menu {
+    padding: 15px 12px;
+}
+
+.admin-menu a {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 4px;
+    color: #cbd5df;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.admin-menu a:hover,
+.admin-menu a.active {
+    color: white;
+    background: var(--admin-primary);
+}
+
+.admin-main {
+    margin-left: 260px;
+    min-height: 100vh;
+}
+
+.admin-topbar {
+    min-height: 70px;
+    background: white;
+    border-bottom: 1px solid #e5e9ee;
+}
+
+.stat-card {
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 6px 25px rgba(0,0,0,.06);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eaf3fa;
+    color: var(--admin-primary);
+    font-weight: 800;
+}
+
+.table-card {
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 6px 25px rgba(0,0,0,.06);
+}
+
+.thumb {
+    width: 70px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 7px;
+}
+
+@media (max-width: 991px) {
+    .admin-sidebar {
+        width: 220px;
+    }
+
+    .admin-main {
+        margin-left: 220px;
+    }
+}
+
+@media (max-width: 767px) {
+    .admin-sidebar {
+        position: static;
+        width: 100%;
+        min-height: auto;
+    }
+
+    .admin-main {
+        margin-left: 0;
+    }
+}

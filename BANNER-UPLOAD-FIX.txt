@@ -1,0 +1,12 @@
+FIX V4.6.3 - BANNER UPLOAD
+
+Replace only these files in your current project:
+1. admin/banners.php
+2. includes/page_banner.php
+
+Keep your existing database. No re-import is needed.
+Back up the old files first.
+
+Upload images from Admin > Page Banners. Allowed: JPG, JPEG, PNG, WEBP, maximum 5 MB.
+Uploaded files are stored in uploads/pages/.
+If upload fails, the page now displays a more specific error message.

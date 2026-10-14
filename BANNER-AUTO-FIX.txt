@@ -1,0 +1,12 @@
+V4.6.4 - FIX BANNER DISPLAY ON ALL PUBLIC PAGES
+
+Backup the existing project first. Replace only:
+1. includes/page_banner.php
+2. admin/banners.php
+3. Public page files that are included in this package (index.php, about.php,
+   products.php, gallery.php, quality.php, facility.php, career.php, news.php,
+   contact.php) if you need the component placement corrected.
+
+No database import is required. Upload images from Admin > Page Banners.
+Each page reads its own image from page_banners. After saving, press Ctrl+F5.
+Check the displayed Path in admin if a banner still appears unchanged.

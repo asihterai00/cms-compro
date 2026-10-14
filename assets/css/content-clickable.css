@@ -1,0 +1,115 @@
+/* Klik foto untuk melihat ukuran asli, klik judul untuk halaman detail. */
+.content-click-card {
+    overflow: hidden;
+    border-radius: 16px;
+    border: 1px solid #e7edf2;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.content-click-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px rgba(10, 32, 48, .12);
+}
+.content-image-link {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #edf2f6;
+    color: inherit;
+    text-decoration: none;
+}
+.content-image-link img {
+    display: block;
+    width: 100%;
+    transition: transform .3s ease;
+}
+.content-image-link:hover img {
+    transform: scale(1.035);
+}
+.content-image-link .product-image,
+.content-news-card-image {
+    height: 240px;
+    object-fit: cover;
+}
+.content-news-card-image {
+    display: block;
+    width: 100%;
+}
+.image-open-hint {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    color: #fff;
+    background: rgba(4, 21, 35, .78);
+    font-size: .78rem;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+.content-image-link:hover .image-open-hint,
+.content-image-link:focus .image-open-hint {
+    opacity: 1;
+}
+.content-title-link {
+    color: #142e43;
+    text-decoration: none;
+}
+.content-title-link:hover {
+    color: #0875b3;
+}
+.content-more-link,
+.content-back-link {
+    color: #0875b3;
+    text-decoration: none;
+    font-weight: 700;
+}
+.content-more-link:hover,
+.content-back-link:hover {
+    text-decoration: underline;
+}
+.content-detail-container {
+    max-width: 980px;
+}
+.content-detail-title {
+    color: #142e43;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.2;
+}
+.content-detail-image {
+    display: block;
+    width: 100%;
+    max-height: 680px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 16px;
+    background: #f1f4f7;
+}
+.content-news-image {
+    display: block;
+    width: 100%;
+    max-height: 520px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+}
+.content-article {
+    max-width: 900px;
+    margin: 0 auto;
+}
+.content-detail-copy {
+    margin-top: 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: #46596a;
+    overflow-wrap: anywhere;
+}
+
+/* V4.9: detail produk lebih seimbang */
+.product-detail-layout { --bs-gutter-x: 1.75rem; }
+.product-detail-media { max-width: 460px; }
+.product-detail-product-image { width: 100%; max-height: 430px; object-fit: contain; padding: 12px; }
+.product-detail-text { min-width: 0; }
+.product-detail-text .content-detail-copy { margin-top: 1rem; }
+@media (max-width: 991.98px) { .product-detail-media { max-width: 100%; } .product-detail-product-image { max-height: 360px; } }

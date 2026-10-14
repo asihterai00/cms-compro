@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Temporary / Backup / Archives
+*.zip
+*.tar.gz
+*.bak
+*_bk.php
+.DS_Store
+Thumbs.db
+
+# Environment / Secret overrides (if added later)
+.env
+.env.local
+
+# Keep upload directories but ignore large uploaded media files if desired (preserving .gitkeep)
+# uploads/*/*
+# !uploads/*/.gitkeep
