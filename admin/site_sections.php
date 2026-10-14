@@ -120,29 +120,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $imagePath = $_POST['existing_image'] ?? '';
         $bgImagePath = $_POST['existing_bg_image'] ?? '';
 
+        // If selected from Media Asset Library
+        if (!empty($_POST['selected_library_image'])) {
+            $imagePath = trim($_POST['selected_library_image']);
+        }
+        if (!empty($_POST['selected_library_bg_image'])) {
+            $bgImagePath = trim($_POST['selected_library_bg_image']);
+        }
+
         // Handle Image Upload
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'svg'])) {
                 $filename = 'sec_' . preg_replace('/[^a-zA-Z0-9_-]/', '', $sectionKey) . '_' . time() . '.' . $ext;
                 if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $filename)) {
                     $imagePath = 'uploads/sections/' . $filename;
                 }
             } else {
-                $error = "Format foto utama tidak valid. Hanya JPG, PNG, WEBP yang diperbolehkan.";
+                $error = "Format foto utama tidak valid. Hanya JPG, PNG, WEBP, SVG yang diperbolehkan.";
             }
         }
 
         // Handle Background Image Upload
         if ($error === '' && isset($_FILES['bg_image']) && $_FILES['bg_image']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['bg_image']['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'svg'])) {
                 $bgFilename = 'bg_' . preg_replace('/[^a-zA-Z0-9_-]/', '', $sectionKey) . '_' . time() . '.' . $ext;
                 if (move_uploaded_file($_FILES['bg_image']['tmp_name'], $uploadDir . $bgFilename)) {
                     $bgImagePath = 'uploads/sections/' . $bgFilename;
                 }
             } else {
-                $error = "Format foto latar tidak valid. Hanya JPG, PNG, WEBP yang diperbolehkan.";
+                $error = "Format foto latar tidak valid. Hanya JPG, PNG, WEBP, SVG yang diperbolehkan.";
             }
         }
 
@@ -216,6 +224,15 @@ if ($sectionsQuery) {
     }
 }
 
+// Fetch sub-item counts per section_key
+$subItemCounts = [];
+$cRes = $conn->query("SELECT section_key, COUNT(*) as cnt FROM site_section_items GROUP BY section_key");
+if ($cRes) {
+    while ($cr = $cRes->fetch_assoc()) {
+        $subItemCounts[$cr['section_key']] = (int)$cr['cnt'];
+    }
+}
+
 $pageLabels = [
     'all' => 'Semua Halaman',
     'home' => 'Beranda (Home)',
@@ -244,6 +261,18 @@ $pageLabels = [
         .page-filter-nav { overflow-x: auto; white-space: nowrap; padding-bottom: 4px; }
         .page-filter-nav .nav-link { border-radius: 50px; padding: 0.45rem 1rem; font-weight: 600; font-size: 0.85rem; color: #475569; }
         .page-filter-nav .nav-link.active { background-color: #005A36; color: #ffffff !important; }
+        /* Icon Picker Styles */
+        .icon-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; max-height: 380px; overflow-y: auto; padding: 6px; }
+        .icon-picker-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 4px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; background: #ffffff; transition: all 0.15s; font-size: 0.65rem; text-align: center; color: #334155; }
+        .icon-picker-item i { font-size: 1.4rem; margin-bottom: 4px; color: #005A36; }
+        .icon-picker-item:hover { border-color: #005A36; background: #e6f4ee; transform: translateY(-2px); }
+        .icon-cat-btn { font-size: 0.75rem; padding: 0.25rem 0.65rem; border-radius: 50px; }
+        /* Media Asset Picker Styles */
+        .media-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; max-height: 420px; overflow-y: auto; padding: 6px; }
+        .media-picker-card { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; cursor: pointer; background: #ffffff; transition: all 0.15s; position: relative; }
+        .media-picker-card:hover { border-color: #005A36; box-shadow: 0 4px 12px rgba(0, 90, 54, 0.18); transform: translateY(-2px); }
+        .media-picker-img { width: 100%; height: 95px; object-fit: contain; background: #0f172a; padding: 4px; }
+        .media-picker-info { padding: 6px 8px; font-size: 0.72rem; }
     </style>
 </head>
 <body>
@@ -405,8 +434,11 @@ $pageLabels = [
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Icon Bootstrap</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi <?= htmlspecialchars($editRow['icon'] ?? 'bi-shield-check') ?>"></i></span>
-                                <input type="text" name="icon" class="form-control" value="<?= htmlspecialchars($editRow['icon'] ?? 'bi-shield-check') ?>" placeholder="bi-shield-check, bi-gear-fill">
+                                <span class="input-group-text" id="iconPreviewSpan"><i class="bi <?= htmlspecialchars($editRow['icon'] ?? 'bi-shield-check') ?>"></i></span>
+                                <input type="text" name="icon" id="iconInput" class="form-control" value="<?= htmlspecialchars($editRow['icon'] ?? 'bi-shield-check') ?>" placeholder="bi-shield-check, bi-gear-fill">
+                                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#iconPickerModal" title="Pilih Icon dari Palet">
+                                    <i class="bi bi-grid-3x3-gap-fill me-1"></i> Pilih
+                                </button>
                             </div>
                         </div>
 
@@ -421,24 +453,40 @@ $pageLabels = [
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Foto / Gambar Elemen</label>
-                            <input type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
-                            <?php if (!empty($editRow['image'])): ?>
-                                <div class="mt-2 d-flex align-items-center gap-2">
-                                    <img src="../<?= htmlspecialchars($editRow['image']) ?>" class="img-thumb-preview" alt="Preview">
-                                    <span class="small text-muted"><?= htmlspecialchars($editRow['image']) ?></span>
+                            <div class="input-group mb-1">
+                                <input type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp,.svg">
+                                <button type="button" class="btn btn-outline-success" onclick="openMediaPicker('image')" title="Pilih dari Galeri Asset yang Sudah Tersedia">
+                                    <i class="bi bi-images me-1"></i> Pilih Asset
+                                </button>
+                            </div>
+                            <input type="hidden" name="existing_image" id="input_existing_image" value="<?= htmlspecialchars($editRow['image'] ?? '') ?>">
+                            <input type="hidden" name="selected_library_image" id="input_selected_library_image" value="">
+                            <div id="preview_box_image" class="mt-2 <?= empty($editRow['image']) ? 'd-none' : '' ?>">
+                                <div class="d-flex align-items-center gap-2 p-2 border rounded bg-light">
+                                    <img src="../<?= htmlspecialchars($editRow['image'] ?? '') ?>" id="img_preview_image" class="img-thumb-preview" alt="Preview">
+                                    <span class="small text-muted flex-grow-1 text-truncate" id="label_preview_image"><?= htmlspecialchars($editRow['image'] ?? '') ?></span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="clearSelectedMedia('image')" title="Hapus Gambar"><i class="bi bi-x"></i></button>
                                 </div>
-                            <?php endif; ?>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Foto Latar Belakang (Background Image)</label>
-                            <input type="file" name="bg_image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
-                            <?php if (!empty($editRow['bg_image'])): ?>
-                                <div class="mt-2 d-flex align-items-center gap-2">
-                                    <img src="../<?= htmlspecialchars($editRow['bg_image']) ?>" class="img-thumb-preview" alt="BG Preview">
-                                    <span class="small text-muted"><?= htmlspecialchars($editRow['bg_image']) ?></span>
+                            <div class="input-group mb-1">
+                                <input type="file" name="bg_image" class="form-control" accept=".jpg,.jpeg,.png,.webp,.svg">
+                                <button type="button" class="btn btn-outline-success" onclick="openMediaPicker('bg_image')" title="Pilih dari Galeri Asset yang Sudah Tersedia">
+                                    <i class="bi bi-images me-1"></i> Pilih Asset
+                                </button>
+                            </div>
+                            <input type="hidden" name="existing_bg_image" id="input_existing_bg_image" value="<?= htmlspecialchars($editRow['bg_image'] ?? '') ?>">
+                            <input type="hidden" name="selected_library_bg_image" id="input_selected_library_bg_image" value="">
+                            <div id="preview_box_bg_image" class="mt-2 <?= empty($editRow['bg_image']) ? 'd-none' : '' ?>">
+                                <div class="d-flex align-items-center gap-2 p-2 border rounded bg-light">
+                                    <img src="../<?= htmlspecialchars($editRow['bg_image'] ?? '') ?>" id="img_preview_bg_image" class="img-thumb-preview" alt="BG Preview">
+                                    <span class="small text-muted flex-grow-1 text-truncate" id="label_preview_bg_image"><?= htmlspecialchars($editRow['bg_image'] ?? '') ?></span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="clearSelectedMedia('bg_image')" title="Hapus Gambar"><i class="bi bi-x"></i></button>
                                 </div>
-                            <?php endif; ?>
+                            </div>
                         </div>
 
                         <div class="col-12 mt-4">
@@ -509,6 +557,16 @@ $pageLabels = [
                                         <?php if (!empty($s['badge_text'])): ?>
                                             <div class="badge bg-light text-success border mt-1 small"><?= htmlspecialchars($s['badge_text']) ?></div>
                                         <?php endif; ?>
+                                        <?php 
+                                        $cntItems = $subItemCounts[$s['section_key']] ?? 0;
+                                        if ($cntItems > 0):
+                                        ?>
+                                            <div class="mt-1">
+                                                <a href="site_section_items.php?section_key=<?= urlencode($s['section_key']) ?>" class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold" style="font-size: 0.72rem;">
+                                                    <i class="bi bi-collection me-1"></i> Kelola <?= $cntItems ?> Sub-Item
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <div class="fw-semibold text-truncate" style="max-width: 320px;" title="<?= htmlspecialchars($s['title'] ?? '') ?>">
@@ -568,6 +626,186 @@ $pageLabels = [
         </div>
     </div>
 </div>
+
+<?php
+$corporateAssets = [
+    ['path' => 'uploads/products/product_steering_wheel.jpg', 'title' => 'Steering Wheel Systems (OEM Catalog)', 'cat' => 'Products'],
+    ['path' => 'uploads/products/product_airbag_module.jpg', 'title' => 'Airbag Safety Modules (Precision Inflator)', 'cat' => 'Products'],
+    ['path' => 'uploads/products/product_cockpit_resin.svg', 'title' => 'Cockpit & Resin Interior Trims (Blueprint)', 'cat' => 'Products'],
+    ['path' => 'uploads/products/product_exterior_trim.svg', 'title' => 'Exterior Aerodynamic & Grille (Blueprint)', 'cat' => 'Products'],
+    ['path' => 'uploads/gallery/facility_injection_molding.jpg', 'title' => 'Automated Injection Molding Plant', 'cat' => 'Facility'],
+    ['path' => 'uploads/gallery/facility_cleanroom_lab.svg', 'title' => 'Cleanroom Class 100k & CMM Laboratory', 'cat' => 'Facility'],
+    ['path' => 'uploads/certifications/cert_iatf_16949.svg', 'title' => 'IATF 16949:2016 Official Automotive Seal', 'cat' => 'Certifications'],
+    ['path' => 'uploads/certifications/cert_iso_9001.svg', 'title' => 'ISO 9001:2015 Quality Management Seal', 'cat' => 'Certifications'],
+    ['path' => 'uploads/certifications/cert_iso_14001.svg', 'title' => 'ISO 14001:2015 Environmental Green Seal', 'cat' => 'Certifications'],
+    ['path' => 'uploads/certifications/cert_iso_45001.svg', 'title' => 'ISO 45001:2018 Safety K3 Seal', 'cat' => 'Certifications'],
+    ['path' => 'uploads/certifications/cert_tkdn_kemenperin.svg', 'title' => 'TKDN 78.4% Kemenperin RI Seal', 'cat' => 'Certifications'],
+    ['path' => 'uploads/company/logo_nihon_plast_green.png', 'title' => 'PT Nihon Plast Indonesia Corporate Logo', 'cat' => 'Company'],
+    ['path' => 'uploads/pages/banner_home.jpg', 'title' => 'Panoramic Automotive Plant Banner', 'cat' => 'Banners']
+];
+
+$iconCategories = [
+    'Mutu & ISO' => ['bi-shield-check', 'bi-patch-check-fill', 'bi-award', 'bi-award-fill', 'bi-check2-circle', 'bi-clipboard-check', 'bi-shield-shaded', 'bi-star-fill', 'bi-trophy', 'bi-bookmark-star-fill'],
+    'Manufaktur & Mesin' => ['bi-gear-fill', 'bi-gear-wide-connected', 'bi-tools', 'bi-wrench-adjustable', 'bi-cpu', 'bi-cpu-fill', 'bi-robot', 'bi-boxes', 'bi-box-seam', 'bi-layers-fill', 'bi-hammer', 'bi-screwdriver'],
+    'Otomotif & Transport' => ['bi-car-front', 'bi-car-front-fill', 'bi-speedometer', 'bi-speedometer2', 'bi-disc-fill', 'bi-fuel-pump', 'bi-ev-front', 'bi-compass'],
+    'Fasilitas & Gedung' => ['bi-building', 'bi-building-fill-gear', 'bi-building-fill-check', 'bi-geo-alt-fill', 'bi-pin-map-fill', 'bi-hospital', 'bi-door-open'],
+    'Lingkungan & ESG' => ['bi-tree-fill', 'bi-flower1', 'bi-sun-fill', 'bi-lightning-charge-fill', 'bi-recycle', 'bi-water', 'bi-cloud-sun'],
+    'Bisnis & Data' => ['bi-graph-up-arrow', 'bi-bar-chart-line-fill', 'bi-pie-chart-fill', 'bi-briefcase-fill', 'bi-globe2', 'bi-people-fill', 'bi-person-badge-fill'],
+    'Kontak & Layanan' => ['bi-envelope-fill', 'bi-telephone-fill', 'bi-chat-dots-fill', 'bi-send-fill', 'bi-headset', 'bi-info-circle-fill', 'bi-bell-fill']
+];
+?>
+
+<!-- MODAL: ICON PICKER -->
+<div class="modal fade" id="iconPickerModal" tabindex="-1" aria-labelledby="iconPickerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-np-green text-white">
+                <h5 class="modal-title fw-bold" id="iconPickerModalLabel">
+                    <i class="bi bi-grid-3x3-gap-fill me-2"></i>Palet Icon Presisi Otomotif &amp; Korporat
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="mb-3">
+                    <input type="text" id="iconSearchInput" class="form-control" placeholder="Cari icon (contoh: shield, gear, award, car, check, box, tools)..." autocomplete="off">
+                </div>
+                
+                <?php foreach ($iconCategories as $catName => $icons): ?>
+                    <div class="mb-3">
+                        <div class="fw-bold text-muted small text-uppercase mb-2"><?= htmlspecialchars($catName) ?></div>
+                        <div class="icon-picker-grid">
+                            <?php foreach ($icons as $ic): ?>
+                                <div class="icon-picker-item" data-icon="<?= $ic ?>" onclick="selectIcon('<?= $ic ?>')" title="<?= $ic ?>">
+                                    <i class="bi <?= $ic ?>"></i>
+                                    <span class="text-truncate" style="max-width: 65px;"><?= str_replace('bi-', '', $ic) ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <small class="text-muted me-auto"><i class="bi bi-info-circle me-1"></i>Klik pada salah satu icon untuk memilih secara instan.</small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: MEDIA ASSET PICKER -->
+<div class="modal fade" id="mediaPickerModal" tabindex="-1" aria-labelledby="mediaPickerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-np-green text-white">
+                <h5 class="modal-title fw-bold" id="mediaPickerModalLabel">
+                    <i class="bi bi-images me-2"></i>Pilih Gambar dari Galeri Asset Perusahaan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <p class="text-muted small mb-3">
+                    Semua gambar berkualitas tinggi (foto studio kemudi, airbag inflator, cetak biru resin injeksi, interior cleanroom, dan sertifikat resmi) siap digunakan dengan 1-klik tanpa perlu mengunggah ulang.
+                </p>
+                <div class="media-picker-grid">
+                    <?php foreach ($corporateAssets as $asset): ?>
+                        <div class="media-picker-card" onclick="selectMediaAsset('<?= htmlspecialchars($asset['path']) ?>')" title="Gunakan gambar ini">
+                            <img src="../<?= htmlspecialchars($asset['path']) ?>" class="media-picker-img" alt="<?= htmlspecialchars($asset['title']) ?>">
+                            <div class="media-picker-info">
+                                <span class="badge bg-secondary-subtle text-secondary small text-uppercase mb-1"><?= htmlspecialchars($asset['cat']) ?></span>
+                                <div class="fw-bold text-dark text-truncate" title="<?= htmlspecialchars($asset['title']) ?>"><?= htmlspecialchars($asset['title']) ?></div>
+                                <code class="small text-muted text-truncate d-block"><?= htmlspecialchars($asset['path']) ?></code>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <small class="text-muted me-auto"><i class="bi bi-check-circle me-1"></i>Klik kartu gambar untuk menetapkannya ke form.</small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentTargetField = 'image';
+
+function openMediaPicker(target) {
+    currentTargetField = target;
+    const modal = new bootstrap.Modal(document.getElementById('mediaPickerModal'));
+    modal.show();
+}
+
+function selectMediaAsset(path) {
+    if (currentTargetField === 'image') {
+        document.getElementById('input_selected_library_image').value = path;
+        document.getElementById('input_existing_image').value = path;
+        document.getElementById('img_preview_image').src = '../' + path;
+        document.getElementById('label_preview_image').innerText = path;
+        document.getElementById('preview_box_image').classList.remove('d-none');
+    } else if (currentTargetField === 'bg_image') {
+        document.getElementById('input_selected_library_bg_image').value = path;
+        document.getElementById('input_existing_bg_image').value = path;
+        document.getElementById('img_preview_bg_image').src = '../' + path;
+        document.getElementById('label_preview_bg_image').innerText = path;
+        document.getElementById('preview_box_bg_image').classList.remove('d-none');
+    }
+    bootstrap.Modal.getInstance(document.getElementById('mediaPickerModal')).hide();
+}
+
+function clearSelectedMedia(target) {
+    if (target === 'image') {
+        document.getElementById('input_selected_library_image').value = '';
+        document.getElementById('input_existing_image').value = '';
+        document.getElementById('preview_box_image').classList.add('d-none');
+    } else if (target === 'bg_image') {
+        document.getElementById('input_selected_library_bg_image').value = '';
+        document.getElementById('input_existing_bg_image').value = '';
+        document.getElementById('preview_box_bg_image').classList.add('d-none');
+    }
+}
+
+function selectIcon(iconName) {
+    const iconInput = document.getElementById('iconInput');
+    const previewSpan = document.getElementById('iconPreviewSpan');
+    if (iconInput) {
+        iconInput.value = iconName;
+    }
+    if (previewSpan) {
+        previewSpan.innerHTML = '<i class="bi ' + iconName + '"></i>';
+    }
+    bootstrap.Modal.getInstance(document.getElementById('iconPickerModal')).hide();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const iconSearch = document.getElementById('iconSearchInput');
+    if (iconSearch) {
+        iconSearch.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.icon-picker-item');
+            items.forEach(function(item) {
+                const name = item.getAttribute('data-icon') || '';
+                if (name.includes(query) || query === '') {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    const iconInput = document.getElementById('iconInput');
+    if (iconInput) {
+        iconInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            const previewSpan = document.getElementById('iconPreviewSpan');
+            if (previewSpan) {
+                previewSpan.innerHTML = '<i class="bi ' + (val ? val : 'bi-shield-check') + '"></i>';
+            }
+        });
+    }
+});
+</script>
 
 <?php include __DIR__ . "/includes/footer.php"; ?>
 </body>

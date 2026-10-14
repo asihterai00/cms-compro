@@ -84,3 +84,45 @@ $email = $footerComp["email"] ?? "corporate@n-plast.co.id";
         </div>
     </div>
 </footer>
+
+<!-- Core JavaScript Libraries (100% Free & Open Source) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+<script src="assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="assets/vendor/aos/aos.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Initialize AOS (Animate on Scroll)
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            once: true,
+            duration: 750,
+            easing: 'ease-out-cubic',
+            offset: 40
+        });
+    }
+
+    // 2. Global Toast Helper using SweetAlert2
+    window.showToast = function(icon, title) {
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+            Toast.fire({
+                icon: icon || 'success',
+                title: title || ''
+            });
+        }
+    };
+});
+</script>
+

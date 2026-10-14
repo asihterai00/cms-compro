@@ -39,36 +39,27 @@ if ($machineryQuery) {
                         <?= htmlspecialchars(get_section_val('facility', 'facility_plant_overview', 'subtitle', 'Pabrik PT Nihon Plast Indonesia didesain mengikuti standar ketat prinsipal Nihon Plast Co., Ltd. (Jepang) untuk menghadirkan presisi Monozukuri tanpa cela.')) ?>
                     </p>
                     <div class="row g-3 mb-4">
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <div class="text-np-green fw-bold fs-4">28.500 m²</div>
-                                <div class="small text-muted fw-semibold">Total Luas Lahan Pabrik</div>
+                        <?php 
+                        $plantStats = sec_items('facility_plant_stats');
+                        if (!empty($plantStats)):
+                            foreach ($plantStats as $pStat):
+                        ?>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="text-np-green fw-bold fs-4"><?= htmlspecialchars($pStat['title']) ?></div>
+                                    <div class="small text-muted fw-semibold"><?= htmlspecialchars($pStat['subtitle']) ?></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <div class="text-np-green fw-bold fs-4">18.200 m²</div>
-                                <div class="small text-muted fw-semibold">Luas Bangunan Produksi</div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <div class="text-np-green fw-bold fs-4">120.000 / Bln</div>
-                                <div class="small text-muted fw-semibold">Kapasitas Steering Wheel</div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <div class="text-np-green fw-bold fs-4">95.000 / Bln</div>
-                                <div class="small text-muted fw-semibold">Kapasitas Modul Airbag</div>
-                            </div>
-                        </div>
+                        <?php 
+                            endforeach;
+                        endif; 
+                        ?>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <div class="position-relative rounded-4 overflow-hidden shadow-lg border">
                         <?php
-                        $plantImg = get_section_val('facility', 'facility_plant_overview', 'image', 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1200&q=80');
+                        $plantImg = get_section_val('facility', 'facility_plant_overview', 'image', 'uploads/gallery/facility_injection_molding.jpg');
                         $plantImgSrc = resolve_image_path($plantImg);
                         ?>
                         <img
@@ -107,113 +98,71 @@ if ($machineryQuery) {
             </div>
 
             <div class="row g-4">
-                <!-- Cell 1: Injection Molding -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                        <img
-                            src="https://images.unsplash.com/photo-1565610222536-ef125c59da2e?auto=format&fit=crop&w=800&q=80"
-                            class="card-img-top"
-                            style="height: 220px; object-fit: cover;"
-                            alt="Precision Injection Molding Machine"
-                            loading="lazy"
-                        >
-                        <div class="card-body p-4">
-                            <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2">Injeksi Resin Presisi</span>
-                            <h4 class="h5 fw-bold mb-2">High-Tonnage Injection Molding</h4>
-                            <p class="small text-muted mb-3">
-                                Armada 22 mesin injeksi plastik berkisar dari <strong>150-ton hingga 2.500-ton</strong> yang dilengkapi servo-robotik otomatis untuk mencetak komponen presisi tinggi dari material PP, ABS, PC, dan PA66.
-                            </p>
-                            <ul class="list-unstyled small text-muted mb-0">
-                                <li><i class="bi bi-check2-circle text-success me-1"></i> Multi-cavity mold compatibility</li>
-                                <li><i class="bi bi-check2-circle text-success me-1"></i> Gas-assist injection capability</li>
-                            </ul>
+                <?php 
+                $caps = sec_items('facility_capabilities');
+                if (!empty($caps)):
+                    foreach ($caps as $cap):
+                        $hasImage = !empty($cap['image']);
+                        $colClass = $hasImage ? 'col-lg-4 col-md-6' : 'col-lg-6 col-md-6';
+                ?>
+                    <div class="<?= $colClass ?>">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden <?= $hasImage ? '' : 'p-4' ?>">
+                            <?php if ($hasImage): ?>
+                                <img
+                                    src="<?= htmlspecialchars(resolve_image_path($cap['image'])) ?>"
+                                    class="card-img-top"
+                                    style="height: 220px; object-fit: cover;"
+                                    alt="<?= htmlspecialchars($cap['title']) ?>"
+                                    loading="lazy"
+                                >
+                                <div class="card-body p-4">
+                                    <?php if (!empty($cap['badge'])): ?>
+                                        <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2"><?= htmlspecialchars($cap['badge']) ?></span>
+                                    <?php endif; ?>
+                                    <h4 class="h5 fw-bold mb-2"><?= htmlspecialchars($cap['title']) ?></h4>
+                                    <?php if (!empty($cap['subtitle'])): ?>
+                                        <p class="small text-muted mb-3"><?= htmlspecialchars($cap['subtitle']) ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($cap['content'])): ?>
+                                        <p class="small text-muted mb-3"><?= htmlspecialchars($cap['content']) ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($cap['extra_data']) && is_array($cap['extra_data'])): ?>
+                                        <ul class="list-unstyled small text-muted mb-0">
+                                            <?php foreach ($cap['extra_data'] as $point): ?>
+                                                <li><i class="bi bi-check2-circle text-success me-1"></i> <?= htmlspecialchars($point) ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="p-3 bg-np-tint text-np-green rounded-3 fs-3">
+                                        <i class="bi <?= htmlspecialchars($cap['icon'] ?: 'bi-gear-fill') ?>"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="h5 fw-bold mb-0"><?= htmlspecialchars($cap['title']) ?></h4>
+                                        <?php if (!empty($cap['subtitle'])): ?>
+                                            <span class="small text-muted"><?= htmlspecialchars($cap['subtitle']) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <?php if (!empty($cap['content'])): ?>
+                                    <p class="text-muted small mb-0"><?= htmlspecialchars($cap['content']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($cap['extra_data']) && is_array($cap['extra_data'])): ?>
+                                    <ul class="list-unstyled small text-muted mt-3 mb-0">
+                                        <?php foreach ($cap['extra_data'] as $point): ?>
+                                            <li><i class="bi bi-check2-circle text-success me-1"></i> <?= htmlspecialchars($point) ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
-                </div>
-
-                <!-- Cell 2: Cleanroom Safety Assembly -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                        <img
-                            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"
-                            class="card-img-top"
-                            style="height: 220px; object-fit: cover;"
-                            alt="Cleanroom Airbag Assembly"
-                            loading="lazy"
-                        >
-                        <div class="card-body p-4">
-                            <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2">Cleanroom Class 8</span>
-                            <h4 class="h5 fw-bold mb-2">Modul Airbag Cleanroom Assembly</h4>
-                            <p class="small text-muted mb-3">
-                                Area perakitan steril berstandar <strong>ISO 14644-1 Class 8</strong> dengan kontrol partikel mikro dan electrostatic discharge (ESD) terproteksi penuh.
-                            </p>
-                            <ul class="list-unstyled small text-muted mb-0">
-                                <li><i class="bi bi-check2-circle text-success me-1"></i> Traceability barcode 100% individual</li>
-                                <li><i class="bi bi-check2-circle text-success me-1"></i> Automatic torque recording system</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cell 3: Leather Wrapping Craftsmanship -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                        <img
-                            src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80"
-                            class="card-img-top"
-                            style="height: 220px; object-fit: cover;"
-                            alt="Genuine Leather Steering Wheel Wrapping"
-                            loading="lazy"
-                        >
-                        <div class="card-body p-4">
-                            <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2">Takumi Craftsmanship</span>
-                            <h4 class="h5 fw-bold mb-2">Leather & Urethane Steering Cell</h4>
-                            <p class="small text-muted mb-3">
-                                Keahlian pembungkusan kulit asli dan sintetis berteknologi jahitan tangan presisi dipadukan dengan busa polyurethane molding berdensitas tinggi.
-                            </p>
-                            <ul class="list-unstyled small text-muted mb-0">
-                                <li><i class="bi bi-check2-circle text-success me-1"></i> Euro-stitch, Cross-stitch, Baseball-stitch</li>
-                                <li><i class="bi bi-check2-circle text-success me-1"></i> Integrated steering heater option</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cell 4: Ultrasonic & Vibration Welding -->
-                <div class="col-lg-6 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <div class="p-3 bg-np-tint text-np-green rounded-3 fs-3">
-                                <i class="bi bi-lightning-charge-fill"></i>
-                            </div>
-                            <div>
-                                <h4 class="h5 fw-bold mb-0">Automated Vibration & Ultrasonic Welding</h4>
-                                <span class="small text-muted">Pengelasan Frekuensi Tinggi Komponen Interior</span>
-                            </div>
-                        </div>
-                        <p class="text-muted small mb-0">
-                            Stasiun pengelasan otomatis bergetar dan ultrasonik untuk merekatkan modul saluran udara (air ducts), penutup airbag, dan konsol tengah dengan kekuatan rekat setara material cetak utuh tanpa penggunaan lem kimiawi beracun.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Cell 5: Polyurethane Foaming -->
-                <div class="col-lg-6 col-md-12">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <div class="p-3 bg-np-tint text-np-green rounded-3 fs-3">
-                                <i class="bi bi-shield-shaded"></i>
-                            </div>
-                            <div>
-                                <h4 class="h5 fw-bold mb-0">High-Pressure Polyurethane (PU) Foaming</h4>
-                                <span class="small text-muted">Inti Rangka Kemudi & Komponen Peredam</span>
-                            </div>
-                        </div>
-                        <p class="text-muted small mb-0">
-                            Sistem injeksi busa poliuretan bertekanan tinggi pada rangka inti logam roda kemudi, menjamin daya redam getaran berkendara yang optimal dan keselamatan deselerasi tabrakan pengemudi.
-                        </p>
-                    </div>
-                </div>
+                <?php 
+                    endforeach;
+                endif; 
+                ?>
             </div>
         </div>
     </section>
@@ -297,34 +246,26 @@ if ($machineryQuery) {
             </div>
 
             <div class="row g-4">
-                <div class="col-md-6 col-lg-3">
-                    <div class="cleanroom-card h-100 p-4 bg-white rounded-4 border">
-                        <div class="cleanroom-badge mb-2"><i class="bi bi-rulers me-1"></i>3D Metrology</div>
-                        <h5 class="fw-bold mb-2">CMM Geometric Lab</h5>
-                        <p class="small text-muted mb-0">Mesin pengukur koordinat 3 dimensi beresolusi 0,001 mm (mikron) untuk validasi cetakan mold presisi tinggi.</p>
+                <?php 
+                $labs = sec_items('facility_laboratories');
+                if (!empty($labs)):
+                    foreach ($labs as $lab):
+                ?>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="cleanroom-card h-100 p-4 bg-white rounded-4 border">
+                            <?php if (!empty($lab['badge'])): ?>
+                                <div class="cleanroom-badge mb-2">
+                                    <i class="bi <?= htmlspecialchars($lab['icon'] ?: 'bi-award') ?> me-1"></i><?= htmlspecialchars($lab['badge']) ?>
+                                </div>
+                            <?php endif; ?>
+                            <h5 class="fw-bold mb-2"><?= htmlspecialchars($lab['title']) ?></h5>
+                            <p class="small text-muted mb-0"><?= htmlspecialchars($lab['content'] ?? '') ?></p>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="cleanroom-card h-100 p-4 bg-white rounded-4 border">
-                        <div class="cleanroom-badge mb-2"><i class="bi bi-thermometer-half me-1"></i>Thermal Stress</div>
-                        <h5 class="fw-bold mb-2">Chamber Suhu Ekstrim</h5>
-                        <p class="small text-muted mb-0">Ruang simulasi termal dengan rentang suhu dari <strong>-40°C hingga +120°C</strong> serta kelembaban 95% RH untuk uji penuaan material.</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="cleanroom-card h-100 p-4 bg-white rounded-4 border">
-                        <div class="cleanroom-badge mb-2"><i class="bi bi-speedometer2 me-1"></i>Safety Inflation</div>
-                        <h5 class="fw-bold mb-2">High-Speed Sensor Deployment Lab</h5>
-                        <p class="small text-muted mb-0">Sensor optik presisi tinggi untuk menganalisis kurva tekanan inflasi kantung udara dalam 30 milidetik.</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="cleanroom-card h-100 p-4 bg-white rounded-4 border">
-                        <div class="cleanroom-badge mb-2"><i class="bi bi-hammer me-1"></i>Mechanical Strength</div>
-                        <h5 class="fw-bold mb-2">Drop Tower & Tensile Rig</h5>
-                        <p class="small text-muted mb-0">Alat uji impak jatuh bebas dan kekuatan tarik sambungan kulit untuk menjamin daya tahan mekanik roda kemudi saat terjadi benturan.</p>
-                    </div>
-                </div>
+                <?php 
+                    endforeach;
+                endif; 
+                ?>
             </div>
         </div>
     </section>

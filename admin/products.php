@@ -30,6 +30,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name = trim($_POST["name"] ?? "");
     $description = trim($_POST["description"] ?? "");
     $image = trim($_POST["old_image"] ?? "");
+    if (!empty($_POST["preset_image"])) {
+        $image = trim($_POST["preset_image"]);
+    }
     $uploadError = "";
 
     if (
@@ -40,7 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $allowed = [
             "image/jpeg",
             "image/png",
-            "image/webp"
+            "image/webp",
+            "image/svg+xml"
         ];
 
         if (
@@ -276,19 +280,55 @@ $products = $conn->query(
             </div>
 
             <div class="mb-3">
-
-                <label class="form-label">
-                    Product Image
+                <label class="form-label fw-bold">
+                    Product Image (Unggah File Baru atau Pilih Preset Resmi)
                 </label>
+
+                <input type="hidden" name="old_image" id="input_old_image" value="<?= htmlspecialchars($editItem["image"] ?? "") ?>">
+                <input type="hidden" name="preset_image" id="input_preset_image" value="">
 
                 <input
                     type="file"
                     name="image_file"
-                    class="form-control"
-                    accept=".jpg,.jpeg,.png,.webp"
+                    class="form-control mb-2"
+                    accept=".jpg,.jpeg,.png,.webp,.svg"
                 >
 
+                <div class="mb-2">
+                    <small class="text-muted d-block mb-1 fw-semibold">Pilih Cepat dari Asset Manufaktur Resmi:</small>
+                    <div class="d-flex flex-wrap gap-1">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setProductPreset('uploads/products/product_steering_wheel.jpg')">
+                            <i class="bi bi-disc me-1"></i> Steering Wheel
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setProductPreset('uploads/products/product_airbag_module.jpg')">
+                            <i class="bi bi-shield-shaded me-1"></i> Airbag Module
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setProductPreset('uploads/products/product_cockpit_resin.svg')">
+                            <i class="bi bi-speedometer2 me-1"></i> Cockpit Resin
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setProductPreset('uploads/products/product_exterior_trim.svg')">
+                            <i class="bi bi-car-front me-1"></i> Exterior Trim
+                        </button>
+                    </div>
+                </div>
+
+                <div id="product_preview_box" class="p-2 border rounded bg-light <?= empty($editItem['image']) ? 'd-none' : '' ?>">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="../<?= htmlspecialchars($editItem['image'] ?? '') ?>" id="product_preview_img" style="height: 50px; width: 80px; object-fit: contain; background: #0f172a; border-radius: 4px;" alt="Preview">
+                        <span class="small text-muted flex-grow-1 text-truncate" id="product_preview_label"><?= htmlspecialchars($editItem['image'] ?? '') ?></span>
+                    </div>
+                </div>
             </div>
+
+            <script>
+            function setProductPreset(path) {
+                document.getElementById('input_preset_image').value = path;
+                document.getElementById('input_old_image').value = path;
+                document.getElementById('product_preview_img').src = '../' + path;
+                document.getElementById('product_preview_label').innerText = path;
+                document.getElementById('product_preview_box').classList.remove('d-none');
+            }
+            </script>
 
             <button class="btn btn-primary">
                 <?= $editItem ? "Update Product" : "Save Product" ?>

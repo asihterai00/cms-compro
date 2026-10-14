@@ -1,7 +1,7 @@
 # 🧠 CMS Company Profile - Project Memory Bank
 
 > Auto-exported from MySQL Database `db_cms_compro.project_memory`
-> Generated on: 2026-10-14 08:35:44
+> Generated on: 2026-10-14 09:50:56
 
 
 ## 📂 Category: ARCHITECTURE
@@ -26,6 +26,46 @@ PT Nihon Plast Indonesia Company Profile CMS.
 - **Author:** antigravity-ai
 
 Successfully implemented 4 major capabilities: 1) 100% FOSS Multilingual Engine across 5 languages (ID, EN, JA, ZH, KO) with authentic automotive tier-1 terminology and browser auto-detection. 2) Zero videos, YouTube iframes, or GIFs across entire site; pure high-res photography. 3) 100% Dynamic CMS with site_sections table, active/inactive 1-click toggles, customizable titles, subtitles, badges, icons, images, backgrounds, and buttons. 4) Multi-user authorization with granular Create, Read, Update, Delete (CRUD) permissions matrix per menu.
+
+---
+
+### #14 - All 9 Public Pages Dynamic CMS &amp; Active Toggle Complete
+- **Recorded At:** 2026-10-14 15:51:20
+- **Author:** antigravity-ai
+
+Successfully migrated and wired all 9 public pages (home, about, facility, quality, products, contact, career, gallery, news) to MySQL site_sections table. Every page now supports 100% dynamic content rendering via get_section_val() and conditional rendering via is_section_active(). Admin site_sections.php supports instant 1-click active/not-active toggles and tabbed page filtering. Verified via 20 automated tests in scripts/test_all_pages_dynamic.php.
+
+---
+
+### #15 - Optimized Home Page Hierarchy, News at #2, and Performance Pruning
+- **Recorded At:** 2026-10-14 16:02:33
+- **Author:** antigravity-ai
+
+Re-architected index.php section order to follow Nihon Plast Japan and Tier-1 automotive standards. News section moved to position #2 immediately below Hero/Stats. Heavy non-essential sections (gallery_preview, quality_pillars, esg_sustainability) turned off by default (is_active=0) cutting initial HTML payload to 63KB and eliminating 7-10MB photo bloat, with lazy loading enabled across all media. Full dynamic toggle retained in admin/site_sections.php.
+
+---
+
+### #16 - Dedicated Automotive Visual Assets, Official SVG Accreditation Seals, and Interactive Icon &amp; Media Pickers
+- **Recorded At:** 2026-10-14 16:16:08
+- **Author:** antigravity-ai
+
+Generated OEM studio photographs for Steering Wheel and Airbag Modules, plus high-precision technical blueprints for Cockpit Resin and Exterior Trims. Created 5 official vector SVG accreditation seals (IATF 16949, ISO 9001, ISO 14001, ISO 45001, TKDN 78%). Replaced all external Unsplash URLs with local fast assets. Developed interactive Icon Picker Modal (70+ categorized corporate icons) and Media Asset Gallery Modal in admin/site_sections.php, admin/products.php, and admin/certifications.php to make choosing icons and images effortless.
+
+---
+
+### #17 - 100 Percent Dynamic CMS Sub-Items Engine and Admin Manager
+- **Recorded At:** 2026-10-14 16:36:30
+- **Author:** antigravity-ai
+
+Migrated all static HTML cards and lists to site_section_items table (77 dynamic sub-items across 18 sections). Refactored about.php, facility.php, quality.php, career.php, and products.php. Created admin/site_section_items.php with 1-click active toggle, full CRUD, and icon/media pickers. Connected with granular menu-level RBAC and linked from site_sections.php. All 26 tests passed.
+
+---
+
+### #18 - Dribbble-Grade Automotive UI System &amp; FOSS Vendor Integration
+- **Recorded At:** 2026-10-14 16:50:46
+- **Author:** antigravity-ai
+
+Modernized the UI architecture by eliminating clustered nav wrapping (strict white-space: nowrap with utility topbar and fluid container), integrating Swiper 11 hero carousel with dynamic HUD cards, horizontal progress bar and slide counter, continuous linear OEM marquee ticker, ambient automotive canvas particle motion, SweetAlert2 modal and toast feedback, and AOS (Animate on Scroll) animations. 100% Free & Open Source without third-party paid dependencies.
 
 ---
 
@@ -77,6 +117,14 @@ Revamped entire web application based on Japan, ID, CN, KR competitor benchmarks
 - **Author:** antigravity-ai
 
 Fixed cross-cutting theme inconsistencies and broken responsive layouts: 1. Discovered and neutralized home-scroll.css and content-clickable.css which were leaking old blue (#0b6ea8, #142e43, #8ed0ff) and breaking font scales; 2. Enforced strict Bootstrap color overrides (.text-primary, .bg-primary, .btn-primary all map to --np-green #005A36); 3. Standardized fluid typography scale with clamp() across all headings (h1-h6) and body copy; 4. Fixed responsive auto-fit for desktop, tablet, and mobile (prevented stats-bar collision on mobile, added touch horizontal scrolling on zone tabs and tables, fixed aspect ratio distortions); 5. Rebuilt career.php to dynamically fetch from database careers table and updated news.php and gallery.php to match the unified Nihon Plast design system.
+
+---
+
+### #19 - FOSS Vendor Libraries, Navbar Decluttering &amp; Dribbble Hero Carousel
+- **Recorded At:** 2026-10-14 16:50:51
+- **Author:** antigravity-ai
+
+Installed local Swiper 11, SweetAlert2, and AOS in assets/vendor/. Added site-topbar for contact and multilingual pills to clear navbar real estate. Overhauled navbar with strict white-space: nowrap and container-fluid. Seeded 4 dynamic hero slides in site_section_items. Implemented Swiper 11 hero slider, ambient particle canvas overlay, continuous OEM marquee ticker, and SweetAlert2 notifications for B2B RFQ.
 
 ---
 

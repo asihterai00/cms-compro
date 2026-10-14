@@ -100,13 +100,20 @@ if ($galleryItems) {
 
 <section class="section-padding">
     <div class="container">
+        <?php if (is_section_active('gallery', 'gallery_header')): ?>
         <div class="max-w-700 mb-5">
             <span class="eyebrow-badge">
-                <i class="bi bi-camera-fill"></i> <?= htmlspecialchars(__('gallery_badge', 'DOKUMENTASI FOTO MANUFAKTUR')) ?>
+                <i class="bi <?= htmlspecialchars(get_section_val('gallery', 'gallery_header', 'icon', 'bi-camera-fill')) ?>"></i>
+                <?= htmlspecialchars(get_section_val('gallery', 'gallery_header', 'badge_text', __('gallery_badge', 'DOKUMENTASI FOTO MANUFAKTUR'))) ?>
             </span>
-            <h1 class="display-6 fw-bold text-np-green mb-2"><?= htmlspecialchars(__('gallery_title', 'Galeri Aktivitas & Fasilitas')) ?></h1>
-            <p class="text-muted"><?= htmlspecialchars(__('gallery_desc', 'Dokumentasi fotografi beresolusi tinggi mengenai kegiatan produksi manufaktur, budaya keselamatan 5S, dan fasilitas pabrik PT Nihon Plast Indonesia.')) ?></p>
+            <h1 class="display-6 fw-bold text-np-green mb-2">
+                <?= htmlspecialchars(get_section_val('gallery', 'gallery_header', 'title', __('gallery_title', 'Galeri Aktivitas & Fasilitas'))) ?>
+            </h1>
+            <p class="text-muted">
+                <?= htmlspecialchars(get_section_val('gallery', 'gallery_header', 'subtitle', __('gallery_desc', 'Dokumentasi fotografi beresolusi tinggi mengenai kegiatan produksi manufaktur, budaya keselamatan 5S, dan fasilitas pabrik PT Nihon Plast Indonesia.'))) ?>
+            </p>
         </div>
+        <?php endif; ?>
 
         <div class="row g-4">
             <?php if (!empty($galleryModalItems)): ?>

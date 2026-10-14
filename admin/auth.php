@@ -32,6 +32,12 @@ function get_app_menus() {
             'url' => 'site_sections.php',
             'desc' => 'Ubah teks, judul, icon, background, gambar & toggle aktif/nonaktif'
         ],
+        'site_section_items' => [
+            'name' => 'Sub-Item & Card Elements',
+            'icon' => 'bi-collection',
+            'url' => 'site_section_items.php',
+            'desc' => 'Kelola kartu, pilar, zone kendaraan, OEM badges & sub-elemen'
+        ],
         'banners' => [
             'name' => 'Page Banners',
             'icon' => 'bi-image',

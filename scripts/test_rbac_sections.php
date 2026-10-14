@@ -29,6 +29,7 @@ echo " - When is_active = 0, oem_trust appears in index.php: " . ($hasOemInactiv
 
 // Set oem_trust back to active (1)
 $conn->query("UPDATE site_sections SET is_active = 1 WHERE section_key = 'oem_trust'");
+clear_page_sections_cache('home');
 ob_start();
 include __DIR__ . "/../index.php";
 $outActive = ob_get_clean();

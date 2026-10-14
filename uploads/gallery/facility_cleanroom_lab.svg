@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cleanBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022c22" />
+      <stop offset="50%" stop-color="#064e3b" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <filter id="cleanGlow">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#10B981" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#cleanBg)" />
+  
+  <!-- Cleanroom Ceiling HEPA Filter Grids -->
+  <g stroke="#34D399" stroke-width="1" opacity="0.3">
+    <rect x="50" y="20" width="150" height="70" fill="#064e3b" />
+    <rect x="230" y="20" width="150" height="70" fill="#064e3b" />
+    <rect x="410" y="20" width="150" height="70" fill="#064e3b" />
+    <rect x="590" y="20" width="150" height="70" fill="#064e3b" />
+  </g>
+
+  <!-- 3D Coordinate Measuring Machine (CMM) & Airbag Deployment Rig -->
+  <g transform="translate(180, 120)" filter="url(#cleanGlow)">
+    <!-- Granite Surface Base Table -->
+    <rect x="20" y="260" width="400" height="40" rx="4" fill="#0F172A" stroke="#334155" stroke-width="2" />
+    <!-- Table Legs -->
+    <rect x="40" y="300" width="30" height="60" fill="#1E293B" />
+    <rect x="370" y="300" width="30" height="60" fill="#1E293B" />
+
+    <!-- CMM Bridge Gantry -->
+    <rect x="60" y="60" width="30" height="200" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <rect x="350" y="60" width="30" height="200" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" />
+    <rect x="60" y="40" width="320" height="30" rx="3" fill="#005A36" stroke="#10B981" stroke-width="2" />
+    
+    <!-- Measuring Head Probe Assembly -->
+    <rect x="200" y="65" width="40" height="50" fill="#0F172A" stroke="#34D399" />
+    <line x1="220" y1="115" x2="220" y2="190" stroke="#EF4444" stroke-width="3" />
+    <circle cx="220" cy="192" r="5" fill="#EF4444" />
+    <!-- Laser Measurement Ring Beam -->
+    <circle cx="220" cy="220" r="28" fill="none" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4,4" />
+
+    <!-- Steering Wheel Under Inspection on Base Table -->
+    <ellipse cx="220" cy="245" rx="55" ry="25" fill="#1E293B" stroke="#64748B" stroke-width="4" />
+    <ellipse cx="220" cy="245" rx="20" ry="10" fill="#005A36" />
+  </g>
+
+  <!-- Inspection Terminal Screen Display -->
+  <g transform="translate(560, 200)">
+    <rect width="180" height="130" rx="6" fill="#0F172A" stroke="#10B981" stroke-width="1.5" />
+    <!-- Screen Header -->
+    <rect width="180" height="25" rx="6" fill="#064E3B" />
+    <text x="90" y="17" text-anchor="middle" fill="#FFFFFF" font-family="'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="700">CMM PRECISION INSPECTION</text>
+    <!-- Waveform / Tolerance Scan -->
+    <path d="M15 65 L45 55 L75 75 L105 45 L135 65 L165 50" fill="none" stroke="#34D399" stroke-width="2" />
+    <text x="15" y="95" fill="#94A3B8" font-family="'Segoe UI', Roboto, sans-serif" font-size="9">Tolerance: ±0.005 mm</text>
+    <text x="15" y="112" fill="#10B981" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800">STATUS: PASS (100% OK)</text>
+  </g>
+
+  <!-- Cleanroom Specs Footer -->
+  <g transform="translate(40, 500)">
+    <rect width="720" height="70" rx="8" fill="#020617" stroke="#10B981" stroke-width="1.5" />
+    <text x="25" y="26" fill="#10B981" font-family="'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="12" letter-spacing="1">CLEANROOM CLASS 100,000 &amp; LABORATORY SPECIFICATIONS</text>
+    <text x="25" y="46" fill="#FFFFFF" font-family="'Segoe UI', Roboto, sans-serif" font-size="11">Instrumentation: Mitutoyo 3D CMM, Airbag Deployment Chamber, Xenon Arc UV Weatherometer, Gas Leak Sniffer</text>
+    <text x="25" y="60" fill="#94A3B8" font-family="'Segoe UI', Roboto, sans-serif" font-size="10">Standards: IATF 16949 Metrology Traceability, JIS D1601 Vibration Test, ISO 17025 Ready</text>
+  </g>
+</svg>

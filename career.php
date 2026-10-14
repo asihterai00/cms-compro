@@ -16,38 +16,49 @@ $careers = $conn->query("SELECT * FROM careers ORDER BY id ASC");
 
 <section class="section-padding">
     <div class="container">
-        <!-- Intro & Culture -->
+        <!-- 1. Intro & Culture -->
+        <?php if (is_section_active('career', 'career_intro')): ?>
         <div class="row align-items-center g-5 mb-5">
             <div class="col-lg-6">
                 <span class="eyebrow-badge">
-                    <i class="bi bi-people-fill"></i> PEOPLE & MONOZUKURI CULTURE
+                    <i class="bi <?= htmlspecialchars(get_section_val('career', 'career_intro', 'icon', 'bi-people-fill')) ?>"></i>
+                    <?= htmlspecialchars(get_section_val('career', 'career_intro', 'badge_text', 'CAREER & TALENT DEVELOPMENT')) ?>
                 </span>
                 <h1 class="display-6 fw-bold text-np-green mb-3">
-                    Tumbuh & Berkembang Bersama Produsen Otomotif Tier-1 Dunia
+                    <?= htmlspecialchars(get_section_val('career', 'career_intro', 'title', 'Membangun Karir Berkelanjutan di Industri Manufaktur Presisi')) ?>
                 </h1>
                 <p class="lead text-muted mb-4">
-                    Di PT Nihon Plast Indonesia, kami percaya bahwa produk berkualitas tinggi hanya lahir dari sumber daya manusia yang terampil, berintegritas, dan menjunjung tinggi keselamatan kerja (<em>Anzen Daiichi</em>).
+                    <?= nl2br(htmlspecialchars(get_section_val('career', 'career_intro', 'subtitle', 'Kami percaya bahwa keunggulan produk berawal dari sumber daya manusia yang kompeten, berintegritas, dan menjunjung tinggi budaya keselamatan kerja.'))) ?>
                 </p>
                 <div class="row g-3">
-                    <div class="col-sm-6">
-                        <div class="p-3 bg-light rounded-3 border">
-                            <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-mortarboard-fill me-1"></i> Pelatihan Terstruktur</h6>
-                            <p class="small text-muted mb-0">Program transfer teknologi dan pelatihan standar manufaktur Jepang.</p>
+                    <?php 
+                    $introFeats = sec_items('career_intro_features');
+                    if (!empty($introFeats)):
+                        foreach ($introFeats as $feat):
+                    ?>
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <h6 class="fw-bold text-np-green mb-1"><i class="bi <?= htmlspecialchars($feat['icon'] ?: 'bi-check-circle') ?> me-1"></i> <?= htmlspecialchars($feat['title']) ?></h6>
+                                <p class="small text-muted mb-0"><?= htmlspecialchars($feat['subtitle'] ?? $feat['content'] ?? '') ?></p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="p-3 bg-light rounded-3 border">
-                            <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-shield-check me-1"></i> Budaya K3 / SMK3</h6>
-                            <p class="small text-muted mb-0">Lingkungan kerja higienis dengan penghargaan Zero Accident.</p>
-                        </div>
-                    </div>
+                    <?php 
+                        endforeach;
+                    endif; 
+                    ?>
                 </div>
             </div>
 
             <div class="col-lg-6">
                 <div class="rounded-4 overflow-hidden shadow-sm border">
+                    <?php
+                    $careerImg = resolve_image_path(
+                        get_section_val('career', 'career_intro', 'image', 'uploads/gallery/facility_cleanroom_lab.svg'),
+                        'uploads/pages'
+                    );
+                    ?>
                     <img
-                        src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=900&q=80"
+                        src="<?= htmlspecialchars($careerImg) ?>"
                         class="img-fluid w-100"
                         style="height: 340px; object-fit: cover;"
                         alt="Nihon Plast Indonesia Team"
@@ -55,14 +66,97 @@ $careers = $conn->query("SELECT * FROM careers ORDER BY id ASC");
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <!-- Job Vacancies List -->
+        <!-- 2. Workplace Culture & Benefits -->
+        <?php if (is_section_active('career', 'career_culture_benefits')): ?>
+        <div class="mb-5 p-4 p-md-5 bg-light rounded-4 border">
+            <div class="text-center max-w-700 mx-auto mb-4">
+                <span class="eyebrow-badge mx-auto">
+                    <i class="bi <?= htmlspecialchars(get_section_val('career', 'career_culture_benefits', 'icon', 'bi-heart-pulse-fill')) ?>"></i>
+                    <?= htmlspecialchars(get_section_val('career', 'career_culture_benefits', 'badge_text', 'WORKPLACE CULTURE & PERKS')) ?>
+                </span>
+                <h2 class="h3 fw-bold text-np-green mb-2">
+                    <?= htmlspecialchars(get_section_val('career', 'career_culture_benefits', 'title', 'Kesejahteraan Karyawan & Pengembangan Profesional')) ?>
+                </h2>
+                <p class="text-muted small">
+                    <?= htmlspecialchars(get_section_val('career', 'career_culture_benefits', 'subtitle', 'Pelatihan teknik Monozukuri langsung, fasilitas BPJS Kesehatan & Ketenagakerjaan lengkap, kantin higienis, dan bus jemputan karyawan.')) ?>
+                </p>
+            </div>
+            <div class="row g-4 text-center">
+                <?php 
+                $benefits = sec_items('career_culture_benefits');
+                if (!empty($benefits)):
+                    foreach ($benefits as $b):
+                ?>
+                    <div class="col-6 col-md-4">
+                        <div class="p-3 bg-white rounded-3 shadow-sm h-100 border">
+                            <i class="bi <?= htmlspecialchars($b['icon'] ?: 'bi-award') ?> text-np-green fs-2 mb-2 d-block"></i>
+                            <h6 class="fw-bold text-dark mb-1"><?= htmlspecialchars($b['title']) ?></h6>
+                            <small class="text-muted"><?= htmlspecialchars($b['content'] ?? '') ?></small>
+                        </div>
+                    </div>
+                <?php 
+                    endforeach;
+                endif; 
+                ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- 3. Recruitment Stages -->
+        <?php if (is_section_active('career', 'career_hiring_process')): ?>
+        <div class="mb-5 p-4 p-md-5 bg-white rounded-4 border shadow-sm">
+            <div class="text-center max-w-700 mx-auto mb-4">
+                <span class="eyebrow-badge mx-auto">
+                    <i class="bi <?= htmlspecialchars(get_section_val('career', 'career_hiring_process', 'icon', 'bi-check2-circle')) ?>"></i>
+                    <?= htmlspecialchars(get_section_val('career', 'career_hiring_process', 'badge_text', 'RECRUITMENT STAGES')) ?>
+                </span>
+                <h2 class="h3 fw-bold text-np-green mb-2">
+                    <?= htmlspecialchars(get_section_val('career', 'career_hiring_process', 'title', 'Tahapan Rekrutmen Transparan & Bebas Biaya')) ?>
+                </h2>
+                <p class="text-muted small">
+                    <?= htmlspecialchars(get_section_val('career', 'career_hiring_process', 'subtitle', '1. Seleksi Berkas Administrasi, 2. Tes Kemampuan Teknis & Psikotes, 3. Wawancara HR & User, 4. Pemeriksaan Kesehatan (MCU) & Onboarding.')) ?>
+                </p>
+            </div>
+            <div class="row g-3 text-center">
+                <?php 
+                $stages = sec_items('career_hiring_process');
+                if (!empty($stages)):
+                    foreach ($stages as $idx => $stg):
+                ?>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <div class="badge bg-np-green text-white rounded-pill px-3 py-1 mb-2">
+                                <?= !empty($stg['subtitle']) ? 'Tahap ' . htmlspecialchars($stg['subtitle']) : 'Langkah ' . ($idx + 1) ?>
+                            </div>
+                            <h6 class="fw-bold text-np-green mb-1"><?= htmlspecialchars($stg['title']) ?></h6>
+                            <small class="text-muted"><?= htmlspecialchars($stg['content'] ?? '') ?></small>
+                        </div>
+                    </div>
+                <?php 
+                    endforeach;
+                endif; 
+                ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- 4. Job Vacancies List -->
+        <?php if (is_section_active('career', 'career_vacancies_intro')): ?>
         <div class="mb-4">
             <span class="eyebrow-badge">
-                <i class="bi bi-briefcase-fill"></i> CURRENT OPENINGS
+                <i class="bi <?= htmlspecialchars(get_section_val('career', 'career_vacancies_intro', 'icon', 'bi-briefcase-fill')) ?>"></i>
+                <?= htmlspecialchars(get_section_val('career', 'career_vacancies_intro', 'badge_text', 'OPEN VACANCIES')) ?>
             </span>
-            <h2 class="h3 fw-bold text-np-green mb-4">Lowongan Kerja Tersedia</h2>
+            <h2 class="h3 fw-bold text-np-green mb-2">
+                <?= htmlspecialchars(get_section_val('career', 'career_vacancies_intro', 'title', 'Posisi Lowongan yang Sedang Dibuka')) ?>
+            </h2>
+            <p class="text-muted">
+                <?= htmlspecialchars(get_section_val('career', 'career_vacancies_intro', 'subtitle', 'Lihat kesempatan karir aktif di fasilitas pabrik Cikampek, Karawang dan kirimkan lamaran Anda.')) ?>
+            </p>
         </div>
+        <?php endif; ?>
 
         <div class="row g-4">
             <?php if ($careers && $careers->num_rows > 0): ?>

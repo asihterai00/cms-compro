@@ -8,11 +8,20 @@
  * Load all sections for a specific page from site_sections table
  *
  * @param string $page
+ * @param bool $resetCache
  * @return array
  */
-function get_page_sections($page) {
+function get_page_sections($page, $resetCache = false) {
     global $conn;
     static $cachedPageSections = [];
+
+    if ($resetCache) {
+        if ($page === null) {
+            $cachedPageSections = [];
+            return [];
+        }
+        unset($cachedPageSections[$page]);
+    }
 
     if (!isset($cachedPageSections[$page])) {
         $cachedPageSections[$page] = [];
@@ -30,6 +39,16 @@ function get_page_sections($page) {
         }
     }
     return $cachedPageSections[$page];
+}
+
+/**
+ * Clear static cache of page sections (all pages or specific page)
+ *
+ * @param string|null $page
+ * @return void
+ */
+function clear_page_sections_cache($page = null) {
+    get_page_sections($page, true);
 }
 
 /**
@@ -80,3 +99,74 @@ function resolve_image_path($path, $folder = "") {
     if ($folder !== "") return rtrim($folder, "/") . "/" . basename($path);
     return $path;
 }
+
+/**
+ * Get all dynamic items/cards/steps for a specific section from site_section_items
+ *
+ * @param string $section_key
+ * @param bool $onlyActive
+ * @param bool $resetCache
+ * @return array
+ */
+function get_section_items($section_key, $onlyActive = true, $resetCache = false) {
+    global $conn;
+    static $cachedSectionItems = [];
+
+    if ($resetCache) {
+        if ($section_key === null) {
+            $cachedSectionItems = [];
+            return [];
+        }
+        unset($cachedSectionItems[$section_key . '_active']);
+        unset($cachedSectionItems[$section_key . '_all']);
+        return [];
+    }
+
+    $cacheKey = $section_key . ($onlyActive ? '_active' : '_all');
+    if (!isset($cachedSectionItems[$cacheKey])) {
+        $cachedSectionItems[$cacheKey] = [];
+        if (isset($conn) && $conn instanceof mysqli) {
+            $sql = "SELECT * FROM site_section_items WHERE section_key = ?";
+            if ($onlyActive) {
+                $sql .= " AND is_active = 1";
+            }
+            $sql .= " ORDER BY sort_order ASC, id ASC";
+
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param("s", $section_key);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                while ($row = $res->fetch_assoc()) {
+                    if (!empty($row['extra_data'])) {
+                        $decoded = json_decode($row['extra_data'], true);
+                        if (json_last_error() === JSON_ERROR_NONE) {
+                            $row['extra'] = $decoded;
+                        }
+                    }
+                    $cachedSectionItems[$cacheKey][] = $row;
+                }
+                $stmt->close();
+            }
+        }
+    }
+    return $cachedSectionItems[$cacheKey];
+}
+
+/**
+ * Clear static cache of section items
+ *
+ * @param string|null $section_key
+ * @return void
+ */
+function clear_section_items_cache($section_key = null) {
+    get_section_items($section_key, true, true);
+}
+
+/**
+ * Shortcut to get active section items
+ */
+function sec_items($section_key) {
+    return get_section_items($section_key, true);
+}
+

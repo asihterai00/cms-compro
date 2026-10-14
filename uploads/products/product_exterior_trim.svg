@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="extBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="50%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+    <linearGradient id="glossBlack" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="20%" stop-color="#0F172A" />
+      <stop offset="80%" stop-color="#020617" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+    <linearGradient id="chromeGleam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#94A3B8" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <filter id="extShadow">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#extBg)" />
+  <circle cx="400" cy="280" r="260" fill="#005A36" opacity="0.12" filter="blur(70px)" />
+
+  <!-- Technical Grid lines -->
+  <path d="M0 150 H800 M0 300 H800 M0 450 H800 M200 0 V600 M400 0 V600 M600 0 V600" stroke="#334155" stroke-width="0.5" stroke-dasharray="3,6" opacity="0.4" />
+
+  <!-- Front Radiator Grille & Aerodynamic Assembly -->
+  <g transform="translate(100, 110)" filter="url(#extShadow)">
+    <!-- Main Grille Outer Shield Frame -->
+    <path d="M50 30 L550 30 Q580 30 560 90 L510 240 Q490 290 400 300 L200 300 Q110 290 90 240 L40 90 Q20 30 50 30 Z" fill="url(#glossBlack)" stroke="url(#chromeGleam)" stroke-width="3" />
+    
+    <!-- Honeycomb Aerodynamic Mesh Structure -->
+    <g fill="#020617" stroke="#10B981" stroke-width="1" opacity="0.85">
+      <!-- Row 1 -->
+      <polygon points="120,60 140,50 160,60 160,80 140,90 120,80" />
+      <polygon points="170,60 190,50 210,60 210,80 190,90 170,80" />
+      <polygon points="220,60 240,50 260,60 260,80 240,90 220,80" />
+      <polygon points="270,60 290,50 310,60 310,80 290,90 270,80" />
+      <polygon points="320,60 340,50 360,60 360,80 340,90 320,80" />
+      <polygon points="370,60 390,50 410,60 410,80 390,90 370,80" />
+      <polygon points="420,60 440,50 460,60 460,80 440,90 420,80" />
+      <polygon points="470,60 490,50 510,60 510,80 490,90 470,80" />
+      <!-- Row 2 -->
+      <polygon points="145,95 165,85 185,95 185,115 165,125 145,115" />
+      <polygon points="195,95 215,85 235,95 235,115 215,125 195,115" />
+      <polygon points="245,95 265,85 285,95 285,115 265,125 245,115" />
+      <polygon points="295,95 315,85 335,95 335,115 315,125 295,115" />
+      <polygon points="345,95 365,85 385,95 385,115 365,125 345,115" />
+      <polygon points="395,95 415,85 435,95 435,115 415,125 395,115" />
+      <polygon points="445,95 465,85 485,95 485,115 465,125 445,115" />
+      <!-- Row 3 -->
+      <polygon points="160,130 180,120 200,130 200,150 180,160 160,150" />
+      <polygon points="210,130 230,120 250,130 250,150 230,160 210,150" />
+      <polygon points="260,130 280,120 300,130 300,150 280,160 260,150" />
+      <polygon points="310,130 330,120 350,130 350,150 330,160 310,150" />
+      <polygon points="360,130 380,120 400,130 400,150 380,160 360,150" />
+      <polygon points="410,130 430,120 450,130 450,150 430,160 410,150" />
+      <!-- Row 4 -->
+      <polygon points="185,165 205,155 225,165 225,185 205,195 185,185" />
+      <polygon points="235,165 255,155 275,165 275,185 255,195 235,185" />
+      <polygon points="285,165 305,155 325,165 325,185 305,195 285,185" />
+      <polygon points="335,165 355,155 375,165 375,185 355,195 335,185" />
+      <polygon points="385,165 405,155 425,165 425,185 405,195 385,185" />
+    </g>
+
+    <!-- Center OEM Mount Platform -->
+    <rect x="230" y="90" width="140" height="90" rx="10" fill="#0A3C28" stroke="#10B981" stroke-width="2" />
+    <circle cx="300" cy="135" r="28" fill="#020617" stroke="#FCD34D" stroke-width="2" />
+    <path d="M285 135 L300 120 L315 135 L300 150 Z" fill="#FCD34D" />
+
+    <!-- Side Door Mirror Housing (Floating Preview) -->
+    <g transform="translate(480, -30)">
+      <path d="M10 50 Q40 10 90 20 Q120 28 130 60 Q120 90 70 85 Q20 80 10 50 Z" fill="url(#glossBlack)" stroke="#64748B" stroke-width="2" />
+      <!-- Turn Signal LED Indicator Bar -->
+      <path d="M30 55 Q70 45 105 52" fill="none" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Technical Specs Cards -->
+  <g transform="translate(30, 480)">
+    <rect width="350" height="85" rx="8" fill="#0F172A" stroke="#005A36" stroke-width="1.5" />
+    <text x="20" y="28" fill="#10B981" font-family="'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="13" letter-spacing="1">AERODYNAMIC &amp; THERMAL SPECS</text>
+    <text x="20" y="48" fill="#FFFFFF" font-family="'Segoe UI', Roboto, sans-serif" font-size="12">Airflow Resistance: Optimised CFD Drag Coefficient</text>
+    <text x="20" y="68" fill="#94A3B8" font-family="'Segoe UI', Roboto, sans-serif" font-size="11">Heat Resistance: 120°C Engine Bay Underhood Exposure</text>
+  </g>
+
+  <g transform="translate(420, 480)">
+    <rect width="350" height="85" rx="8" fill="#0F172A" stroke="#005A36" stroke-width="1.5" />
+    <text x="20" y="28" fill="#10B981" font-family="'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="13" letter-spacing="1">SURFACE FINISH CAPABILITIES</text>
+    <text x="20" y="48" fill="#FFFFFF" font-family="'Segoe UI', Roboto, sans-serif" font-size="12">Coating: High-Gloss Piano Black / Chrome Vacuum Plating</text>
+    <text x="20" y="68" fill="#94A3B8" font-family="'Segoe UI', Roboto, sans-serif" font-size="11">UV Resistance: 2,000 Hours Xenon Arc Weathering (SAE J2527)</text>
+  </g>
+</svg>

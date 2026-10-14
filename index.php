@@ -21,37 +21,20 @@ $certifications = $conn->query("SELECT * FROM certifications WHERE status = 'act
 // 4. Latest News
 $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC LIMIT 3");
 
-// 5. Gallery (100% Static High-Resolution Photos)
-$galleryItems = $conn->query("SELECT id, title, image FROM gallery ORDER BY id DESC LIMIT 6");
-
-// 6. Dynamic Site Sections Engine (CMS Elements with Active / Inactive State)
-$sectionsResult = $conn->query("SELECT * FROM site_sections WHERE page = 'home'");
-$homeSections = [];
-if ($sectionsResult) {
-    while ($sec = $sectionsResult->fetch_assoc()) {
-        $homeSections[$sec['section_key']] = $sec;
-    }
-}
-
 if (!function_exists('sec_active')) {
     function sec_active($key, $default = true) {
-        global $homeSections;
-        if (isset($homeSections[$key])) {
-            return (bool)$homeSections[$key]['is_active'];
-        }
-        return $default;
+        return is_section_active('home', $key, $default);
     }
 }
 
 if (!function_exists('sec_val')) {
     function sec_val($key, $field, $default = '') {
-        global $homeSections;
-        if (isset($homeSections[$key]) && !empty($homeSections[$key][$field])) {
-            return $homeSections[$key][$field];
-        }
-        return $default;
+        return get_section_val('home', $key, $field, $default);
     }
 }
+
+// 5. Gallery (Only queried if active to save DB load)
+$galleryItems = sec_active('gallery_preview', false) ? $conn->query("SELECT id, title, image FROM gallery ORDER BY id DESC LIMIT 6") : false;
 
 if (!function_exists('homeImagePath')) {
     function homeImagePath($path, $folder = "") {
@@ -76,323 +59,226 @@ if (!function_exists('homeImagePath')) {
 
 <?php include __DIR__ . "/includes/navbar.php"; ?>
 
-<!-- 1. HERO SECTION: High-Tech Automotive Tier-1 -->
+<!-- 1. HERO SECTION: High-Tech Automotive Tier-1 Carousel (Swiper 11) -->
 <?php if (sec_active('hero')): ?>
-    <?php
-    $heroBg = sec_val('hero', 'bg_image', '');
-    $heroStyle = !empty($heroBg) ? 'style="background: linear-gradient(rgba(15,23,42,0.7), rgba(15,23,42,0.85)), url(' . htmlspecialchars($heroBg) . ') center/cover no-repeat;"' : '';
+    <?php 
+    $heroSlides = sec_items('hero_slides'); 
+    if (!empty($heroSlides)):
     ?>
-    <header class="hero-corporate" <?= $heroStyle ?>>
-        <div class="container py-5 my-auto">
-            <div class="row align-items-center">
-                <div class="col-lg-9">
-                    <div class="eyebrow-badge">
-                        <i class="bi <?= htmlspecialchars(sec_val('hero', 'icon', 'bi-shield-check')) ?>"></i> 
-                        <?= htmlspecialchars(sec_val('hero', 'badge_text', __('hero_badge', 'GLOBAL TIER-1 AUTOMOTIVE SAFETY & INTERIOR SYSTEMS'))) ?>
-                    </div>
-                    <h1 class="display-4 fw-bold mb-3">
-                        <?= htmlspecialchars(sec_val('hero', 'title', __('hero_title', 'Producing Reliable Technology for Complete Peace of Mind'))) ?>
-                    </h1>
-                    <p class="lead-text">
-                        <?= htmlspecialchars(sec_val('hero', 'subtitle', $company["short_description"] ?? __('hero_desc', 'Tier-1 Global Automotive Supplier berspesialisasi dalam Roda Kemudi (Steering Wheels), Modul Airbag, dan Komponen Plastik Resin Interior-Eksterior dengan standar sertifikasi IATF 16949, ISO 14001, dan ISO 45001.'))) ?>
-                    </p>
-                    <div class="d-flex flex-wrap gap-3">
-                        <a href="<?= htmlspecialchars(sec_val('hero', 'button_link', '#products-home')) ?>" class="btn btn-np-primary">
-                            <?= htmlspecialchars(sec_val('hero', 'button_text', __('hero_btn_products', 'Jelajahi Produk'))) ?> <i class="bi bi-arrow-right"></i>
-                        </a>
-                        <a href="contact.php" class="btn btn-np-outline">
-                            <i class="bi bi-file-earmark-text"></i> <?= htmlspecialchars(__('hero_btn_rfq', 'Konsultasi Teknis & B2B RFQ')) ?>
-                        </a>
+        <header class="hero-swiper-container hero-corporate">
+            <canvas id="ambientCanvas"></canvas>
+            <div class="swiper hero-swiper">
+                <div class="swiper-wrapper">
+                    <?php foreach ($heroSlides as $idx => $slide): 
+                        $slideBg = resolve_image_path($slide['image'], 'uploads/gallery');
+                        $extra = $slide['extra'] ?? [];
+                        $badges = $extra['badges'] ?? [];
+                        $btnPrimaryText = $extra['btn_primary_text'] ?? ($slide['link_label'] ?? __('hero_btn_products', 'Jelajahi Produk'));
+                        $btnPrimaryLink = $extra['btn_primary_link'] ?? ($slide['link_url'] ?? '#products-home');
+                        $btnSecText = $extra['btn_secondary_text'] ?? __('hero_btn_rfq', 'Konsultasi Teknis & B2B RFQ');
+                        $btnSecLink = $extra['btn_secondary_link'] ?? 'contact.php';
+                    ?>
+                        <div class="swiper-slide hero-slide" style="background-image: url('<?= htmlspecialchars($slideBg, ENT_QUOTES, 'UTF-8') ?>');">
+                            <div class="hero-slide-overlay"></div>
+                            <div class="container hero-slide-content">
+                                <div class="row align-items-center g-4">
+                                    <div class="col-lg-8" data-aos="fade-right" data-aos-duration="750">
+                                        <div class="hero-slide-eyebrow">
+                                            <i class="bi <?= htmlspecialchars($slide['icon'] ?? 'bi-shield-check') ?>"></i>
+                                            <span><?= htmlspecialchars($slide['subtitle'] ?: __('hero_badge', 'TIER-1 AUTOMOTIVE SAFETY & INTERIOR SYSTEMS')) ?></span>
+                                        </div>
+                                        <h1 class="hero-slide-title">
+                                            <?= htmlspecialchars($slide['title']) ?>
+                                        </h1>
+                                        <p class="hero-slide-desc">
+                                            <?= htmlspecialchars($slide['content']) ?>
+                                        </p>
+                                        <div class="d-flex flex-wrap gap-3 pt-2">
+                                            <a href="<?= htmlspecialchars($btnPrimaryLink) ?>" class="btn btn-np-primary">
+                                                <?= htmlspecialchars($btnPrimaryText) ?> <i class="bi bi-arrow-right ms-1"></i>
+                                            </a>
+                                            <a href="<?= htmlspecialchars($btnSecLink) ?>" class="btn btn-np-outline">
+                                                <i class="bi bi-file-earmark-text me-1"></i> <?= htmlspecialchars($btnSecText) ?>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 d-none d-lg-block" data-aos="fade-left" data-aos-duration="750" data-aos-delay="150">
+                                        <div class="hero-hud-card">
+                                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                                                <span class="small text-uppercase fw-bold text-success tracking-wider">
+                                                    <i class="bi bi-cpu-fill me-1"></i> Spec & Certification
+                                                </span>
+                                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1">
+                                                    <?= htmlspecialchars($slide['badge'] ?? 'Verified') ?>
+                                                </span>
+                                            </div>
+                                            <?php if (!empty($badges)): ?>
+                                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                                    <?php foreach ($badges as $b): ?>
+                                                        <span class="hero-hud-pill">
+                                                            <i class="bi bi-check2-circle text-success"></i> <?= htmlspecialchars($b) ?>
+                                                        </span>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <div class="small text-secondary pt-1">
+                                                <i class="bi bi-geo-alt me-1 text-danger"></i> Cikampek Plant &bull; PT Nihon Plast Indonesia
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- Dribbble Floating Controls: Progress Bar & Slide Counter -->
+                <div class="hero-slider-progress-wrapper">
+                    <div class="container">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="hero-counter">
+                                <span class="hero-counter-active" id="heroCurrentSlide">01</span>
+                                <span class="opacity-50">/</span>
+                                <span id="heroTotalSlides"><?= sprintf('%02d', count($heroSlides)) ?></span>
+                            </div>
+                            <div class="hero-slider-controls">
+                                <button class="hero-nav-btn hero-btn-prev" aria-label="Previous Slide">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button class="hero-nav-btn hero-btn-next" aria-label="Next Slide">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="hero-slider-progress-bar">
+                            <div class="hero-slider-progress-fill" id="heroProgressFill"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
+    <?php else: ?>
+        <?php
+        $heroBg = sec_val('hero', 'bg_image', '');
+        $heroStyle = !empty($heroBg) ? 'style="background: linear-gradient(rgba(15,23,42,0.7), rgba(15,23,42,0.85)), url(' . htmlspecialchars($heroBg) . ') center/cover no-repeat;"' : '';
+        ?>
+        <header class="hero-corporate" <?= $heroStyle ?>>
+            <div class="container py-5 my-auto">
+                <div class="row align-items-center">
+                    <div class="col-lg-9">
+                        <div class="eyebrow-badge">
+                            <i class="bi <?= htmlspecialchars(sec_val('hero', 'icon', 'bi-shield-check')) ?>"></i> 
+                            <?= htmlspecialchars(sec_val('hero', 'badge_text', __('hero_badge', 'GLOBAL TIER-1 AUTOMOTIVE SAFETY & INTERIOR SYSTEMS'))) ?>
+                        </div>
+                        <h1 class="display-4 fw-bold mb-3">
+                            <?= htmlspecialchars(sec_val('hero', 'title', __('hero_title', 'Producing Reliable Technology for Complete Peace of Mind'))) ?>
+                        </h1>
+                        <p class="lead-text">
+                            <?= htmlspecialchars(sec_val('hero', 'subtitle', $company["short_description"] ?? __('hero_desc', 'Tier-1 Global Automotive Supplier berspesialisasi dalam Roda Kemudi (Steering Wheels), Modul Airbag, dan Komponen Plastik Resin Interior-Eksterior dengan standar sertifikasi IATF 16949, ISO 14001, dan ISO 45001.'))) ?>
+                        </p>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a href="<?= htmlspecialchars(sec_val('hero', 'button_link', '#products-home')) ?>" class="btn btn-np-primary">
+                                <?= htmlspecialchars(sec_val('hero', 'button_text', __('hero_btn_products', 'Jelajahi Produk'))) ?> <i class="bi bi-arrow-right"></i>
+                            </a>
+                            <a href="contact.php" class="btn btn-np-outline">
+                                <i class="bi bi-file-earmark-text"></i> <?= htmlspecialchars(__('hero_btn_rfq', 'Konsultasi Teknis & B2B RFQ')) ?>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+    <?php endif; ?>
 <?php endif; ?>
 
 <!-- 2. QUICK STATS BAR -->
 <?php if (sec_active('stats')): ?>
-    <div class="container">
-        <div class="stats-bar">
-            <div class="row g-4 align-items-center">
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-value text-np-green"><?= htmlspecialchars(__('stat_iso_title', 'IATF 16949 / ISO 14001')) ?></div>
-                    <div class="stat-label"><?= htmlspecialchars(__('stat_iso_sub', 'Standar Mutu Otomotif Global')) ?></div>
-                </div>
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-value text-np-green"><?= htmlspecialchars(__('stat_products_title', '4 Lini Produk Utama')) ?></div>
-                    <div class="stat-label"><?= htmlspecialchars(__('stat_products_sub', 'Steering, Airbag, Interior & Eksterior Resin')) ?></div>
-                </div>
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-value text-np-green"><?= htmlspecialchars(__('stat_facility_title', 'Pabrik Cikampek Karawang')) ?></div>
-                    <div class="stat-label"><?= htmlspecialchars(__('stat_facility_sub', 'Cleanroom Class 8 & Injeksi 150T-2500T')) ?></div>
-                </div>
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-value text-np-green"><?= htmlspecialchars(__('stat_safety_title', 'Zero Defect & Zero LTI')) ?></div>
-                    <div class="stat-label"><?= htmlspecialchars(__('stat_safety_sub', 'Disiplin Budaya K3 Kemnaker RI & 5S')) ?></div>
+    <?php $statItems = sec_items('stats'); ?>
+    <?php if (!empty($statItems)): ?>
+        <div class="container">
+            <div class="stats-bar">
+                <div class="row g-4 align-items-center">
+                    <?php 
+                    $colClass = count($statItems) <= 3 ? 'col-md-4' : 'col-6 col-md-3'; 
+                    foreach ($statItems as $st): 
+                    ?>
+                        <div class="<?= $colClass ?> stat-item">
+                            <div class="stat-value text-np-green"><?= htmlspecialchars($st['title']) ?></div>
+                            <div class="stat-label"><?= htmlspecialchars($st['subtitle'] ?? '') ?></div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
-    </div>
+    <?php endif; ?>
 <?php endif; ?>
 
-<!-- 3. OEM TRUST BAR: AUTOMOTIVE PARTNERS & CLIENT ELEVATION -->
-<?php if (sec_active('oem_trust')): ?>
-    <section class="oem-trust-section mt-4">
-        <div class="container text-center">
-            <span class="eyebrow-badge mb-3">
-                <i class="bi <?= htmlspecialchars(sec_val('oem_trust', 'icon', 'bi-award-fill')) ?>"></i> 
-                <?= htmlspecialchars(sec_val('oem_trust', 'badge_text', __('oem_trust_badge', 'TIER-1 TRUSTED SUPPLIER TO GLOBAL & DOMESTIC OEMS'))) ?>
-            </span>
-            <div class="oem-grid mt-2">
-                <div class="oem-badge-item">TOYOTA</div>
-                <div class="oem-badge-item">HONDA</div>
-                <div class="oem-badge-item">NISSAN</div>
-                <div class="oem-badge-item">DAIHATSU</div>
-                <div class="oem-badge-item">MITSUBISHI</div>
-                <div class="oem-badge-item">SUZUKI</div>
-                <div class="oem-badge-item">SUBARU</div>
-                <div class="oem-badge-item">MAZDA</div>
+<!-- 3. NEWS SECTION: Latest Updates & Corporate Topics (No. 2 saat scroll) -->
+<?php if (sec_active('news_preview')): ?>
+    <section id="news-home" class="home-section py-5 bg-white border-bottom">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <div class="eyebrow-badge mb-1">
+                        <i class="bi <?= htmlspecialchars(sec_val('news_preview', 'icon', 'bi-newspaper')) ?>"></i> 
+                        <?= htmlspecialchars(sec_val('news_preview', 'badge_text', __('news_badge', 'LATEST UPDATES'))) ?>
+                    </div>
+                    <h2 class="h2 fw-bold text-np-green mb-0">
+                        <?= htmlspecialchars(sec_val('news_preview', 'title', __('news_title', 'Berita & Informasi Perusahaan'))) ?>
+                    </h2>
+                </div>
+                <a href="<?= htmlspecialchars(sec_val('news_preview', 'button_link', 'news.php')) ?>" class="btn btn-sm btn-np-outline">
+                    <?= htmlspecialchars(sec_val('news_preview', 'button_text', __('news_btn', 'Lihat Semua Berita'))) ?> <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <?php if ($news && $news->num_rows > 0): ?>
+                    <?php while ($article = $news->fetch_assoc()): ?>
+                        <div class="col-md-4">
+                            <article class="card border rounded-4 h-100 p-4 bg-light shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-np-tint text-np-green border border-success-subtle small">
+                                        <i class="bi bi-calendar3 me-1"></i><?= date('d M Y', strtotime($article['published_at'])) ?>
+                                    </span>
+                                    <span class="badge bg-white text-muted border small">Corporate</span>
+                                </div>
+                                <h3 class="h5 fw-bold text-np-green mb-2">
+                                    <a href="news-detail.php?id=<?= (int)$article['id'] ?>" class="text-decoration-none text-np-green">
+                                        <?= htmlspecialchars($article['title']) ?>
+                                    </a>
+                                </h3>
+                                <p class="small text-muted flex-grow-1 mb-3" style="line-height: 1.6;">
+                                    <?= htmlspecialchars(mb_strimwidth(strip_tags($article['content'] ?? ''), 0, 120, '...')) ?>
+                                </p>
+                                <div class="pt-2 border-top">
+                                    <a href="news-detail.php?id=<?= (int)$article['id'] ?>" class="small fw-bold text-np-green text-decoration-none">
+                                        <?= htmlspecialchars(__('read_more', 'Baca Selengkapnya')) ?> →
+                                    </a>
+                                </div>
+                            </article>
+                        </div>
+                    <?php endwhile; ?>
+                <?php endif; ?>
             </div>
         </div>
     </section>
 <?php endif; ?>
 
 <!-- TOMBOL NAVIGASI HALAMAN HOME -->
-<nav class="home-section-nav mt-4" aria-label="Navigasi bagian Home">
+<nav class="home-section-nav" aria-label="Navigasi bagian Home">
     <div class="container">
-        <?php if (sec_active('about_intro')): ?><a href="#about-home"><?= htmlspecialchars(__('nav_about', 'About')) ?></a><?php endif; ?>
-        <?php if (sec_active('vehicle_explorer')): ?><a href="#vehicle-explorer-home"><?= htmlspecialchars(__('vehicle_explorer_title', 'Vehicle Explorer')) ?></a><?php endif; ?>
-        <?php if (sec_active('products_grid')): ?><a href="#products-home"><?= htmlspecialchars(__('nav_products', 'Products')) ?></a><?php endif; ?>
-        <?php if (sec_active('certifications_grid')): ?><a href="#certifications-home"><?= htmlspecialchars(__('nav_quality', 'Certifications & ISO')) ?></a><?php endif; ?>
-        <?php if (sec_active('quality_pillars')): ?><a href="#quality-home"><?= htmlspecialchars(__('quality_title', 'Quality & Monozukuri')) ?></a><?php endif; ?>
-        <?php if (sec_active('facility_preview')): ?><a href="#facility-home"><?= htmlspecialchars(__('nav_facility', 'Facility')) ?></a><?php endif; ?>
-        <?php if (sec_active('esg_sustainability')): ?><a href="#esg-home"><?= htmlspecialchars(__('esg_title', 'Green Monozukuri')) ?></a><?php endif; ?>
-        <?php if (sec_active('gallery_preview')): ?><a href="#gallery-home"><?= htmlspecialchars(__('nav_gallery', 'Gallery')) ?></a><?php endif; ?>
-        <?php if (sec_active('news_preview')): ?><a href="#news-home"><?= htmlspecialchars(__('nav_news', 'News')) ?></a><?php endif; ?>
-        <?php if (sec_active('contact_cta')): ?><a href="#contact-home"><?= htmlspecialchars(__('nav_contact', 'Contact')) ?></a><?php endif; ?>
+        <?php if (sec_active('news_preview')): ?><a href="#news-home"><i class="bi bi-newspaper me-1"></i><?= htmlspecialchars(__('nav_news', 'Berita')) ?></a><?php endif; ?>
+        <?php if (sec_active('products_grid')): ?><a href="#products-home"><i class="bi bi-grid-fill me-1"></i><?= htmlspecialchars(__('nav_products', 'Produk')) ?></a><?php endif; ?>
+        <?php if (sec_active('vehicle_explorer')): ?><a href="#vehicle-explorer-home"><i class="bi bi-car-front-fill me-1"></i><?= htmlspecialchars(__('vehicle_explorer_title', 'Vehicle Explorer')) ?></a><?php endif; ?>
+        <?php if (sec_active('facility_preview')): ?><a href="#facility-home"><i class="bi bi-buildings me-1"></i><?= htmlspecialchars(__('nav_facility', 'Fasilitas')) ?></a><?php endif; ?>
+        <?php if (sec_active('certifications_grid')): ?><a href="#certifications-home"><i class="bi bi-patch-check-fill me-1"></i><?= htmlspecialchars(__('nav_quality', 'Sertifikasi & Regulasi')) ?></a><?php endif; ?>
+        <?php if (sec_active('about_intro')): ?><a href="#about-home"><i class="bi bi-building me-1"></i><?= htmlspecialchars(__('nav_about', 'Tentang Kami')) ?></a><?php endif; ?>
+        <?php if (sec_active('contact_cta')): ?><a href="#contact-home"><i class="bi bi-envelope-fill me-1"></i><?= htmlspecialchars(__('nav_contact', 'Kontak RFQ')) ?></a><?php endif; ?>
     </div>
 </nav>
 
-<!-- 4. ABOUT COMPANY -->
-<?php if (sec_active('about_intro')): ?>
-    <section id="about-home" class="home-section section-padding">
-        <div class="container">
-            <div class="row g-5 align-items-center">
-                <div class="col-lg-7">
-                    <div class="eyebrow-badge">
-                        <i class="bi <?= htmlspecialchars(sec_val('about_intro', 'icon', 'bi-building')) ?>"></i> 
-                        <?= htmlspecialchars(sec_val('about_intro', 'badge_text', __('about_intro_badge', 'PROFIL SINGKAT PERUSAHAAN'))) ?>
-                    </div>
-                    <h2 class="h1 fw-bold text-np-green mb-3">
-                        <?= htmlspecialchars(sec_val('about_intro', 'title', $company["company_name"] ?? __('brand_name', 'PT Nihon Plast Indonesia'))) ?>
-                    </h2>
-                    <p class="fs-5 text-secondary fw-semibold mb-3">
-                        <?= htmlspecialchars(sec_val('about_intro', 'subtitle', $company["tagline"] ?? __('about_intro_title', 'Driving Safety & Precision Through Japanese Monozukuri'))) ?>
-                    </p>
-                    <p class="text-muted mb-4" style="line-height: 1.8;">
-                        <?= nl2br(htmlspecialchars(sec_val('about_intro', 'content', $company["about_text"] ?? __('about_intro_p1', 'PT Nihon Plast Indonesia beroperasi di Kawasan Industri Cikampek, Karawang, Jawa Barat sebagai anak perusahaan dari Nihon Plast Co., Ltd. (Jepang).')))) ?>
-                    </p>
-
-                    <!-- Visi & Nilai Inti Ringkas -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-3 border h-100">
-                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-compass me-1"></i> Visi Korporat</h6>
-                                <p class="small text-muted mb-0"><?= htmlspecialchars($company["vision"] ?? "Menjadi mitra manufaktur otomotif One-of-a-Kind yang tak tergantikan.") ?></p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-3 border h-100">
-                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-award me-1"></i> Nilai Inti</h6>
-                                <p class="small text-muted mb-0"><?= htmlspecialchars($company["values_text"] ?? "Monozukuri (Craftsmanship), Safety First, Kaizen, and Harmony.") ?></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="<?= htmlspecialchars(sec_val('about_intro', 'button_link', 'about.php')) ?>" class="btn btn-np-primary">
-                            <?= htmlspecialchars(sec_val('about_intro', 'button_text', __('about_btn_more', 'Profil Selengkapnya'))) ?>
-                        </a>
-                        <a href="contact.php" class="btn btn-np-outline"><?= htmlspecialchars(__('contact_us', 'Hubungi Kami')) ?></a>
-                    </div>
-                </div>
-
-                <div class="col-lg-5">
-                    <div class="card border-0 shadow-sm p-4 rounded-4 bg-light">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <span class="badge bg-np-green p-3 rounded-3 text-white"><i class="bi bi-geo-alt-fill fs-4"></i></span>
-                            <div>
-                                <h5 class="fw-bold mb-0">Kantor & Fasilitas Pabrik</h5>
-                                <small class="text-muted">Kawasan Industri Indotaisei, Cikampek, Karawang</small>
-                            </div>
-                        </div>
-                        <hr>
-                        <p class="mb-2"><strong>Alamat Pabrik:</strong><br><span class="text-muted"><?= nl2br(htmlspecialchars($company["address"] ?? "Kawasan Industri Indotaisei Sektor 1A Blok P-1, Kalihurip, Cikampek, Karawang, Jawa Barat 41373")) ?></span></p>
-                        <p class="mb-2"><strong>Telepon:</strong><br><span class="text-muted"><?= htmlspecialchars($company["phone"] ?? "+62 (264) 351-888") ?></span></p>
-                        <p class="mb-0"><strong>Email Resmi:</strong><br><span class="text-muted"><?= htmlspecialchars($company["email"] ?? "corporate@n-plast.co.id") ?></span></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-<?php endif; ?>
-
-<!-- 5. INTERACTIVE VEHICLE ZONE EXPLORER -->
-<?php if (sec_active('vehicle_explorer')): ?>
-    <section id="vehicle-explorer-home" class="home-section section-padding pb-0">
-        <div class="container">
-            <div class="text-center max-w-700 mx-auto mb-4">
-                <span class="eyebrow-badge mx-auto">
-                    <i class="bi <?= htmlspecialchars(sec_val('vehicle_explorer', 'icon', 'bi-car-front-fill')) ?>"></i> 
-                    <?= htmlspecialchars(sec_val('vehicle_explorer', 'badge_text', __('vehicle_explorer_badge', 'VEHICLE APPLICATION EXPLORER'))) ?>
-                </span>
-                <h2 class="display-6 fw-bold text-np-green mb-2">
-                    <?= htmlspecialchars(sec_val('vehicle_explorer', 'title', __('vehicle_explorer_title', 'Peta Penerapan Komponen pada Kendaraan'))) ?>
-                </h2>
-                <p class="text-muted">
-                    <?= htmlspecialchars(sec_val('vehicle_explorer', 'subtitle', __('vehicle_explorer_desc', 'Jelajahi integrasi teknologi keselamatan dan komponen interior Nihon Plast pada arsitektur mobil modern.'))) ?>
-                </p>
-            </div>
-
-            <div class="vehicle-explorer-card">
-                <!-- Nav Tabs -->
-                <div class="zone-nav-tabs" role="tablist">
-                    <button type="button" class="zone-tab-btn active" data-zone="steering">
-                        <i class="bi bi-circle-square"></i> 1. <?= htmlspecialchars(__('zone_steering_title', 'Roda Kemudi (Steering)')) ?>
-                    </button>
-                    <button type="button" class="zone-tab-btn" data-zone="airbag">
-                        <i class="bi bi-shield-shaded"></i> 2. <?= htmlspecialchars(__('zone_airbag_title', 'Modul Airbag Keselamatan')) ?>
-                    </button>
-                    <button type="button" class="zone-tab-btn" data-zone="cockpit">
-                        <i class="bi bi-speedometer2"></i> 3. <?= htmlspecialchars(__('zone_interior_title', 'Kokpit & Konsol Tengah')) ?>
-                    </button>
-                    <button type="button" class="zone-tab-btn" data-zone="cleanroom">
-                        <i class="bi bi-shield-check"></i> 4. <?= htmlspecialchars(__('zone_cleanroom_title', 'Area Cleanroom Class 8')) ?>
-                    </button>
-                </div>
-
-                <!-- Pane 1: Steering Wheel -->
-                <div class="zone-content-pane active" id="zone-steering">
-                    <div class="row align-items-center g-4">
-                        <div class="col-lg-6">
-                            <div class="zone-visual-display">
-                                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80" alt="Steering Wheel System Application">
-                                <div class="zone-hotspot" style="top: 45%; left: 50%;" title="Driver Airbag & Switch Module">1</div>
-                                <div class="zone-hotspot" style="top: 25%; left: 25%;" title="Genuine Leather Stitching">2</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2">Zone: Driver Cockpit Interface</span>
-                            <h3 class="h4 fw-bold text-np-green mb-3"><?= htmlspecialchars(__('zone_steering_title', 'Steering Wheel Systems & Ergonomics')) ?></h3>
-                            <p class="text-muted mb-4">
-                                <?= htmlspecialchars(__('zone_steering_desc', 'Rangka magnesium/aluminium die-cast ringan dengan busa poliuretan integral, balutan kulit premium jahitan tangan, dan tombol multifungsi kontrol presisi tinggi.')) ?>
-                            </p>
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Magnesium/Al Die-Cast Core</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Hand-Crafted Genuine Leather</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Multi-Switch & Paddle Shift</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> FMVSS 208 / ECE R12 Compliant</span>
-                            </div>
-                            <a href="products.php" class="btn btn-np-primary btn-sm">
-                                <?= htmlspecialchars(__('btn_view_more', 'Lihat Katalog Steering')) ?> <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 2: Airbags -->
-                <div class="zone-content-pane" id="zone-airbag">
-                    <div class="row align-items-center g-4">
-                        <div class="col-lg-6">
-                            <div class="zone-visual-display">
-                                <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=900&q=80" alt="Airbag Safety Module Application">
-                                <div class="zone-hotspot" style="top: 50%; left: 48%;" title="Driver Airbag Inflator Module">1</div>
-                                <div class="zone-hotspot" style="top: 30%; left: 75%;" title="Passenger Cushion Deployment">2</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2">Zone: Active & Passive Safety</span>
-                            <h3 class="h4 fw-bold text-np-green mb-3"><?= htmlspecialchars(__('zone_airbag_title', 'Airbag Safety Modules & Inflator Encasement')) ?></h3>
-                            <p class="text-muted mb-4">
-                                <?= htmlspecialchars(__('zone_airbag_desc', 'Sistem proteksi benturan berkecepatan tinggi yang dirancang untuk mengembang sempurna dalam 20 hingga 30 milidetik.')) ?>
-                            </p>
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Driver, Passenger, Side Curtain</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Cleanroom ISO Class 8 Assembly</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Laser-Scored Seamless Tear Seam</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> 100% Traceability Barcode</span>
-                            </div>
-                            <a href="products.php" class="btn btn-np-primary btn-sm">
-                                <?= htmlspecialchars(__('btn_view_more', 'Lihat Katalog Airbag')) ?> <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 3: Cockpit Resins -->
-                <div class="zone-content-pane" id="zone-cockpit">
-                    <div class="row align-items-center g-4">
-                        <div class="col-lg-6">
-                            <div class="zone-visual-display">
-                                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80" alt="Cockpit & Instrument Panel Resins">
-                                <div class="zone-hotspot" style="top: 40%; left: 55%;" title="Center Console & AC Vents">1</div>
-                                <div class="zone-hotspot" style="top: 60%; left: 35%;" title="Glovebox & Lower Trims">2</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2">Zone: Vehicle Interior & Cabin</span>
-                            <h3 class="h4 fw-bold text-np-green mb-3"><?= htmlspecialchars(__('zone_interior_title', 'Cockpit, Instrument Panel & Center Console')) ?></h3>
-                            <p class="text-muted mb-4">
-                                <?= htmlspecialchars(__('zone_interior_desc', 'Komponen resin interior berskala besar dicetak menggunakan mesin injeksi presisi tinggi hingga 2.500 Ton.')) ?>
-                            </p>
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> High-Tonnage Resin Molding</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Low-VOC & Recycled PP Formulations</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Integrated Air Vent Registers</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> High Acoustic Damping</span>
-                            </div>
-                            <a href="products.php" class="btn btn-np-primary btn-sm">
-                                <?= htmlspecialchars(__('btn_view_more', 'Lihat Katalog Interior')) ?> <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 4: Cleanroom Class 8 -->
-                <div class="zone-content-pane" id="zone-cleanroom">
-                    <div class="row align-items-center g-4">
-                        <div class="col-lg-6">
-                            <div class="zone-visual-display">
-                                <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=80" alt="Cleanroom Class 8 Assembly">
-                                <div class="zone-hotspot" style="top: 35%; left: 60%;" title="Positive Pressure Air Filtration">1</div>
-                                <div class="zone-hotspot" style="top: 70%; left: 45%;" title="ESD Controlled Workstation">2</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2">Zone: High-Precision Cleanroom</span>
-                            <h3 class="h4 fw-bold text-np-green mb-3"><?= htmlspecialchars(__('zone_cleanroom_title', 'Area Perakitan Bersih (Cleanroom Class 8)')) ?></h3>
-                            <p class="text-muted mb-4">
-                                <?= htmlspecialchars(__('zone_cleanroom_desc', 'Lingkungan bertekanan positif bebas debu dengan kontrol elektrostatik (ESD) untuk perakitan sensor krusial dan modul airbag.')) ?>
-                            </p>
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> ISO 14644-1 Class 8 Certified</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> ESD Safe Anti-Static Flooring</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Temperature & Humidity Lock</span>
-                                <span class="spec-badge-pill"><i class="bi bi-check2"></i> Strict Air Shower Protocol</span>
-                            </div>
-                            <a href="facility.php" class="btn btn-np-primary btn-sm">
-                                <?= htmlspecialchars(__('btn_view_more', 'Jelajahi Cleanroom')) ?> <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-<?php endif; ?>
-
-<!-- 6. PRODUCTS: 4 Core Pillars of Nihon Plast -->
+<!-- 4. PRODUCTS: 4 Core Pillars of Nihon Plast -->
 <?php if (sec_active('products_grid')): ?>
     <section id="products-home" class="home-section section-padding section-light">
         <div class="container">
@@ -450,6 +336,149 @@ if (!function_exists('homeImagePath')) {
     </section>
 <?php endif; ?>
 
+<!-- 5. INTERACTIVE VEHICLE ZONE EXPLORER -->
+<?php if (sec_active('vehicle_explorer')): ?>
+    <section id="vehicle-explorer-home" class="home-section section-padding pb-0">
+        <div class="container">
+            <div class="text-center max-w-700 mx-auto mb-4">
+                <span class="eyebrow-badge mx-auto">
+                    <i class="bi <?= htmlspecialchars(sec_val('vehicle_explorer', 'icon', 'bi-car-front-fill')) ?>"></i> 
+                    <?= htmlspecialchars(sec_val('vehicle_explorer', 'badge_text', __('vehicle_explorer_badge', 'VEHICLE APPLICATION EXPLORER'))) ?>
+                </span>
+                <h2 class="display-6 fw-bold text-np-green mb-2">
+                    <?= htmlspecialchars(sec_val('vehicle_explorer', 'title', __('vehicle_explorer_title', 'Peta Penerapan Komponen pada Kendaraan'))) ?>
+                </h2>
+                <p class="text-muted">
+                    <?= htmlspecialchars(sec_val('vehicle_explorer', 'subtitle', __('vehicle_explorer_desc', 'Jelajahi integrasi teknologi keselamatan dan komponen interior Nihon Plast pada arsitektur mobil modern.'))) ?>
+                </p>
+            </div>
+
+            <div class="vehicle-explorer-card">
+                <!-- Nav Tabs -->
+                <?php $zones = sec_items('vehicle_explorer'); ?>
+                <div class="zone-nav-tabs" role="tablist">
+                    <?php foreach ($zones as $idx => $z): ?>
+                        <button type="button" class="zone-tab-btn <?= $idx === 0 ? 'active' : '' ?>" data-zone="<?= htmlspecialchars($z['item_key'] ?: 'zone-'.$z['id']) ?>">
+                            <i class="bi <?= htmlspecialchars($z['icon'] ?? 'bi-gear') ?>"></i> <?= htmlspecialchars($z['extra']['tab_label'] ?? $z['title']) ?>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+
+                <?php foreach ($zones as $idx => $z): ?>
+                    <div class="zone-content-pane <?= $idx === 0 ? 'active' : '' ?>" id="zone-<?= htmlspecialchars($z['item_key'] ?: 'zone-'.$z['id']) ?>">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6">
+                                <div class="zone-visual-display">
+                                    <img src="<?= htmlspecialchars($z['image']) ?>" alt="<?= htmlspecialchars($z['title']) ?>" loading="lazy">
+                                    <div class="zone-hotspot" style="top: 45%; left: 50%;" title="Precision Component">1</div>
+                                    <div class="zone-hotspot" style="top: 30%; left: 35%;" title="Safety Traceability">2</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <?php if (!empty($z['subtitle'])): ?>
+                                    <span class="badge bg-np-tint text-np-green border border-success-subtle mb-2"><?= htmlspecialchars($z['subtitle']) ?></span>
+                                <?php endif; ?>
+                                <h3 class="h4 fw-bold text-np-green mb-3"><?= htmlspecialchars($z['title']) ?></h3>
+                                <p class="text-muted mb-4"><?= htmlspecialchars($z['content'] ?? '') ?></p>
+                                <?php if (!empty($z['extra']['badges']) && is_array($z['extra']['badges'])): ?>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">
+                                        <?php foreach ($z['extra']['badges'] as $b): ?>
+                                            <span class="spec-badge-pill"><i class="bi bi-check2"></i> <?= htmlspecialchars($b) ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                                <a href="<?= htmlspecialchars($z['extra']['link'] ?? 'products.php') ?>" class="btn btn-np-primary btn-sm">
+                                    <?= htmlspecialchars(__('btn_view_more', 'Pelajari Spesifikasi')) ?> <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
+<!-- 6. FACILITY: Factory Overview -->
+<?php if (sec_active('facility_preview')): ?>
+    <section id="facility-home" class="home-section section-padding section-light">
+        <div class="container">
+            <div class="text-center max-w-700 mx-auto mb-5">
+                <div class="eyebrow-badge mx-auto">
+                    <i class="bi <?= htmlspecialchars(sec_val('facility_preview', 'icon', 'bi-buildings')) ?>"></i> 
+                    <?= htmlspecialchars(sec_val('facility_preview', 'badge_text', __('facility_badge', 'MANUFACTURING FACILITY'))) ?>
+                </div>
+                <h2 class="h1 fw-bold text-np-green">
+                    <?= htmlspecialchars(sec_val('facility_preview', 'title', __('facility_title', 'Fasilitas Pabrik Presisi di Cikampek, Karawang'))) ?>
+                </h2>
+                <p class="text-muted">
+                    <?= htmlspecialchars(sec_val('facility_preview', 'subtitle', __('facility_desc', 'Mengintegrasikan mesin injeksi plastik presisi tinggi 150T–2500T, Cleanroom Assembly Class 8, dan lab kontrol kualitas berstandar 5S.'))) ?>
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <img src="uploads/gallery/facility_cleanroom_lab.svg" class="home-card-image" alt="Engineering Lab" loading="lazy">
+                        <div class="p-4">
+                            <h5 class="fw-bold text-np-green">Engineering & Mold R&D</h5>
+                            <p class="small text-muted mb-0">Dukungan tim rekayasa teknis untuk pembuatan dan perawatan mold presisi cetak resin plastik.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <img src="uploads/gallery/facility_injection_molding.jpg" class="home-card-image" alt="Production Facility" loading="lazy">
+                        <div class="p-4">
+                            <h5 class="fw-bold text-np-green">High-Tonnage Injection Line</h5>
+                            <p class="small text-muted mb-0">Area 22 mesin injeksi multi-tonase yang mampu memproduksi komponen interior besar dan cover eksterior.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <img src="uploads/gallery/facility_cleanroom_lab.svg" class="home-card-image" alt="Cleanroom Assembly" loading="lazy">
+                        <div class="p-4">
+                            <h5 class="fw-bold text-np-green">Safety Module Cleanroom</h5>
+                            <p class="small text-muted mb-0">Area perakitan steril berstandar ISO Class 8 untuk modul airbag dan switch kendali setir kemudi mobil.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Virtual Plant Tour & Manufacturing Motion Video Showcase -->
+                <div class="col-12 mt-4" data-aos="fade-up" data-aos-duration="750">
+                    <div class="video-tour-banner position-relative rounded-4 overflow-hidden border shadow-sm">
+                        <video class="w-100 d-block" style="height: 380px; object-fit: cover;" poster="uploads/gallery/facility_injection_molding.jpg" muted loop playsinline autoplay>
+                            <source src="uploads/videos/plant_tour.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-tour-overlay d-flex flex-column justify-content-end p-4 p-md-5">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold">
+                                    <i class="bi bi-play-circle-fill me-1"></i> MONOZUKURI PRODUCTION MOTION
+                                </span>
+                                <span class="badge bg-dark bg-opacity-75 text-white border border-secondary px-3 py-2 rounded-pill">
+                                    <i class="bi bi-badge-hd-fill me-1"></i> Full HD 60FPS
+                                </span>
+                            </div>
+                            <h3 class="text-white fw-bold mb-2">Virtual Plant Tour & High-Precision Production Cells</h3>
+                            <p class="text-white-50 mb-0 max-w-700">
+                                Saksikan secara visual presisi 22 mesin injeksi servo multi-tonase (150T - 2.500T), cleanroom Class 8 perakitan airbag safety module, serta pengujian mutu berstandar IATF 16949 di Cikampek, Karawang.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="<?= htmlspecialchars(sec_val('facility_preview', 'button_link', 'facility.php')) ?>" class="btn btn-np-outline">
+                    <?= htmlspecialchars(sec_val('facility_preview', 'button_text', __('facility_btn', 'Jelajahi Seluruh Fasilitas Pabrik'))) ?> <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
 <!-- 7. CERTIFICATIONS & INDONESIAN REGULATORY COMPLIANCE -->
 <?php if (sec_active('certifications_grid')): ?>
     <section id="certifications-home" class="home-section section-padding">
@@ -480,8 +509,12 @@ if (!function_exists('homeImagePath')) {
                         <div class="col-md-6 col-lg-4">
                             <div class="cert-card <?= str_contains($cert['name'], 'IATF') ? 'featured-iatf' : '' ?>">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="cert-card-icon">
-                                        <i class="bi bi-shield-check"></i>
+                                    <div class="cert-card-icon d-flex align-items-center justify-content-center p-1">
+                                        <?php if (!empty($cert['image'])): ?>
+                                            <img src="<?= htmlspecialchars($cert['image']) ?>" alt="<?= htmlspecialchars($cert['name']) ?>" style="width: 100%; height: 100%; object-fit: contain;">
+                                        <?php else: ?>
+                                            <i class="bi bi-shield-check"></i>
+                                        <?php endif; ?>
                                     </div>
                                     <span class="badge bg-np-tint text-np-green border border-success-subtle small">
                                         <?= htmlspecialchars($cert['category']) ?>
@@ -521,7 +554,100 @@ if (!function_exists('homeImagePath')) {
     </section>
 <?php endif; ?>
 
-<!-- 8. QUALITY & MONOZUKURI ASSURANCE -->
+<!-- 8. ABOUT COMPANY -->
+<?php if (sec_active('about_intro')): ?>
+    <section id="about-home" class="home-section section-padding section-light">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-7">
+                    <div class="eyebrow-badge">
+                        <i class="bi <?= htmlspecialchars(sec_val('about_intro', 'icon', 'bi-building')) ?>"></i> 
+                        <?= htmlspecialchars(sec_val('about_intro', 'badge_text', __('about_intro_badge', 'PROFIL SINGKAT PERUSAHAAN'))) ?>
+                    </div>
+                    <h2 class="h1 fw-bold text-np-green mb-3">
+                        <?= htmlspecialchars(sec_val('about_intro', 'title', $company["company_name"] ?? __('brand_name', 'PT Nihon Plast Indonesia'))) ?>
+                    </h2>
+                    <p class="fs-5 text-secondary fw-semibold mb-3">
+                        <?= htmlspecialchars(sec_val('about_intro', 'subtitle', $company["tagline"] ?? __('about_intro_title', 'Driving Safety & Precision Through Japanese Monozukuri'))) ?>
+                    </p>
+                    <p class="text-muted mb-4" style="line-height: 1.8;">
+                        <?= nl2br(htmlspecialchars(sec_val('about_intro', 'content', $company["about_text"] ?? __('about_intro_p1', 'PT Nihon Plast Indonesia beroperasi di Kawasan Industri Cikampek, Karawang, Jawa Barat sebagai anak perusahaan dari Nihon Plast Co., Ltd. (Jepang).')))) ?>
+                    </p>
+
+                    <!-- Visi & Nilai Inti Ringkas -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-compass me-1"></i> Visi Korporat</h6>
+                                <p class="small text-muted mb-0"><?= htmlspecialchars($company["vision"] ?? "Menjadi mitra manufaktur otomotif One-of-a-Kind yang tak tergantikan.") ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-award me-1"></i> Nilai Inti</h6>
+                                <p class="small text-muted mb-0"><?= htmlspecialchars($company["values_text"] ?? "Monozukuri (Craftsmanship), Safety First, Kaizen, and Harmony.") ?></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="<?= htmlspecialchars(sec_val('about_intro', 'button_link', 'about.php')) ?>" class="btn btn-np-primary">
+                            <?= htmlspecialchars(sec_val('about_intro', 'button_text', __('about_btn_more', 'Profil Selengkapnya'))) ?>
+                        </a>
+                        <a href="contact.php" class="btn btn-np-outline"><?= htmlspecialchars(__('contact_us', 'Hubungi Kami')) ?></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="badge bg-np-green p-3 rounded-3 text-white"><i class="bi bi-geo-alt-fill fs-4"></i></span>
+                            <div>
+                                <h5 class="fw-bold mb-0">Kantor & Fasilitas Pabrik</h5>
+                                <small class="text-muted">Kawasan Industri Indotaisei, Cikampek, Karawang</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="mb-2"><strong>Alamat Pabrik:</strong><br><span class="text-muted"><?= nl2br(htmlspecialchars($company["address"] ?? "Kawasan Industri Indotaisei Sektor 1A Blok P-1, Kalihurip, Cikampek, Karawang, Jawa Barat 41373")) ?></span></p>
+                        <p class="mb-2"><strong>Telepon:</strong><br><span class="text-muted"><?= htmlspecialchars($company["phone"] ?? "+62 (264) 351-888") ?></span></p>
+                        <p class="mb-0"><strong>Email Resmi:</strong><br><span class="text-muted"><?= htmlspecialchars($company["email"] ?? "corporate@n-plast.co.id") ?></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
+<!-- 9. OEM TRUST BAR: AUTOMOTIVE PARTNERS & CLIENT ELEVATION -->
+<?php if (sec_active('oem_trust')): ?>
+    <?php $oemList = sec_items('oem_trust'); ?>
+    <section class="oem-ticker-section oem-trust-section">
+        <div class="container text-center mb-3">
+            <span class="eyebrow-badge">
+                <i class="bi <?= htmlspecialchars(sec_val('oem_trust', 'icon', 'bi-award-fill')) ?>"></i> 
+                <?= htmlspecialchars(sec_val('oem_trust', 'badge_text', __('oem_trust_badge', 'TIER-1 TRUSTED SUPPLIER TO GLOBAL & DOMESTIC OEMS'))) ?>
+            </span>
+        </div>
+        <div class="swiper oem-ticker-swiper">
+            <div class="swiper-wrapper">
+                <?php 
+                // Loop OEM partners 3x to ensure uninterrupted, seamless infinite continuous ticker
+                $tickerItems = array_merge($oemList, $oemList, $oemList);
+                foreach ($tickerItems as $oem): 
+                ?>
+                    <div class="swiper-slide" style="width: auto;">
+                        <div class="oem-ticker-card">
+                            <i class="bi bi-patch-check-fill text-success me-2"></i>
+                            <?= htmlspecialchars($oem['title']) ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
+<!-- 10. QUALITY & MONOZUKURI ASSURANCE (Opsional Home / Dimatikan Default agar Cepat) -->
 <?php if (sec_active('quality_pillars')): ?>
     <section id="quality-home" class="home-section section-padding section-dark">
         <div class="container">
@@ -539,96 +665,21 @@ if (!function_exists('homeImagePath')) {
             </div>
 
             <div class="row g-4">
-                <div class="col-md-6 col-lg-3">
-                    <div class="step-card">
-                        <div class="step-num">01</div>
-                        <h5 class="fw-bold text-np-green mb-2"><?= htmlspecialchars(__('quality_pillar1_title', 'Raw Material QA')) ?></h5>
-                        <p class="small text-muted mb-0"><?= htmlspecialchars(__('quality_pillar1_desc', 'Inspeksi spektrometri dan uji densitas bahan baku resin, kulit asli, serta busa polyurethane.')) ?></p>
+                <?php foreach (sec_items('quality_pillars') as $idx => $step): ?>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="step-card">
+                            <div class="step-num"><?= htmlspecialchars($step['subtitle'] ?: sprintf('%02d', $idx + 1)) ?></div>
+                            <h5 class="fw-bold text-np-green mb-2"><?= htmlspecialchars($step['title']) ?></h5>
+                            <p class="small text-muted mb-0"><?= htmlspecialchars($step['content'] ?? '') ?></p>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="step-card">
-                        <div class="step-num">02</div>
-                        <h5 class="fw-bold text-np-green mb-2">Precision Injection</h5>
-                        <p class="small text-muted mb-0">Mesin injeksi berteknologi servo Jepang dengan kontrol suhu dan tekanan mikro untuk toleransi ukuran mikron.</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="step-card">
-                        <div class="step-num">03</div>
-                        <h5 class="fw-bold text-np-green mb-2"><?= htmlspecialchars(__('quality_pillar2_title', 'Master Craftsmanship & CMM')) ?></h5>
-                        <p class="small text-muted mb-0"><?= htmlspecialchars(__('quality_pillar2_desc', 'Inspeksi dimensi geometri Coordinate Measuring Machine (CMM) berkalibrasi rutin laser.')) ?></p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="step-card">
-                        <div class="step-num">04</div>
-                        <h5 class="fw-bold text-np-green mb-2"><?= htmlspecialchars(__('quality_pillar3_title', 'Safety Deployment Lab')) ?></h5>
-                        <p class="small text-muted mb-0"><?= htmlspecialchars(__('quality_pillar3_desc', 'Uji kecepatan tinggi dan ketahanan benturan sensor airbag drop-tower demi jaminan keselamatan mutlak.')) ?></p>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
 <?php endif; ?>
 
-<!-- 9. FACILITY: Factory Overview -->
-<?php if (sec_active('facility_preview')): ?>
-    <section id="facility-home" class="home-section section-padding section-light">
-        <div class="container">
-            <div class="text-center max-w-700 mx-auto mb-5">
-                <div class="eyebrow-badge mx-auto">
-                    <i class="bi <?= htmlspecialchars(sec_val('facility_preview', 'icon', 'bi-buildings')) ?>"></i> 
-                    <?= htmlspecialchars(sec_val('facility_preview', 'badge_text', __('facility_badge', 'MANUFACTURING FACILITY'))) ?>
-                </div>
-                <h2 class="h1 fw-bold text-np-green">
-                    <?= htmlspecialchars(sec_val('facility_preview', 'title', __('facility_title', 'Fasilitas Pabrik Presisi di Cikampek, Karawang'))) ?>
-                </h2>
-                <p class="text-muted">
-                    <?= htmlspecialchars(sec_val('facility_preview', 'subtitle', __('facility_desc', 'Mengintegrasikan mesin injeksi plastik presisi tinggi 150T–2500T, Cleanroom Assembly Class 8, dan lab kontrol kualitas berstandar 5S.'))) ?>
-                </p>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                        <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=800&q=80" class="home-card-image" alt="Engineering Lab" loading="lazy">
-                        <div class="p-4">
-                            <h5 class="fw-bold text-np-green">Engineering & Mold R&D</h5>
-                            <p class="small text-muted mb-0">Dukungan tim rekayasa teknis untuk pembuatan dan perawatan mold presisi cetak resin plastik.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                        <img src="https://images.unsplash.com/photo-1565610222536-ef125c59da2e?auto=format&fit=crop&w=800&q=80" class="home-card-image" alt="Production Facility" loading="lazy">
-                        <div class="p-4">
-                            <h5 class="fw-bold text-np-green">High-Tonnage Injection Line</h5>
-                            <p class="small text-muted mb-0">Area 22 mesin injeksi multi-tonase yang mampu memproduksi komponen interior besar dan cover eksterior.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80" class="home-card-image" alt="Cleanroom Assembly" loading="lazy">
-                        <div class="p-4">
-                            <h5 class="fw-bold text-np-green">Safety Module Cleanroom</h5>
-                            <p class="small text-muted mb-0">Area perakitan steril berstandar ISO Class 8 untuk modul airbag dan switch kendali setir kemudi mobil.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mt-5">
-                <a href="<?= htmlspecialchars(sec_val('facility_preview', 'button_link', 'facility.php')) ?>" class="btn btn-np-outline">
-                    <?= htmlspecialchars(sec_val('facility_preview', 'button_text', __('facility_btn', 'Jelajahi Seluruh Fasilitas Pabrik'))) ?> <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-<?php endif; ?>
-
-<!-- 10. GREEN MONOZUKURI & SUSTAINABILITY (ESG) -->
+<!-- 11. GREEN MONOZUKURI & SUSTAINABILITY (Opsional Home / Dimatikan Default agar Cepat) -->
 <?php if (sec_active('esg_sustainability')): ?>
     <section id="esg-home" class="home-section section-padding bg-light">
         <div class="container">
@@ -645,21 +696,21 @@ if (!function_exists('homeImagePath')) {
                         <?= htmlspecialchars(sec_val('esg_sustainability', 'subtitle', __('esg_desc', 'Pabrik Karawang aktif menerapkan integrasi material resin daur ulang ramah lingkungan, efisiensi energi solar fotovoltaik, dan standar ISO 14001.'))) ?>
                     </p>
 
+                    <?php 
+                    $esgItems = sec_items('esg_sustainability'); 
+                    $esgStats = array_filter($esgItems, fn($it) => str_starts_with($it['item_key'] ?? '', 'stat_'));
+                    $esgCompliances = array_filter($esgItems, fn($it) => str_starts_with($it['item_key'] ?? '', 'comp_'));
+                    ?>
                     <div class="row g-3">
-                        <div class="col-sm-6">
-                            <div class="esg-stat-box h-100">
-                                <div class="esg-icon-circle"><i class="bi bi-sun-fill"></i></div>
-                                <div class="fs-4 fw-bold text-np-green">450 Ton CO₂</div>
-                                <div class="small text-muted fw-semibold">Pengurangan Emisi Karbon/Tahun via Rooftop Solar PV</div>
+                        <?php foreach ($esgStats as $es): ?>
+                            <div class="col-sm-6">
+                                <div class="esg-stat-box h-100">
+                                    <div class="esg-icon-circle"><i class="bi <?= htmlspecialchars($es['icon'] ?? 'bi-sun-fill') ?>"></i></div>
+                                    <div class="fs-4 fw-bold text-np-green"><?= htmlspecialchars($es['badge'] ?? '') ?></div>
+                                    <div class="small text-muted fw-semibold"><?= htmlspecialchars($es['title']) ?></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="esg-stat-box h-100">
-                                <div class="esg-icon-circle"><i class="bi bi-tree-fill"></i></div>
-                                <div class="fs-4 fw-bold text-np-green">28% Target</div>
-                                <div class="small text-muted fw-semibold">Rasio Penggunaan Recycled Polypropylene Resin</div>
-                            </div>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
 
@@ -667,27 +718,15 @@ if (!function_exists('homeImagePath')) {
                     <div class="p-4 bg-white rounded-4 border shadow-sm">
                         <h5 class="fw-bold text-np-green mb-3"><i class="bi bi-check-all text-success me-2"></i>Pilar Kepatuhan Lingkungan & K3</h5>
                         <ul class="list-group list-group-flush small">
-                            <li class="list-group-item px-0 py-3 d-flex align-items-start gap-3">
-                                <i class="bi bi-patch-check-fill text-success fs-5"></i>
-                                <div>
-                                    <strong>Sertifikasi ISO 14001:2015 Terakreditasi</strong>
-                                    <p class="text-muted mb-0">Sistem manajemen lingkungan terintegrasi dengan pemilahan limbah resin 100% terkontrol.</p>
-                                </div>
-                            </li>
-                            <li class="list-group-item px-0 py-3 d-flex align-items-start gap-3">
-                                <i class="bi bi-shield-check text-success fs-5"></i>
-                                <div>
-                                    <strong>SMK3 PP 50/2012 & Zero Accident Award</strong>
-                                    <p class="text-muted mb-0">Budaya K3 Jepang (5S & Anzen Daiichi) melindungi keselamatan seluruh tenaga kerja.</p>
-                                </div>
-                            </li>
-                            <li class="list-group-item px-0 py-3 d-flex align-items-start gap-3">
-                                <i class="bi bi-droplet-half text-success fs-5"></i>
-                                <div>
-                                    <strong>RoHS & ELV (End-of-Life Vehicles) Compliant</strong>
-                                    <p class="text-muted mb-0">Bebas senyawa berbahaya timbal, merkuri, kadmium, dan kromium heksavalen.</p>
-                                </div>
-                            </li>
+                            <?php foreach ($esgCompliances as $ec): ?>
+                                <li class="list-group-item px-0 py-3 d-flex align-items-start gap-3">
+                                    <i class="bi <?= htmlspecialchars($ec['icon'] ?? 'bi-patch-check-fill') ?> text-success fs-5"></i>
+                                    <div>
+                                        <strong><?= htmlspecialchars($ec['title']) ?></strong>
+                                        <p class="text-muted mb-0"><?= htmlspecialchars($ec['content'] ?? '') ?></p>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
                         </ul>
                     </div>
                 </div>
@@ -696,8 +735,8 @@ if (!function_exists('homeImagePath')) {
     </section>
 <?php endif; ?>
 
-<!-- 11. GALLERY (100% Static High-Resolution Photos) -->
-<?php if (sec_active('gallery_preview')): ?>
+<!-- 12. GALLERY (Opsional Home / Dimatikan Default agar Hemat Bandwidth) -->
+<?php if (sec_active('gallery_preview') && $galleryItems && $galleryItems->num_rows > 0): ?>
     <section id="gallery-home" class="home-section section-padding">
         <div class="container">
             <div class="text-center max-w-700 mx-auto mb-5">
@@ -714,28 +753,26 @@ if (!function_exists('homeImagePath')) {
             </div>
 
             <div class="row g-4">
-                <?php if ($galleryItems && $galleryItems->num_rows > 0): ?>
-                    <?php while ($item = $galleryItems->fetch_assoc()): ?>
-                        <?php $galleryImage = homeImagePath($item["image"] ?? "", "uploads/gallery"); ?>
-                        <div class="col-6 col-lg-4">
-                            <article class="home-gallery-card border-0 shadow-sm rounded-3 overflow-hidden">
-                                <?php if ($galleryImage !== ""): ?>
-                                    <img src="<?= htmlspecialchars($galleryImage) ?>"
-                                         alt="<?= htmlspecialchars($item["title"] ?? "Company gallery") ?>"
-                                         style="height: 220px; object-fit: cover; width: 100%; display: block;"
-                                         loading="lazy">
-                                <?php else: ?>
-                                    <div class="home-image-placeholder p-5 text-center text-muted bg-light">
-                                        <i class="bi bi-image fs-1 d-block mb-1"></i> Foto Presisi
-                                    </div>
-                                <?php endif; ?>
-                                <div class="home-gallery-caption p-3 bg-white">
-                                    <h6 class="fw-bold text-dark mb-0"><?= htmlspecialchars($item["title"] ?? "") ?></h6>
+                <?php while ($item = $galleryItems->fetch_assoc()): ?>
+                    <?php $galleryImage = homeImagePath($item["image"] ?? "", "uploads/gallery"); ?>
+                    <div class="col-6 col-lg-4">
+                        <article class="home-gallery-card border-0 shadow-sm rounded-3 overflow-hidden">
+                            <?php if ($galleryImage !== ""): ?>
+                                <img src="<?= htmlspecialchars($galleryImage) ?>"
+                                     alt="<?= htmlspecialchars($item["title"] ?? "Company gallery") ?>"
+                                     style="height: 220px; object-fit: cover; width: 100%; display: block;"
+                                     loading="lazy">
+                            <?php else: ?>
+                                <div class="home-image-placeholder p-5 text-center text-muted bg-light">
+                                    <i class="bi bi-image fs-1 d-block mb-1"></i> Foto Presisi
                                 </div>
-                            </article>
-                        </div>
-                    <?php endwhile; ?>
-                <?php endif; ?>
+                            <?php endif; ?>
+                            <div class="home-gallery-caption p-3 bg-white">
+                                <h6 class="fw-bold text-dark mb-0"><?= htmlspecialchars($item["title"] ?? "") ?></h6>
+                            </div>
+                        </article>
+                    </div>
+                <?php endwhile; ?>
             </div>
 
             <div class="text-center mt-4">
@@ -747,46 +784,7 @@ if (!function_exists('homeImagePath')) {
     </section>
 <?php endif; ?>
 
-<!-- 12. NEWS SECTION -->
-<?php if (sec_active('news_preview')): ?>
-    <section id="news-home" class="home-section section-padding section-light">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
-                <div>
-                    <div class="eyebrow-badge">
-                        <i class="bi <?= htmlspecialchars(sec_val('news_preview', 'icon', 'bi-newspaper')) ?>"></i> 
-                        <?= htmlspecialchars(sec_val('news_preview', 'badge_text', __('news_badge', 'LATEST UPDATES'))) ?>
-                    </div>
-                    <h2 class="h1 fw-bold text-np-green mb-0">
-                        <?= htmlspecialchars(sec_val('news_preview', 'title', __('news_title', 'Berita & Informasi Perusahaan'))) ?>
-                    </h2>
-                </div>
-                <a href="<?= htmlspecialchars(sec_val('news_preview', 'button_link', 'news.php')) ?>" class="btn btn-np-outline">
-                    <?= htmlspecialchars(sec_val('news_preview', 'button_text', __('news_btn', 'Lihat Semua Berita'))) ?>
-                </a>
-            </div>
 
-            <div class="row g-4">
-                <?php if ($news && $news->num_rows > 0): ?>
-                    <?php while ($article = $news->fetch_assoc()): ?>
-                        <div class="col-md-4">
-                            <article class="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
-                                <span class="small text-muted mb-2"><i class="bi bi-clock me-1"></i><?= date('d M Y', strtotime($article['published_at'])) ?></span>
-                                <h3 class="h5 fw-bold text-np-green mb-3"><?= htmlspecialchars($article['title']) ?></h3>
-                                <p class="small text-muted flex-grow-1" style="line-height: 1.6;">
-                                    <?= htmlspecialchars(substr($article['content'], 0, 140)) ?>...
-                                </p>
-                                <a href="news-detail.php?id=<?= (int)$article['id'] ?>" class="small fw-bold text-np-green text-decoration-none">
-                                    <?= htmlspecialchars(__('read_more', 'Baca Selengkapnya')) ?> <i class="bi bi-arrow-right"></i>
-                                </a>
-                            </article>
-                        </div>
-                    <?php endwhile; ?>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
-<?php endif; ?>
 
 <!-- 13. CONTACT CTA (B2B SOURCING & PROCUREMENT) -->
 <?php if (sec_active('contact_cta')): ?>
@@ -832,9 +830,75 @@ if (!function_exists('homeImagePath')) {
     </div>
 </div>
 
+<!-- Ambient Canvas Particle Script -->
+<script src="assets/js/ambient-canvas.js"></script>
+
 <script>
 (function () {
-    // 1. Vehicle Zone Explorer Tabs Switcher
+    // 1. Swiper 11 Hero Carousel with Dynamic HUD & Horizontal Progress
+    const heroSwiperEl = document.querySelector('.hero-swiper');
+    if (heroSwiperEl && typeof Swiper !== 'undefined') {
+        const progressFill = document.getElementById('heroProgressFill');
+        const currentSlideEl = document.getElementById('heroCurrentSlide');
+        const AUTOPLAY_TIME = 6500;
+
+        function startProgress() {
+            if (!progressFill) return;
+            progressFill.style.transition = 'none';
+            progressFill.style.width = '0%';
+            requestAnimationFrame(() => {
+                progressFill.style.transition = `width ${AUTOPLAY_TIME}ms linear`;
+                progressFill.style.width = '100%';
+            });
+        }
+
+        const heroSwiper = new Swiper('.hero-swiper', {
+            loop: true,
+            speed: 850,
+            effect: 'fade',
+            fadeEffect: {
+                crossFade: true
+            },
+            autoplay: {
+                delay: AUTOPLAY_TIME,
+                disableOnInteraction: false
+            },
+            navigation: {
+                nextEl: '.hero-btn-next',
+                prevEl: '.hero-btn-prev'
+            },
+            on: {
+                init: function () {
+                    startProgress();
+                },
+                slideChange: function () {
+                    if (currentSlideEl) {
+                        const realIndex = this.realIndex + 1;
+                        currentSlideEl.textContent = realIndex < 10 ? '0' + realIndex : realIndex;
+                    }
+                    startProgress();
+                }
+            }
+        });
+    }
+
+    // 2. Continuous Silky Linear OEM Marquee
+    const oemSwiperEl = document.querySelector('.oem-ticker-swiper');
+    if (oemSwiperEl && typeof Swiper !== 'undefined') {
+        new Swiper('.oem-ticker-swiper', {
+            slidesPerView: 'auto',
+            spaceBetween: 24,
+            loop: true,
+            speed: 5000,
+            autoplay: {
+                delay: 0,
+                disableOnInteraction: false
+            },
+            allowTouchMove: false
+        });
+    }
+
+    // 3. Vehicle Zone Explorer Tabs Switcher
     const zoneButtons = document.querySelectorAll('.zone-tab-btn');
     const zonePanes = document.querySelectorAll('.zone-content-pane');
 
@@ -856,7 +920,7 @@ if (!function_exists('homeImagePath')) {
         });
     });
 
-    // 2. Lightbox Modal
+    // 4. Lightbox Modal
     const modal = document.getElementById('homePhotoModal');
     const modalImage = document.getElementById('homePhotoModalImage');
     if (!modal || !modalImage) return;

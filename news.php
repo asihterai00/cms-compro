@@ -17,13 +17,20 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
 
 <section class="section-padding">
     <div class="container">
+        <?php if (is_section_active('news', 'news_header')): ?>
         <div class="max-w-700 mb-5">
             <span class="eyebrow-badge">
-                <i class="bi bi-newspaper"></i> CORPORATE ANNOUNCEMENTS
+                <i class="bi <?= htmlspecialchars(get_section_val('news', 'news_header', 'icon', 'bi-newspaper')) ?>"></i>
+                <?= htmlspecialchars(get_section_val('news', 'news_header', 'badge_text', 'CORPORATE ANNOUNCEMENTS')) ?>
             </span>
-            <h1 class="display-6 fw-bold text-np-green mb-2">Berita & Informasi Perusahaan Terkini</h1>
-            <p class="text-muted">Ikuti perkembangan terbaru mengenai ekspansi pabrik, pencapaian sertifikasi mutu, inisiatif keberlanjutan, dan kegiatan perusahaan kami.</p>
+            <h1 class="display-6 fw-bold text-np-green mb-2">
+                <?= htmlspecialchars(get_section_val('news', 'news_header', 'title', 'Berita & Informasi Perusahaan Terkini')) ?>
+            </h1>
+            <p class="text-muted">
+                <?= htmlspecialchars(get_section_val('news', 'news_header', 'subtitle', 'Ikuti perkembangan terbaru mengenai ekspansi pabrik, pencapaian sertifikasi mutu, inisiatif keberlanjutan, dan kegiatan perusahaan kami.')) ?>
+            </p>
         </div>
+        <?php endif; ?>
 
         <div class="row g-4">
             <?php if ($news && $news->num_rows > 0): ?>

@@ -1,0 +1,465 @@
+/* =========================================================
+   PT NIHON PLAST INDONESIA - MODERN DRIBBLE-GRADE STYLESHEET
+   100% Free & Open Source | Swiper 11, AOS, SweetAlert2 Integration
+   ========================================================= */
+
+:root {
+    --np-green: #005A36;
+    --np-green-accent: #007A4A;
+    --np-green-dark: #003822;
+    --np-green-tint: rgba(0, 90, 54, 0.08);
+    --np-green-border: rgba(0, 90, 54, 0.2);
+    --np-glass-bg: rgba(255, 255, 255, 0.08);
+    --np-glass-border: rgba(255, 255, 255, 0.18);
+    --np-shadow-glow: 0 10px 30px rgba(0, 90, 54, 0.25);
+    --np-radius-card: 16px;
+    --np-radius-pill: 50px;
+}
+
+/* =========================================================
+   1. SLEEK TOP UTILITY BAR (Clears Clutter from Navbar)
+   ========================================================= */
+.site-topbar {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.78rem;
+    color: #475569;
+    padding: 0.35rem 0;
+    transition: all 0.2s ease;
+}
+
+.site-topbar-link {
+    color: #475569;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.site-topbar-link:hover {
+    color: var(--np-green);
+}
+
+.site-topbar-badge {
+    background: #e6f4ee;
+    color: var(--np-green);
+    border: 1px solid rgba(0, 90, 54, 0.15);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--np-radius-pill);
+    letter-spacing: 0.02em;
+}
+
+/* =========================================================
+   2. NAVBAR OVERHAUL (ZERO CLUSTERING, SINGLE-LINE CLEANLINESS)
+   ========================================================= */
+.site-navbar {
+    background: #FFFFFF;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    padding: 0.65rem 0 !important;
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.site-navbar .site-logo-img {
+    height: 44px;
+    width: auto;
+    max-width: 240px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.site-navbar .site-logo-img:hover {
+    transform: scale(1.02);
+}
+
+/* Nav links: STRICT NO-WRAP to prevent 2-3 line vertical stacking */
+.site-navbar .nav-link {
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    padding: 0.45rem 0.85rem !important;
+    border-radius: 8px;
+    white-space: nowrap !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center;
+    letter-spacing: -0.01em;
+}
+
+.site-navbar .nav-link:hover {
+    color: var(--np-green) !important;
+    background: var(--np-green-tint) !important;
+}
+
+.site-navbar .nav-link.active {
+    color: var(--np-green) !important;
+    background: var(--np-green-tint) !important;
+    font-weight: 700 !important;
+}
+
+/* Language Switcher Pill Group */
+.lang-switcher {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--np-radius-pill);
+    padding: 2px;
+    gap: 2px;
+}
+
+.lang-btn {
+    border: none;
+    background: transparent;
+    color: #64748b;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--np-radius-pill);
+    font-size: 0.74rem;
+    font-weight: 750;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+}
+
+.lang-btn:hover,
+.lang-btn.active {
+    background: var(--np-green);
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 6px rgba(0, 90, 54, 0.25);
+}
+
+/* B2B RFQ Button in Navbar */
+.btn-np-nav {
+    background: linear-gradient(135deg, var(--np-green) 0%, var(--np-green-accent) 100%) !important;
+    color: #FFFFFF !important;
+    font-size: 0.84rem;
+    font-weight: 700;
+    border-radius: var(--np-radius-pill);
+    padding: 0.5rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    text-decoration: none;
+    white-space: nowrap !important;
+    box-shadow: 0 4px 14px rgba(0, 90, 54, 0.22);
+}
+
+.btn-np-nav:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 90, 54, 0.35);
+    color: #FFFFFF !important;
+}
+
+/* =========================================================
+   3. MODERN DRIBBLE HERO CAROUSEL & SLIDER (SWIPER 11)
+   ========================================================= */
+.hero-swiper-container {
+    position: relative;
+    width: 100%;
+    min-height: 84vh;
+    max-height: 900px;
+    overflow: hidden;
+    background: #0f172a;
+}
+
+.hero-slide {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 84vh;
+    display: flex;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Deep cinematic dual-gradient overlay */
+.hero-slide-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(10, 18, 30, 0.94) 0%, rgba(10, 18, 30, 0.75) 55%, rgba(10, 18, 30, 0.45) 100%);
+    z-index: 1;
+}
+
+/* Ambient canvas particle overlay */
+#ambientCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+.hero-slide-content {
+    position: relative;
+    z-index: 3;
+    padding: 4.5rem 0;
+}
+
+.hero-slide-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 90, 54, 0.25);
+    border: 1px solid rgba(0, 168, 98, 0.4);
+    color: #6ee7b7;
+    font-size: 0.74rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.4rem 1rem;
+    border-radius: var(--np-radius-pill);
+    margin-bottom: 1.25rem;
+    backdrop-filter: blur(8px);
+}
+
+.hero-slide-title {
+    font-size: clamp(2rem, 4.2vw, 3.4rem);
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.25rem;
+    text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.hero-slide-desc {
+    font-size: clamp(1rem, 1.3vw, 1.18rem);
+    line-height: 1.75;
+    color: #cbd5e1;
+    margin-bottom: 2rem;
+    max-width: 680px;
+}
+
+/* Floating Glassmorphic Technical HUD Card */
+.hero-hud-card {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: var(--np-radius-card);
+    padding: 1.75rem;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+    color: #FFFFFF;
+}
+
+.hero-hud-pill {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--np-radius-pill);
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.hero-hud-pill:hover {
+    background: rgba(0, 90, 54, 0.35);
+    border-color: #6ee7b7;
+    color: #6ee7b7;
+}
+
+/* Dribbble Style Horizontal Timer Progress Bar */
+.hero-slider-progress-wrapper {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.hero-slider-progress-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.hero-slider-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    transition: width 0.1s linear;
+}
+
+/* Slide Counter (01 / 04) & Nav Controls */
+.hero-slider-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #FFFFFF;
+}
+
+.hero-counter {
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+}
+
+.hero-counter-active {
+    color: #10b981;
+    font-size: 1.35rem;
+}
+
+.hero-nav-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(6px);
+}
+
+.hero-nav-btn:hover {
+    background: var(--np-green);
+    border-color: var(--np-green);
+    transform: scale(1.08);
+}
+
+/* =========================================================
+   4. OEM PARTNER SILKY SMOOTH CONTINUOUS MARQUEE
+   ========================================================= */
+.oem-ticker-section {
+    background: #FFFFFF;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.75rem 0;
+    overflow: hidden;
+}
+
+.oem-ticker-swiper .swiper-wrapper {
+    transition-timing-function: linear !important;
+}
+
+.oem-ticker-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1.85rem;
+    font-weight: 800;
+    font-size: 0.96rem;
+    letter-spacing: 0.06em;
+    color: #475569;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.oem-ticker-card:hover {
+    background: #e6f4ee;
+    border-color: #005A36;
+    color: #005A36;
+    box-shadow: 0 4px 14px rgba(0, 90, 54, 0.15);
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   5. SWEETALERT2 STYLING HARMONIZATION (FOSS)
+   ========================================================= */
+.swal2-popup.swal2-modal {
+    border-radius: 20px !important;
+    padding: 2rem !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    font-family: inherit !important;
+}
+
+.swal2-title {
+    font-weight: 750 !important;
+    color: var(--np-green-dark) !important;
+}
+
+.swal2-confirm.swal2-styled {
+    background-color: var(--np-green) !important;
+    border-radius: 50px !important;
+    padding: 0.65rem 1.75rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(0, 90, 54, 0.3) !important;
+}
+
+.swal2-confirm.swal2-styled:hover {
+    background-color: var(--np-green-accent) !important;
+}
+
+/* Toast alert styling */
+.swal2-toast {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* =========================================================
+   6. VIRTUAL PLANT TOUR & VIDEO MOTION SHOWCASE
+   ========================================================= */
+.video-tour-banner {
+    position: relative;
+    background: #0f172a;
+    border-radius: var(--np-radius-card);
+    overflow: hidden;
+}
+
+.video-tour-banner video {
+    filter: brightness(0.85);
+    transition: transform 0.5s ease;
+}
+
+.video-tour-banner:hover video {
+    transform: scale(1.02);
+}
+
+.video-tour-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(10, 18, 30, 0.95) 0%, rgba(10, 18, 30, 0.45) 55%, transparent 100%);
+    pointer-events: none;
+}
+
+/* =========================================================
+   7. RESPONSIVE REFINEMENTS (DESKTOP, TABLET, MOBILE)
+   ========================================================= */
+@media (max-width: 991.98px) {
+    .site-topbar {
+        font-size: 0.72rem;
+    }
+    .hero-swiper-container,
+    .hero-slide {
+        min-height: 75vh;
+    }
+    .hero-slide-content {
+        padding: 3rem 0;
+    }
+}
+

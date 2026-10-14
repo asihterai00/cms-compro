@@ -46,7 +46,7 @@ $company = $result ? $result->fetch_assoc() : [];
                 <div class="col-lg-6">
                     <div class="position-relative rounded-4 overflow-hidden shadow-lg border">
                         <?php
-                        $dnaImg = get_section_val('about', 'about_dna', 'image', 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1200&q=80');
+                        $dnaImg = get_section_val('about', 'about_dna', 'image', 'uploads/gallery/facility_injection_molding.jpg');
                         $dnaImgSrc = resolve_image_path($dnaImg);
                         ?>
                         <img
@@ -129,18 +129,31 @@ $company = $result ? $result->fetch_assoc() : [];
                             </div>
                             <div class="col-lg-8">
                                 <div class="d-flex flex-wrap gap-2">
-                                    <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
-                                        <i class="bi bi-hammer me-1"></i> Monozukuri (Craftsmanship)
-                                    </span>
-                                    <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
-                                        <i class="bi bi-shield-fill-check me-1"></i> Safety First (Anzen Daiichi)
-                                    </span>
-                                    <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
-                                        <i class="bi bi-arrow-repeat me-1"></i> Continuous Kaizen
-                                    </span>
-                                    <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
-                                        <i class="bi bi-people-fill me-1"></i> Integrity & Harmony
-                                    </span>
+                                    <?php 
+                                    $values = sec_items('about_values');
+                                    if (!empty($values)):
+                                        foreach ($values as $val):
+                                    ?>
+                                        <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
+                                            <i class="bi <?= htmlspecialchars($val['icon'] ?: 'bi-award') ?> me-1"></i> <?= htmlspecialchars($val['title']) ?>
+                                        </span>
+                                    <?php 
+                                        endforeach;
+                                    else:
+                                    ?>
+                                        <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
+                                            <i class="bi bi-hammer me-1"></i> Monozukuri (Craftsmanship)
+                                        </span>
+                                        <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
+                                            <i class="bi bi-shield-fill-check me-1"></i> Safety First (Anzen Daiichi)
+                                        </span>
+                                        <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
+                                            <i class="bi bi-arrow-repeat me-1"></i> Continuous Kaizen
+                                        </span>
+                                        <span class="badge bg-np-tint text-np-green p-3 rounded-pill border border-success-subtle fs-6">
+                                            <i class="bi bi-people-fill me-1"></i> Integrity & Harmony
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -168,27 +181,24 @@ $company = $result ? $result->fetch_assoc() : [];
                         <?= htmlspecialchars(get_section_val('about', 'about_global_footprint', 'subtitle', 'Nihon Plast Co., Ltd. berkantor pusat di Fuji City, Shizuoka Prefecture, Jepang, dan telah melayani industri otomotif dunia sejak 1948 dengan jaringan pabrik manufaktur di berbagai benua:')) ?>
                     </p>
                     <ul class="list-unstyled d-flex flex-column gap-3">
-                        <li class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
-                            <i class="bi bi-geo-alt-fill text-np-green fs-4"></i>
-                            <div>
-                                <strong>Jepang (Headquarters & R&D Center)</strong>
-                                <div class="small text-muted">Fuji Plant, Aoshima Plant, Tomioka Plant</div>
-                            </div>
-                        </li>
-                        <li class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
-                            <i class="bi bi-geo-alt-fill text-np-green fs-4"></i>
-                            <div>
-                                <strong>Asia Pasifik (ASEAN & China)</strong>
-                                <div class="small text-muted">Indonesia (Cikampek Plant), Thailand, China (Wuhan & Zhongshan)</div>
-                            </div>
-                        </li>
-                        <li class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
-                            <i class="bi bi-geo-alt-fill text-np-green fs-4"></i>
-                            <div>
-                                <strong>Amerika Utara (North America)</strong>
-                                <div class="small text-muted">Amerika Serikat (Ohio) & Mexico (Matamoros & Silao)</div>
-                            </div>
-                        </li>
+                        <?php 
+                        $footprints = sec_items('about_global_footprint');
+                        if (!empty($footprints)):
+                            foreach ($footprints as $fprint):
+                        ?>
+                            <li class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
+                                <i class="bi <?= htmlspecialchars($fprint['icon'] ?: 'bi-geo-alt-fill') ?> text-np-green fs-4"></i>
+                                <div>
+                                    <strong><?= htmlspecialchars($fprint['title']) ?></strong>
+                                    <?php if (!empty($fprint['subtitle'])): ?>
+                                        <div class="small text-muted"><?= htmlspecialchars($fprint['subtitle']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                        <?php 
+                            endforeach;
+                        endif; 
+                        ?>
                     </ul>
                 </div>
             <?php endif; ?>
@@ -206,34 +216,27 @@ $company = $result ? $result->fetch_assoc() : [];
                     <div class="machinery-table-wrapper">
                         <table class="table machinery-table">
                             <tbody>
-                                <tr>
-                                    <th style="width: 35%;">Nama Perusahaan</th>
-                                    <td><strong><?= htmlspecialchars($company["company_name"] ?? "PT Nihon Plast Indonesia") ?></strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Kepemilikan Saham</th>
-                                    <td>Nihon Plast Co., Ltd. (Jepang) - Tier-1 Automotive Group</td>
-                                </tr>
-                                <tr>
-                                    <th>Lokasi Pabrik</th>
-                                    <td><?= htmlspecialchars($company["address"] ?? "Kawasan Industri Indotaisei Sektor 1A Blok P-1, Kalihurip, Cikampek, Karawang, Jawa Barat") ?></td>
-                                </tr>
-                                <tr>
-                                    <th>Luas Area Pabrik</th>
-                                    <td>Total Lahan: 28.500 m² | Bangunan Produksi: 18.200 m²</td>
-                                </tr>
-                                <tr>
-                                    <th>Lini Produk Utama</th>
-                                    <td>Steering Wheel Systems, Airbag Modules, Cockpit & Exterior Trims</td>
-                                </tr>
-                                <tr>
-                                    <th>Sertifikasi Mutu</th>
-                                    <td><span class="badge bg-success">IATF 16949:2016</span> <span class="badge bg-success">ISO 14001:2015</span> <span class="badge bg-success">SMK3 / ISO 45001</span></td>
-                                </tr>
-                                <tr>
-                                    <th>Mitra Pelanggan OEM</th>
-                                    <td>Toyota, Honda, Nissan, Daihatsu, Mitsubishi, Suzuki, Subaru, Mazda</td>
-                                </tr>
+                                <?php 
+                                $datasheetItems = sec_items('about_datasheet');
+                                if (!empty($datasheetItems)):
+                                    foreach ($datasheetItems as $idx => $dItem):
+                                ?>
+                                    <tr>
+                                        <th style="<?= $idx === 0 ? 'width: 35%;' : '' ?>"><?= htmlspecialchars($dItem['title']) ?></th>
+                                        <td>
+                                            <?php if (!empty($dItem['extra_data']) && !empty($dItem['extra_data']['badges'])): ?>
+                                                <?php foreach ($dItem['extra_data']['badges'] as $b): ?>
+                                                    <span class="badge bg-success me-1"><?= htmlspecialchars($b) ?></span>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <strong><?= htmlspecialchars($dItem['content'] ?? '') ?></strong>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php 
+                                    endforeach;
+                                endif; 
+                                ?>
                             </tbody>
                         </table>
                     </div>

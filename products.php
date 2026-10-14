@@ -50,6 +50,22 @@ if ($categoryFilter !== "") {
 
 <section class="section-padding">
     <div class="container">
+        <!-- 1. Catalog Intro Header -->
+        <?php if (is_section_active('products', 'products_catalog_intro')): ?>
+        <div class="max-w-700 mx-auto text-center mb-5">
+            <span class="eyebrow-badge mx-auto">
+                <i class="bi <?= htmlspecialchars(get_section_val('products', 'products_catalog_intro', 'icon', 'bi-grid-3x3-gap-fill')) ?>"></i>
+                <?= htmlspecialchars(get_section_val('products', 'products_catalog_intro', 'badge_text', 'TIER-1 OEM PRODUCT PORTFOLIO')) ?>
+            </span>
+            <h1 class="display-6 fw-bold text-np-green mb-2">
+                <?= htmlspecialchars(get_section_val('products', 'products_catalog_intro', 'title', 'Katalog Komponen Otomotif Berstandar Dunia')) ?>
+            </h1>
+            <p class="text-muted">
+                <?= htmlspecialchars(get_section_val('products', 'products_catalog_intro', 'subtitle', 'Menyediakan sistem roda kemudi terintegrasi, modul keselamatan kantung udara, dan moulding resin interior eksterior berkualitas OEM.')) ?>
+            </p>
+        </div>
+        <?php endif; ?>
+
         <!-- Filter Tabs -->
         <div class="d-flex flex-wrap align-items-center justify-content-center gap-2 mb-5">
             <a href="products.php" class="product-filter-btn <?= $categoryFilter === '' ? 'active' : '' ?>">
@@ -123,21 +139,104 @@ if ($categoryFilter !== "") {
     </div>
 </section>
 
-<!-- B2B Consultation Section -->
+<!-- 2. Technical Capabilities & Resin Compatibility -->
+<?php if (is_section_active('products', 'products_technical_capabilities')): ?>
 <section class="section-padding bg-light border-top">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <span class="eyebrow-badge">
+                    <i class="bi <?= htmlspecialchars(get_section_val('products', 'products_technical_capabilities', 'icon', 'bi-layers-fill')) ?>"></i>
+                    <?= htmlspecialchars(get_section_val('products', 'products_technical_capabilities', 'badge_text', 'MATERIAL ENGINEERING EXCELLENCE')) ?>
+                </span>
+                <h2 class="display-6 fw-bold text-np-green mb-3">
+                    <?= htmlspecialchars(get_section_val('products', 'products_technical_capabilities', 'title', 'Keunggulan Material & Toleransi Presisi Tinggi')) ?>
+                </h2>
+                <p class="text-muted mb-4" style="line-height: 1.8;">
+                    <?= nl2br(htmlspecialchars(get_section_val('products', 'products_technical_capabilities', 'subtitle', 'Penggunaan resin rekayasa tinggi (PP-TD20, ABS, PC/ABS, PA66-GF) dengan ketahanan getaran, anti gores, dan kestabilan termal optimal.'))) ?>
+                </p>
+                <div class="row g-3">
+                    <?php 
+                    $matFeats = sec_items('products_material_features');
+                    if (!empty($matFeats)):
+                        foreach ($matFeats as $mf):
+                    ?>
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white rounded-3 shadow-sm border">
+                                <h6 class="fw-bold text-np-green mb-1"><i class="bi <?= htmlspecialchars($mf['icon'] ?: 'bi-shield-check') ?> me-1"></i> <?= htmlspecialchars($mf['title']) ?></h6>
+                                <small class="text-muted"><?= htmlspecialchars($mf['subtitle'] ?? $mf['content'] ?? '') ?></small>
+                            </div>
+                        </div>
+                    <?php 
+                        endforeach;
+                    endif; 
+                    ?>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="p-4 bg-white rounded-4 border shadow-sm">
+                    <h5 class="fw-bold text-np-green mb-3"><i class="bi bi-cpu me-2"></i> Matriks Resin Kompatibel</h5>
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small">
+                        <?php 
+                        $resins = sec_items('products_resins');
+                        if (!empty($resins)):
+                            foreach ($resins as $rs):
+                        ?>
+                            <li class="p-2 bg-light rounded d-flex justify-content-between">
+                                <strong><?= htmlspecialchars($rs['title']) ?></strong>
+                                <span class="text-muted"><?= htmlspecialchars($rs['subtitle'] ?? $rs['content'] ?? '') ?></span>
+                            </li>
+                        <?php 
+                            endforeach;
+                        endif; 
+                        ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- 3. Custom OEM Engineering -->
+<?php if (is_section_active('products', 'products_custom_oem')): ?>
+<section class="section-padding">
     <div class="container text-center max-w-700 mx-auto">
         <span class="eyebrow-badge mx-auto">
-            <i class="bi bi-tools"></i> CUSTOM OEM ENGINEERING
+            <i class="bi <?= htmlspecialchars(get_section_val('products', 'products_custom_oem', 'icon', 'bi-gear-wide-connected')) ?>"></i>
+            <?= htmlspecialchars(get_section_val('products', 'products_custom_oem', 'badge_text', 'TAILORED OEM SOURCING')) ?>
         </span>
-        <h2 class="display-6 fw-bold text-np-green mb-3">Membutuhkan Komponen dengan Spesifikasi Khusus?</h2>
+        <h2 class="display-6 fw-bold text-np-green mb-3">
+            <?= htmlspecialchars(get_section_val('products', 'products_custom_oem', 'title', 'Solusi Kustomisasi Komponen Sesuai Kebutuhan OEM')) ?>
+        </h2>
         <p class="text-muted mb-4">
-            Tim R&D dan manufaktur PT Nihon Plast Indonesia siap mendiskusikan mold tooling, material resin terbarukan, dan perancangan prototipe keselamatan bersama tim rekayasa otomotif Anda.
+            <?= nl2br(htmlspecialchars(get_section_val('products', 'products_custom_oem', 'subtitle', 'Dukungan rekayasa teknis mulai dari perancangan cetakan (moulding), pemilihan tekstur laser butir, hingga uji coba prototipe cepat.'))) ?>
         </p>
-        <a href="contact.php" class="btn btn-np-primary px-4 py-3 fw-bold">
-            <i class="bi bi-chat-square-text me-2"></i> Konsultasikan Proyek OEM Anda
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- 4. CTA B2B Sourcing -->
+<?php if (is_section_active('products', 'products_cta')): ?>
+<section class="section-padding bg-np-green text-white">
+    <div class="container text-center max-w-700 mx-auto">
+        <div class="badge bg-white text-np-green fw-bold px-3 py-2 rounded-pill mb-3">
+            <i class="bi <?= htmlspecialchars(get_section_val('products', 'products_cta', 'icon', 'bi-file-earmark-text')) ?> me-1"></i>
+            <?= htmlspecialchars(get_section_val('products', 'products_cta', 'badge_text', 'B2B SOURCING INQUIRY')) ?>
+        </div>
+        <h2 class="display-6 fw-bold mb-3 text-white">
+            <?= htmlspecialchars(get_section_val('products', 'products_cta', 'title', 'Tertarik Mengembangkan Komponen Baru Bersama Kami?')) ?>
+        </h2>
+        <p class="lead text-white-50 mb-4">
+            <?= htmlspecialchars(get_section_val('products', 'products_cta', 'subtitle', 'Ajukan permintaan penawaran harga (RFQ) dan jadwalkan sesi tinjauan teknis bersama tim rekayasa kami.')) ?>
+        </p>
+        <a href="<?= htmlspecialchars(get_section_val('products', 'products_cta', 'button_link', 'contact.php')) ?>" class="btn btn-light text-np-green fw-bold px-4 py-3 rounded-pill">
+            <?= htmlspecialchars(get_section_val('products', 'products_cta', 'button_text', 'Ajukan Permintaan RFQ')) ?>
+            <i class="bi bi-arrow-right ms-2"></i>
         </a>
     </div>
 </section>
+<?php endif; ?>
 
 <?php include __DIR__ . "/includes/footer.php"; ?>
 </body>

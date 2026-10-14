@@ -48,16 +48,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $sortOrder = (int)($_POST["sort_order"] ?? 0);
     $status = in_array($_POST["status"] ?? "", ["active", "archived"], true) ? $_POST["status"] : "active";
     $image = trim($_POST["old_image"] ?? "");
+    if (!empty($_POST["preset_image"])) {
+        $image = trim($_POST["preset_image"]);
+    }
 
     if ($name === "") {
         $error = "Nama sertifikasi wajib diisi.";
     } else {
         // Handle file upload
         if (isset($_FILES["image_file"]) && $_FILES["image_file"]["error"] === UPLOAD_ERR_OK) {
-            $allowedMimes = ["image/jpeg", "image/png", "image/webp"];
+            $allowedMimes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
             $fileType = mime_content_type($_FILES["image_file"]["tmp_name"]);
 
-            if (in_array($fileType, $allowedMimes, true)) {
+            if (in_array($fileType, $allowedMimes, true) || str_ends_with(strtolower($_FILES["image_file"]["name"]), '.svg')) {
                 $ext = strtolower(pathinfo($_FILES["image_file"]["name"], PATHINFO_EXTENSION));
                 $newFilename = "cert_" . uniqid() . "." . $ext;
                 $uploadDir = __DIR__ . "/../uploads/certifications/";
@@ -66,19 +69,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
                 $dest = $uploadDir . $newFilename;
                 if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $dest)) {
-                    // remove old file if exists
-                    if (!empty($image)) {
-                        $oldPath = $uploadDir . basename($image);
-                        if (is_file($oldPath)) {
-                            @unlink($oldPath);
-                        }
-                    }
-                    $image = $newFilename;
+                    $image = "uploads/certifications/" . $newFilename;
                 } else {
                     $error = "Gagal memindahkan file yang diunggah.";
                 }
             } else {
-                $error = "Format file tidak didukung. Harap unggah file JPG, PNG, atau WEBP.";
+                $error = "Format file tidak didukung. Harap unggah file JPG, PNG, WEBP, atau SVG.";
             }
         }
 
@@ -216,15 +212,54 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Upload Gambar / Badge Sertifikat</label>
-                        <input type="file" name="image_file" class="form-control" accept="image/jpeg,image/png,image/webp">
-                        <small class="text-muted d-block mt-1">Format: JPG, PNG, WEBP (Maks 3 MB).</small>
-                        <?php if (!empty($editItem['image'])): ?>
-                            <div class="mt-2 p-2 border rounded bg-light text-center">
-                                <img src="../uploads/certifications/<?= htmlspecialchars($editItem['image']) ?>" alt="Preview" class="img-fluid" style="max-height: 80px;">
-                                <div class="small text-muted mt-1"><?= htmlspecialchars($editItem['image']) ?></div>
+                        <input type="hidden" name="old_image" id="input_old_image" value="<?= htmlspecialchars($editItem['image'] ?? '') ?>">
+                        <input type="hidden" name="preset_image" id="input_preset_image" value="">
+
+                        <input type="file" name="image_file" class="form-control mb-2" accept="image/jpeg,image/png,image/webp,image/svg+xml,.svg">
+                        
+                        <div class="mb-2">
+                            <small class="text-muted d-block mb-1 fw-semibold">Pilih Cepat dari Segel Akreditasi Resmi:</small>
+                            <div class="d-flex flex-wrap gap-1">
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCertPreset('uploads/certifications/cert_iatf_16949.svg')">
+                                    <i class="bi bi-patch-check me-1"></i> IATF 16949
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCertPreset('uploads/certifications/cert_iso_9001.svg')">
+                                    <i class="bi bi-shield-check me-1"></i> ISO 9001
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCertPreset('uploads/certifications/cert_iso_14001.svg')">
+                                    <i class="bi bi-tree me-1"></i> ISO 14001
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCertPreset('uploads/certifications/cert_iso_45001.svg')">
+                                    <i class="bi bi-shield-exclamation me-1"></i> ISO 45001
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="setCertPreset('uploads/certifications/cert_tkdn_kemenperin.svg')">
+                                    <i class="bi bi-flag me-1"></i> TKDN RI
+                                </button>
                             </div>
-                        <?php endif; ?>
+                        </div>
+
+                        <?php 
+                        $currentImg = $editItem['image'] ?? '';
+                        $previewSrc = '';
+                        if (!empty($currentImg)) {
+                            $previewSrc = (str_starts_with($currentImg, 'uploads/') ? '../' : '../uploads/certifications/') . $currentImg;
+                        }
+                        ?>
+                        <div id="cert_preview_box" class="p-2 border rounded bg-light text-center <?= empty($currentImg) ? 'd-none' : '' ?>">
+                            <img src="<?= htmlspecialchars($previewSrc) ?>" id="cert_preview_img" alt="Preview" class="img-fluid" style="max-height: 70px;">
+                            <div class="small text-muted mt-1 text-truncate" id="cert_preview_label"><?= htmlspecialchars($currentImg) ?></div>
+                        </div>
                     </div>
+
+                    <script>
+                    function setCertPreset(path) {
+                        document.getElementById('input_preset_image').value = path;
+                        document.getElementById('input_old_image').value = path;
+                        document.getElementById('cert_preview_img').src = '../' + path;
+                        document.getElementById('cert_preview_label').innerText = path;
+                        document.getElementById('cert_preview_box').classList.remove('d-none');
+                    }
+                    </script>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-grow-1">
@@ -264,8 +299,18 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
                                     <tr>
                                         <td class="text-muted fw-bold"><?= (int)$row['sort_order'] ?></td>
                                         <td>
-                                            <div class="fw-bold text-dark"><?= htmlspecialchars($row['name']) ?></div>
-                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle small"><?= htmlspecialchars($row['category']) ?></span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <?php if (!empty($row['image'])): ?>
+                                                    <?php $bPath = (str_starts_with($row['image'], 'uploads/') ? '../' : '../uploads/certifications/') . $row['image']; ?>
+                                                    <img src="<?= htmlspecialchars($bPath) ?>" style="width: 38px; height: 38px; object-fit: contain; flex-shrink: 0;" alt="Badge">
+                                                <?php else: ?>
+                                                    <div class="p-2 bg-light rounded text-muted" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-award"></i></div>
+                                                <?php endif; ?>
+                                                <div>
+                                                    <div class="fw-bold text-dark"><?= htmlspecialchars($row['name']) ?></div>
+                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small"><?= htmlspecialchars($row['category']) ?></span>
+                                                </div>
+                                            </div>
                                             <?php if (!empty($row['description'])): ?>
                                                 <div class="small text-muted text-truncate mt-1" style="max-width: 250px;">
                                                     <?= htmlspecialchars($row['description']) ?>
