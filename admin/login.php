@@ -36,16 +36,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $user["password"]
         )
     ) {
+        if (($user["status"] ?? "active") !== "active") {
+            $error = "Akun Anda berstatus non-aktif. Silakan hubungi Super Administrator.";
+        } else {
+            $_SESSION["admin_id"] = (int)$user["id"];
+            $_SESSION["admin_username"] = $user["username"];
+            $_SESSION["admin_role"] = $user["role"] ?? "admin";
+            $_SESSION["admin_full_name"] = $user["full_name"] ?? $user["username"];
 
-        $_SESSION["admin_id"] = $user["id"];
-        $_SESSION["admin_username"] = $user["username"];
-
-        header("Location: dashboard.php");
-
-        exit;
+            header("Location: dashboard.php");
+            exit;
+        }
+    } else {
+        $error = "Username atau password salah.";
     }
-
-    $error = "Username atau password salah.";
 }
 
 ?>

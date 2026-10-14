@@ -16,8 +16,16 @@ $image = contentImageUrl($product["image"] ?? "", "uploads/products");
 <html lang="id">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title><?= htmlspecialchars($product["name"] ?? "Produk tidak ditemukan") ?></title>
+    <title><?= htmlspecialchars($product["name"] ?? "Detail Komponen Otomotif") ?> - PT Nihon Plast Indonesia</title>
     <link rel="stylesheet" href="assets/css/product-detail-layout.css">
+    <style>
+        .spec-box-item {
+            background: var(--np-light);
+            border: 1px solid var(--np-border);
+            border-radius: var(--np-radius-md);
+            padding: 1.25rem;
+        }
+    </style>
 </head>
 <body>
 <?php include __DIR__ . "/includes/navbar.php"; ?>
@@ -25,23 +33,71 @@ $image = contentImageUrl($product["image"] ?? "", "uploads/products");
     <div class="container">
         <?php if (!$product): ?>
             <div class="alert alert-warning">Produk tidak ditemukan.</div>
-            <a href="products.php" class="btn btn-outline-dark">Kembali ke Products</a>
+            <a href="products.php" class="btn btn-np-outline">Kembali ke Products</a>
         <?php else: ?>
-            <a href="products.php" class="content-back-link">← Kembali ke Products</a>
+            <a href="products.php" class="content-back-link mb-4 d-inline-block text-np-green fw-bold">← Kembali ke Lini Produk</a>
             <div class="product-detail-layout">
                 <div class="product-detail-media">
                     <?php if ($image !== ""): ?>
                         <button type="button" class="product-detail-image-button" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Perbesar foto produk">
                             <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($product["name"]) ?>" class="product-detail-image">
                         </button>
+                    <?php else: ?>
+                        <div class="d-flex align-items-center justify-content-center bg-light rounded-4" style="height: 340px;">
+                            <i class="bi bi-car-front text-muted fs-1"></i>
+                        </div>
                     <?php endif; ?>
                 </div>
                 <div class="product-detail-info">
-                    <p class="eyebrow">OUR PRODUCTS</p>
-                    <h1 class="content-detail-title"><?= htmlspecialchars($product["name"]) ?></h1>
-                    <div class="content-detail-copy"><?= nl2br(htmlspecialchars($product["description"] ?? "")) ?></div>
+                    <span class="eyebrow-badge">
+                        <i class="bi bi-patch-check-fill"></i> TIER-1 OEM AUTOMOTIVE COMPONENT
+                    </span>
+                    <h1 class="display-6 fw-bold text-np-green mb-3"><?= htmlspecialchars($product["name"]) ?></h1>
+                    
+                    <div class="content-detail-copy text-muted mb-4" style="line-height: 1.8;">
+                        <?= nl2br(htmlspecialchars($product["description"] ?? "")) ?>
+                    </div>
+
+                    <!-- Technical Specs Box -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <div class="spec-box-item">
+                                <div class="small text-muted fw-bold text-uppercase">Standar Sertifikasi Mutu</div>
+                                <div class="fw-bold text-np-green"><i class="bi bi-shield-check me-1"></i> IATF 16949:2016</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="spec-box-item">
+                                <div class="small text-muted fw-bold text-uppercase">Fasilitas Manufaktur</div>
+                                <div class="fw-bold text-np-green"><i class="bi bi-building me-1"></i> Cikampek, Karawang Plant</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="spec-box-item">
+                                <div class="small text-muted fw-bold text-uppercase">Kepatuhan Lingkungan</div>
+                                <div class="fw-bold text-np-green"><i class="bi bi-recycle me-1"></i> ISO 14001 & RoHS / ELV</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="spec-box-item">
+                                <div class="small text-muted fw-bold text-uppercase">Toleransi Presisi</div>
+                                <div class="fw-bold text-np-green"><i class="bi bi-crosshair me-1"></i> CMM Verified (±0.001 mm)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Call To Action Buttons -->
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="contact.php?product=<?= urlencode($product['name']) ?>" class="btn btn-np-primary">
+                            <i class="bi bi-file-earmark-text me-1"></i> Ajukan B2B RFQ untuk Komponen Ini
+                        </a>
+                        <a href="quality.php" class="btn btn-np-outline">
+                            <i class="bi bi-patch-check me-1"></i> Verifikasi Standar Mutu
+                        </a>
+                    </div>
                 </div>
             </div>
+
             <?php if ($image !== ""): ?>
             <div class="modal fade" id="productImageModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-xl">

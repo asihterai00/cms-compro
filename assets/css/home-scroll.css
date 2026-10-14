@@ -1,132 +1,78 @@
 /*
- * CSS tambahan khusus halaman Home yang menampilkan semua bagian secara vertikal.
- * File ini dimuat setelah style.css dari includes/head.php.
+ * CSS tambahan khusus halaman Home.
+ * Diselaraskan 100% dengan Nihon Plast Forest Green (#005A36) dan Responsive System.
  */
 
 html {
     scroll-behavior: smooth;
-    scroll-padding-top: 88px;
+    scroll-padding-top: 80px;
 }
 
 .home-section {
-    scroll-margin-top: 84px;
-}
-
-.home-section-nav {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    background: rgba(255, 255, 255, .96);
-    border-bottom: 1px solid #e6ebf0;
-    box-shadow: 0 4px 18px rgba(12, 30, 45, .05);
-    backdrop-filter: blur(10px);
-}
-
-.home-section-nav .container {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-    overflow-x: auto;
-    padding-top: .85rem;
-    padding-bottom: .85rem;
-    white-space: nowrap;
-    scrollbar-width: thin;
-}
-
-.home-section-nav a {
-    color: #34485b;
-    text-decoration: none;
-    font-size: .9rem;
-    font-weight: 650;
-    transition: color .2s ease;
-}
-
-.home-section-nav a:hover,
-.home-section-nav a:focus {
-    color: #0b6ea8;
+    scroll-margin-top: 76px;
 }
 
 .home-section-title {
-    color: #122c43;
+    color: var(--np-dark, #0F172A);
     font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: -.025em;
-    margin-bottom: 1rem;
-    font-size: clamp(1.8rem, 3vw, 2.65rem);
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.85rem;
+    font-size: clamp(1.65rem, 3vw, 2.35rem);
 }
 
 .home-lead {
-    color: #53677a;
-    font-size: 1.12rem;
-    font-weight: 550;
+    color: var(--np-body, #334155);
+    font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+    line-height: 1.7;
 }
 
 .home-section-heading {
-    max-width: 760px;
-    margin: 0 auto 2.75rem;
+    max-width: 720px;
+    margin: 0 auto 2.5rem;
     text-align: center;
 }
 
-.home-section-heading > p:last-child {
-    color: #667788;
-    margin-bottom: 0;
-}
-
 .home-section-light {
-    background: #f3f6f9;
+    background: var(--np-light, #F8FAFC);
 }
 
 .home-section-dark {
-    color: #fff;
-    background:
-        radial-gradient(circle at 90% 10%, rgba(11, 110, 168, .25), transparent 34%),
-        #0b1724;
+    color: #FFFFFF;
+    background: var(--np-green-dark, #003B22);
 }
 
 .home-section-dark .home-section-title {
-    color: #fff;
-}
-
-.home-section-dark .home-section-heading > p:last-child {
-    color: #d0dbe5;
+    color: #FFFFFF;
 }
 
 .home-section-dark .eyebrow {
-    color: #8ed0ff;
-}
-
-.home-contact-card {
-    height: 100%;
-    padding: clamp(1.5rem, 3vw, 2.2rem);
-    background: #fff;
-    border: 1px solid #e9eef3;
-    border-radius: 20px;
-    box-shadow: 0 16px 45px rgba(13, 36, 55, .08);
-    overflow-wrap: anywhere;
+    color: #A7F3D0;
 }
 
 .home-content-card {
     height: 100%;
     overflow: hidden;
-    border: 1px solid #e8edf2;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 8px 28px rgba(13, 36, 55, .06);
-    transition: transform .2s ease, box-shadow .2s ease;
+    border: 1px solid var(--np-border, #E2E8F0);
+    border-radius: 12px;
+    background: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .home-content-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 15px 34px rgba(13, 36, 55, .12);
+    box-shadow: 0 12px 30px rgba(0, 90, 54, 0.12);
+    border-color: var(--np-green, #005A36);
 }
 
 .home-card-image {
     display: block;
     width: 100%;
-    height: 235px;
+    height: 220px;
     object-fit: cover;
     object-position: center;
-    background: #e9eef3;
+    background: var(--np-light, #F8FAFC);
 }
 
 .home-image-placeholder {
@@ -134,27 +80,28 @@ html {
     min-height: 200px;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #e9eef3, #d9e3ec);
-    color: #63788a;
+    background: var(--np-light, #F8FAFC);
+    color: var(--np-muted, #64748B);
     font-weight: 650;
 }
 
 .home-gallery-card {
     position: relative;
     height: 100%;
-    min-height: 210px;
+    min-height: 200px;
     overflow: hidden;
-    border-radius: 16px;
-    background: #dfe7ee;
-    box-shadow: 0 8px 28px rgba(13, 36, 55, .1);
+    border-radius: 12px;
+    background: var(--np-light, #F8FAFC);
+    border: 1px solid var(--np-border, #E2E8F0);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 .home-gallery-card img {
     display: block;
     width: 100%;
-    height: 260px;
+    height: 240px;
     object-fit: cover;
-    transition: transform .35s ease;
+    transition: transform 0.35s ease;
 }
 
 .home-gallery-card:hover img {
@@ -166,131 +113,46 @@ html {
     right: 0;
     bottom: 0;
     left: 0;
-    padding: 2.5rem 1rem 1rem;
-    color: #fff;
+    padding: 2rem 1rem 0.85rem;
+    color: #FFFFFF;
     font-weight: 700;
-    background: linear-gradient(transparent, rgba(5, 18, 30, .85));
-}
-
-.home-feature-card {
-    height: 100%;
-    padding: 2rem;
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, .06);
-}
-
-.home-feature-card p {
-    color: #d0dbe5;
-}
-
-.home-feature-number {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    margin-bottom: 1.2rem;
-    border-radius: 12px;
-    color: #0b1724;
-    background: #8ed0ff;
-    font-weight: 800;
-}
-
-.home-career-panel {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    padding: clamp(1.5rem, 4vw, 3rem);
-    border: 1px solid #e5ebf1;
-    border-radius: 22px;
-    background: linear-gradient(135deg, #f8fbfd, #eaf3fa);
-}
-
-.home-career-panel .home-section-title {
-    margin-bottom: .65rem;
+    font-size: 0.88rem;
+    background: linear-gradient(transparent, rgba(0, 38, 22, 0.88));
 }
 
 .home-text-link {
-    color: #0b6ea8;
+    color: var(--np-green, #005A36);
     font-weight: 700;
     text-decoration: none;
 }
 
 .home-text-link:hover {
+    color: var(--np-green-accent, #00A862);
     text-decoration: underline;
 }
 
-.home-contact-section {
-    background: #fff;
+.home-card-action {
+    display: inline-block;
+    margin-top: 0.65rem;
+    color: var(--np-green, #005A36);
+    font-size: 0.88rem;
+    font-weight: 750;
 }
 
-@media (min-width: 992px) {
-    .home-section {
-        padding-top: 86px;
-        padding-bottom: 86px;
-    }
+.home-section-dark .home-card-action {
+    color: #A7F3D0;
 }
 
 @media (max-width: 767.98px) {
-    .home-section {
-        padding-top: 54px;
-        padding-bottom: 54px;
-    }
-
-    .home-section-nav .container {
-        gap: 1.1rem;
-        padding-top: .7rem;
-        padding-bottom: .7rem;
-    }
-
     .home-card-image {
-        height: 200px;
+        height: 190px;
     }
 
     .home-gallery-card img {
-        height: 200px;
-    }
-
-    .home-career-panel {
-        align-items: flex-start;
-        flex-direction: column;
+        height: 190px;
     }
 
     .home-section-title {
-        font-size: clamp(1.7rem, 7vw, 2.2rem);
+        font-size: clamp(1.45rem, 5vw, 1.85rem);
     }
 }
-
-
-/* V5.0: kartu konten Home dapat diklik seluruhnya untuk membuka detail. */
-.home-card-link {
-    display: block;
-    height: 100%;
-    color: inherit;
-    text-decoration: none;
-    cursor: pointer;
-}
-.home-card-link:hover, .home-card-link:focus { color: inherit; text-decoration: none; }
-.home-card-link:focus-visible { outline: 3px solid #0b6ea8; outline-offset: 4px; border-radius: 14px; }
-.home-card-link .home-content-card, .home-card-link .home-feature-card { height: 100%; }
-.home-card-action { display: inline-block; margin-top: .8rem; color: #0b6ea8; font-size: .92rem; font-weight: 750; }
-.home-section-dark .home-card-action { color: #8ed0ff; }
-.home-about-link { display: block; }
-.home-career-link { flex: 1; }
-.home-career-link .home-section-title { color: #122c43; }
-.home-gallery-caption .home-card-action { display: block; color: #fff; }
-
-
-/* Modal untuk membuka konten dari halaman Home tanpa navigasi penuh */
-.home-content-modal { display:none; position:fixed; inset:0; z-index:20000; }
-.home-content-modal.is-open { display:flex; align-items:center; justify-content:center; padding:2vh 2vw; }
-.home-content-modal-backdrop { position:absolute; inset:0; background:rgba(7,16,25,.72); }
-.home-content-modal-panel { position:relative; z-index:1; display:flex; flex-direction:column; width:min(1180px,96vw); height:min(900px,94vh); background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 25px 80px rgba(0,0,0,.35); }
-.home-content-modal-header { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 1rem; border-bottom:1px solid #e5eaf0; background:#f8fafc; color:#173047; }
-.home-content-modal-close { width:38px; height:38px; border:0; border-radius:50%; background:#e9eef3; color:#172b3a; font-size:1.8rem; line-height:1; cursor:pointer; }
-.home-content-modal-close:hover { background:#d8e2eb; }
-.home-content-modal-panel iframe { display:block; width:100%; height:100%; flex:1 1 auto; border:0; background:#fff; }
-body.home-modal-open { overflow:hidden; }
-@media(max-width:767.98px) { .home-content-modal.is-open { padding:0; } .home-content-modal-panel { width:100vw; height:100dvh; max-height:100dvh; border-radius:0; } }

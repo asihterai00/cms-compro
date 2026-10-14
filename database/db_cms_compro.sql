@@ -207,3 +207,26 @@ CREATE TABLE IF NOT EXISTS project_memory (
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+CREATE TABLE IF NOT EXISTS certifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    category VARCHAR(100) DEFAULT 'Automotive & Quality',
+    certificate_number VARCHAR(100) NULL,
+    issued_by VARCHAR(150) NULL,
+    valid_until DATE NULL,
+    description TEXT NULL,
+    image VARCHAR(255) NULL,
+    status ENUM('active', 'archived') DEFAULT 'active',
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO certifications (name, category, certificate_number, issued_by, valid_until, description, sort_order) VALUES
+('IATF 16949:2016', 'Automotive Quality Management', 'IATF-0482910 / TÜV-CERT', 'TÜV Rheinland International', '2027-12-31', 'Standar sistem manajemen mutu tertinggi dan wajib bagi rantai pasok otomotif global (Tier-1 Supplier) untuk manufaktur roda kemudi, airbag, dan modul resin interior.', 1),
+('ISO 9001:2015', 'Quality Management System', 'ID-QMS-9001-88321', 'SGS International Certification', '2028-06-30', 'Sertifikasi sistem manajemen mutu internasional yang memastikan konsistensi proses operasional, ketertelusuran material, dan kepuasan pelanggan.', 2),
+('ISO 14001:2015', 'Environmental Management System', 'EMS-14001-ID-54210', 'Lloyd\'s Register / SGS', '2027-10-15', 'Sistem manajemen lingkungan sesuai regulasi Kementerian Lingkungan Hidup dan Kehutanan (KLHK) RI, pengelolaan limbah B3 berizin, dan reduksi jejak karbon pabrik.', 3),
+('ISO 45001:2018 & SMK3 PP 50/2012', 'Occupational Health & Safety (K3)', 'OHSMS-45001-SMK3-9921', 'Kementerian Ketenagakerjaan RI & TÜV Rheinland', '2027-08-20', 'Penerapan Sistem Manajemen Keselamatan dan Kesehatan Kerja (SMK3) sesuai Peraturan Pemerintah RI No. 50 Tahun 2012 dan ISO 45001 (Zero Accident Culture).', 4),
+('Kemenperin & SNI Compliance', 'National Regulatory Standards', 'REG-KEMENPERIN-TKDN-2026', 'Kementerian Perindustrian Republik Indonesia', '2029-01-01', 'Kepatuhan terhadap standar keselamatan komponen kendaraan bermotor nasional dan pemenuhan Tingkat Komponen Dalam Negeri (TKDN) Kemenperin RI.', 5);
+
+

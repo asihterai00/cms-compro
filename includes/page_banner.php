@@ -21,8 +21,8 @@ $bannerDefaults = [
         "subtitle" => "Photos of our facilities and company activities."
     ],
     "quality" => [
-        "title" => "Quality & Continuous Improvement",
-        "subtitle" => "Commitment to quality, safety, and improvement."
+        "title" => "Quality & ISO Certifications",
+        "subtitle" => "Standar Mutu IATF 16949, ISO 9001, ISO 14001, ISO 45001 / SMK3, dan Kepatuhan Regulasi Indonesia."
     ],
     "facility" => [
         "title" => "Factory & Facility",
@@ -119,7 +119,7 @@ if ($bannerImage !== "") {
 ?>
 <section
     class="page-banner"
-    style="background-image: linear-gradient(90deg, rgba(7, 22, 38, .78), rgba(7, 22, 38, .18)), url('<?= htmlspecialchars($bannerImage, ENT_QUOTES) ?><?= strpos($bannerImage, "uploads/") === 0 ? "?v=" . @filemtime(__DIR__ . "/../" . $bannerImage) : "" ?>');"
+    style="background-image: linear-gradient(90deg, rgba(0, 38, 22, 0.90), rgba(0, 90, 54, 0.45)), url('<?= htmlspecialchars($bannerImage, ENT_QUOTES) ?><?= strpos($bannerImage, "uploads/") === 0 ? "?v=" . @filemtime(__DIR__ . "/../" . $bannerImage) : "" ?>');"
 >
     <div class="container">
         <p class="page-banner-eyebrow">

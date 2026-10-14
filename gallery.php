@@ -2,61 +2,50 @@
 require_once __DIR__ . "/config/database.php";
 require_once __DIR__ . "/includes/content_helpers.php";
 
-/* Menyiapkan tabel media tambahan bila belum tersedia. */
+/* Menyiapkan tabel media foto bila belum tersedia. */
 $conn->query("CREATE TABLE IF NOT EXISTS gallery_media (
     id INT AUTO_INCREMENT PRIMARY KEY,
     gallery_id INT NOT NULL,
-    media_type ENUM('image','video','youtube') NOT NULL,
+    media_type ENUM('image') NOT NULL DEFAULT 'image',
     media_path VARCHAR(500) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX(gallery_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-/* Mengambil kategori galeri dan gambar cover untuk kartu. */
+/* Mengambil kategori galeri dan foto cover untuk kartu. */
 $galleryItems = $conn->query("
     SELECT g.id, g.title,
     COALESCE(
         (SELECT gm.media_path FROM gallery_media gm
-         WHERE gm.gallery_id=g.id AND gm.media_type='image'
+         WHERE gm.gallery_id = g.id
          ORDER BY gm.id LIMIT 1),
         g.image
     ) AS cover
     FROM gallery g ORDER BY g.id DESC
 ");
 
-/* Mengubah media menjadi URL yang aman untuk ditampilkan. */
-function galleryModalMediaUrl($path, $type) {
-    if ($type === 'youtube') {
-        return $path;
-    }
-    if ($type === 'video') {
-        return 'uploads/gallery/' . basename($path);
-    }
-    return contentImageUrl($path, 'uploads/gallery');
-}
-
-/* Mengumpulkan seluruh media untuk setiap kategori yang akan dibuka dalam modal. */
+/* Mengumpulkan seluruh foto untuk setiap kategori yang akan dibuka dalam modal. */
 $galleryModalItems = [];
 if ($galleryItems) {
     while ($item = $galleryItems->fetch_assoc()) {
         $id = (int)$item['id'];
-        $mediaRows = [];
-        $stmt = $conn->prepare("SELECT media_type, media_path FROM gallery_media WHERE gallery_id=? ORDER BY id DESC");
+        $photoRows = [];
+        $stmt = $conn->prepare("SELECT media_path FROM gallery_media WHERE gallery_id = ? ORDER BY id DESC");
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $result = $stmt->get_result();
-        while ($media = $result->fetch_assoc()) {
-            $mediaRows[] = [
-                'type' => $media['media_type'],
-                'url' => galleryModalMediaUrl($media['media_path'], $media['media_type']),
+        while ($photo = $result->fetch_assoc()) {
+            $photoRows[] = [
+                'type' => 'image',
+                'url' => contentImageUrl($photo['media_path'], 'uploads/gallery'),
                 'title' => $item['title']
             ];
         }
         $stmt->close();
 
-        /* Menggunakan foto lama dari tabel gallery bila kategori belum punya media tambahan. */
-        if (!$mediaRows && !empty($item['cover'])) {
-            $mediaRows[] = [
+        /* Menggunakan foto lama dari tabel gallery bila belum ada rekaman di gallery_media. */
+        if (!$photoRows && !empty($item['cover'])) {
+            $photoRows[] = [
                 'type' => 'image',
                 'url' => contentImageUrl($item['cover'], 'uploads/gallery'),
                 'title' => $item['title']
@@ -67,43 +56,35 @@ if ($galleryItems) {
             'id' => $id,
             'title' => $item['title'],
             'cover' => contentImageUrl($item['cover'] ?? '', 'uploads/gallery'),
-            'count' => count($mediaRows),
-            'media' => $mediaRows
+            'count' => count($photoRows),
+            'media' => $photoRows
         ];
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title>Gallery</title>
+    <title><?= htmlspecialchars(__('nav_gallery', 'Galeri Foto')) ?> - <?= htmlspecialchars(__('brand_name', 'PT Nihon Plast Indonesia')) ?></title>
     <link rel="stylesheet" href="assets/css/content-clickable.css">
     <style>
-        /* Membuat seluruh kartu galeri tetap mengikuti gaya website yang ada. */
         .gallery-modal-card-trigger { cursor: pointer; }
         .gallery-modal-card-trigger img { cursor: zoom-in; }
-        /* Lapisan belakang modal. */
         .gallery-view-modal { display:none; position:fixed; inset:0; z-index:100000; align-items:center; justify-content:center; padding:20px; }
-        /* Menampilkan modal saat dibuka. */
         .gallery-view-modal.is-open { display:flex; }
-        /* Latar gelap modal. */
-        .gallery-view-modal__backdrop { position:absolute; inset:0; background:rgba(0,0,0,.82); }
-        /* Panel modal. */
-        .gallery-view-modal__panel { position:relative; z-index:1; width:min(1000px,96vw); max-height:92vh; overflow:auto; background:#fff; border-radius:12px; padding:22px; }
-        /* Tombol tutup modal. */
-        .gallery-view-modal__close { position:sticky; top:0; float:right; z-index:2; width:38px; height:38px; border:0; border-radius:50%; background:#f1f1f1; color:#222; font-size:27px; line-height:1; cursor:pointer; }
-        /* Tata letak media di dalam modal konten galeri. */
-        .gallery-view-modal__media-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; clear:both; }
-        .gallery-view-modal__media-item { min-width:0; background:#f5f6f7; border-radius:10px; padding:8px; }
-        .gallery-view-modal__media-item img { display:block; width:100%; max-height:65vh; object-fit:contain; cursor:zoom-in; }
-        .gallery-view-modal__media-item video { display:block; width:100%; max-height:65vh; }
-        .gallery-view-modal__media-item iframe { display:block; width:100%; aspect-ratio:16/9; border:0; }
-        /* Modal foto tunggal: hanya menampilkan foto yang dipilih. */
+        .gallery-view-modal__backdrop { position:absolute; inset:0; background:rgba(15, 23, 42, 0.88); backdrop-filter: blur(4px); }
+        .gallery-view-modal__panel { position:relative; z-index:1; width:min(1060px, 96vw); max-height:92vh; overflow:auto; background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .gallery-view-modal__close { position:sticky; top:0; float:right; z-index:2; width:38px; height:38px; border:0; border-radius:50%; background:#f1f5f9; color:#0f172a; font-size:24px; line-height:1; cursor:pointer; transition:all 0.2s; }
+        .gallery-view-modal__close:hover { background:#e2e8f0; color:#005A36; }
+        .gallery-view-modal__media-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; clear:both; margin-top:16px; }
+        .gallery-view-modal__media-item { min-width:0; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; overflow:hidden; }
+        .gallery-view-modal__media-item img { display:block; width:100%; height:200px; object-fit:cover; border-radius:6px; cursor:zoom-in; transition:transform 0.3s; }
+        .gallery-view-modal__media-item img:hover { transform:scale(1.02); }
         .gallery-photo-only .gallery-view-modal__panel { width:auto; max-width:96vw; padding:12px; overflow:visible; background:transparent; box-shadow:none; }
         .gallery-photo-only .gallery-view-modal__media-grid,
         .gallery-photo-only .gallery-view-modal__heading { display:none; }
-        .gallery-photo-only .gallery-photo-large { display:block; max-width:94vw; max-height:86vh; width:auto; height:auto; object-fit:contain; border-radius:5px; }
+        .gallery-photo-only .gallery-photo-large { display:block; max-width:94vw; max-height:88vh; width:auto; height:auto; object-fit:contain; border-radius:8px; box-shadow:0 20px 40px rgba(0,0,0,0.5); }
         .gallery-photo-large { display:none; }
         body.gallery-modal-open { overflow:hidden; }
         @media(max-width:600px) {
@@ -115,54 +96,72 @@ if ($galleryItems) {
 </head>
 <body>
 <?php include __DIR__ . "/includes/navbar.php"; ?>
-<?php $bannerKey="gallery"; include __DIR__ . "/includes/page_banner.php"; ?>
+<?php $bannerKey = "gallery"; include __DIR__ . "/includes/page_banner.php"; ?>
 
 <section class="section-padding">
     <div class="container">
+        <div class="max-w-700 mb-5">
+            <span class="eyebrow-badge">
+                <i class="bi bi-camera-fill"></i> <?= htmlspecialchars(__('gallery_badge', 'DOKUMENTASI FOTO MANUFAKTUR')) ?>
+            </span>
+            <h1 class="display-6 fw-bold text-np-green mb-2"><?= htmlspecialchars(__('gallery_title', 'Galeri Aktivitas & Fasilitas')) ?></h1>
+            <p class="text-muted"><?= htmlspecialchars(__('gallery_desc', 'Dokumentasi fotografi beresolusi tinggi mengenai kegiatan produksi manufaktur, budaya keselamatan 5S, dan fasilitas pabrik PT Nihon Plast Indonesia.')) ?></p>
+        </div>
+
         <div class="row g-4">
             <?php if (!empty($galleryModalItems)): ?>
                 <?php foreach ($galleryModalItems as $item): ?>
                     <div class="col-md-6 col-lg-4">
-                        <article class="card h-100 content-click-card">
-                            <button type="button" class="content-image-link gallery-modal-card-trigger"
+                        <article class="card h-100 content-click-card border-0 shadow-sm">
+                            <button type="button" class="content-image-link gallery-modal-card-trigger border-0 bg-transparent p-0"
                                 data-gallery-open-content="<?= (int)$item['id'] ?>"
-                                aria-label="Lihat galeri <?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>">
+                                aria-label="Lihat foto <?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>">
                                 <?php if (!empty($item['cover'])): ?>
                                     <img src="<?= htmlspecialchars($item['cover'], ENT_QUOTES, 'UTF-8') ?>"
-                                         class="product-image" alt="<?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy">
+                                         class="product-image" style="height: 220px; object-fit: cover; width: 100%;" alt="<?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy">
                                 <?php else: ?>
-                                    <span class="d-block p-5 text-center">Foto / Video</span>
+                                    <div class="bg-light p-5 text-center text-muted">
+                                        <i class="bi bi-image fs-1 d-block mb-2 text-secondary"></i> Foto Presisi
+                                    </div>
                                 <?php endif; ?>
-                                <span class="image-open-hint">Lihat media →</span>
+                                <span class="image-open-hint"><?= htmlspecialchars(__('view_details', 'Lihat Rincian')) ?> →</span>
                             </button>
-                            <div class="card-body p-4">
-                                <h2 class="h5">
-                                    <button type="button" class="content-title-link gallery-modal-card-trigger"
+                            <div class="card-body p-4 d-flex flex-column">
+                                <h2 class="h5 fw-bold mb-2">
+                                    <button type="button" class="content-title-link gallery-modal-card-trigger border-0 bg-transparent p-0 text-start"
                                         data-gallery-open-content="<?= (int)$item['id'] ?>">
                                         <?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>
                                     </button>
                                 </h2>
-                                <span class="text-muted small"><?= (int)$item['count'] ?> media</span>
-                                <br>
-                                <button type="button" class="content-more-link gallery-modal-card-trigger"
-                                    data-gallery-open-content="<?= $item['id'] ?>">Buka galeri →</button>
+                                <span class="text-muted small mb-3"><?= (int)$item['count'] ?> <?= htmlspecialchars(__('specifications', 'Foto Presisi')) ?></span>
+                                <div class="mt-auto">
+                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill gallery-modal-card-trigger"
+                                        data-gallery-open-content="<?= $item['id'] ?>">
+                                        <?= htmlspecialchars(__('read_more', 'Buka Galeri')) ?> →
+                                    </button>
+                                </div>
                             </div>
                         </article>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="col-12"><div class="alert alert-info">Belum ada galeri.</div></div>
+                <div class="col-12">
+                    <div class="alert alert-light border text-center p-5">
+                        <i class="bi bi-images fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="fw-bold text-muted">Belum ada album foto</h5>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
     </div>
 </section>
 
-<!-- Satu modal digunakan untuk foto tunggal maupun isi kategori galeri. -->
-<div id="galleryViewModal" class="gallery-view-modal" aria-hidden="true">
+<!-- Modal Tinjau Foto -->
+<div id="galleryViewModal" class="gallery-view-modal" aria-hidden="true" role="dialog">
     <div class="gallery-view-modal__backdrop" data-gallery-close></div>
-    <div class="gallery-view-modal__panel" role="dialog" aria-modal="true" aria-label="Konten galeri">
+    <div class="gallery-view-modal__panel" role="dialog" aria-modal="true" aria-label="Foto Dokumentasi">
         <button type="button" class="gallery-view-modal__close" aria-label="Tutup" data-gallery-close>&times;</button>
-        <h2 class="gallery-view-modal__heading h4" id="galleryViewModalTitle"></h2>
+        <h2 class="gallery-view-modal__heading h4 fw-bold text-np-green" id="galleryViewModalTitle"></h2>
         <img id="galleryPhotoLarge" class="gallery-photo-large" src="" alt="">
         <div id="galleryViewModalMedia" class="gallery-view-modal__media-grid"></div>
     </div>
@@ -171,22 +170,18 @@ if ($galleryItems) {
 <script>
 (function () {
     'use strict';
-
-    /* Menyediakan data galeri dari PHP agar modal tidak perlu membuka halaman lain. */
     const galleryItems = <?= json_encode($galleryModalItems, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     const modal = document.getElementById('galleryViewModal');
     const modalTitle = document.getElementById('galleryViewModalTitle');
     const modalMedia = document.getElementById('galleryViewModalMedia');
     const largePhoto = document.getElementById('galleryPhotoLarge');
 
-    /* Membuka kerangka modal dan mengunci scroll halaman belakang. */
     function openGalleryModal() {
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('gallery-modal-open');
     }
 
-    /* Menutup modal dan menghentikan media yang sedang diputar. */
     function closeGalleryModal() {
         modal.classList.remove('is-open', 'gallery-photo-only');
         modal.setAttribute('aria-hidden', 'true');
@@ -197,50 +192,29 @@ if ($galleryItems) {
         modalTitle.textContent = '';
     }
 
-    /* Menampilkan foto saja di dalam modal, tanpa judul atau konten lain. */
     function openPhotoOnly(photoUrl, altText) {
         modal.classList.add('gallery-photo-only');
         modalTitle.textContent = '';
         modalMedia.innerHTML = '';
         largePhoto.src = photoUrl;
-        largePhoto.alt = altText || 'Foto galeri';
+        largePhoto.alt = altText || 'Foto Dokumentasi Presisi';
         openGalleryModal();
     }
 
-    /* Membuat elemen media berdasarkan jenis foto, video lokal, atau YouTube. */
     function createGalleryMedia(media, title) {
         const wrapper = document.createElement('div');
         wrapper.className = 'gallery-view-modal__media-item';
-
-        if (media.type === 'youtube') {
-            const frame = document.createElement('iframe');
-            frame.src = media.url;
-            frame.title = 'Video YouTube - ' + title;
-            frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-            frame.allowFullscreen = true;
-            wrapper.appendChild(frame);
-        } else if (media.type === 'video') {
-            const video = document.createElement('video');
-            video.controls = true;
-            video.preload = 'metadata';
-            const source = document.createElement('source');
-            source.src = media.url;
-            video.appendChild(source);
-            wrapper.appendChild(video);
-        } else {
-            const image = document.createElement('img');
-            image.src = media.url;
-            image.alt = title;
-            image.loading = 'lazy';
-            image.addEventListener('click', function () {
-                openPhotoOnly(media.url, title);
-            });
-            wrapper.appendChild(image);
-        }
+        const image = document.createElement('img');
+        image.src = media.url;
+        image.alt = title;
+        image.loading = 'lazy';
+        image.addEventListener('click', function () {
+            openPhotoOnly(media.url, title);
+        });
+        wrapper.appendChild(image);
         return wrapper;
     }
 
-    /* Membuka semua media milik kategori galeri di dalam modal yang sama. */
     function openGalleryContent(galleryId) {
         const item = galleryItems.find(function (entry) {
             return Number(entry.id) === Number(galleryId);
@@ -252,28 +226,30 @@ if ($galleryItems) {
         modalTitle.textContent = item.title;
         modalMedia.innerHTML = '';
 
-        item.media.forEach(function (media) {
-            modalMedia.appendChild(createGalleryMedia(media, item.title));
-        });
+        if (Array.isArray(item.media) && item.media.length > 0) {
+            item.media.forEach(function (media) {
+                modalMedia.appendChild(createGalleryMedia(media, item.title));
+            });
+        }
         openGalleryModal();
     }
 
-    /* Menangani klik foto cover, judul, atau tombol Buka galeri. */
-    document.addEventListener('click', function (event) {
-        const trigger = event.target.closest('[data-gallery-open-content]');
-        if (!trigger) return;
-        event.preventDefault();
-        openGalleryContent(trigger.getAttribute('data-gallery-open-content'));
+    document.querySelectorAll('[data-gallery-open-content]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-gallery-open-content');
+            if (id) {
+                openGalleryContent(id);
+            }
+        });
     });
 
-    /* Menutup modal ketika tombol X atau latar gelap diklik. */
-    modal.querySelectorAll('[data-gallery-close]').forEach(function (element) {
+    document.querySelectorAll('[data-gallery-close]').forEach(function (element) {
         element.addEventListener('click', closeGalleryModal);
     });
 
-    /* Menutup modal menggunakan tombol Escape pada keyboard. */
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
             closeGalleryModal();
         }
     });
