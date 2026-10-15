@@ -2,6 +2,8 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('news', 'read');
+
 /* Tambahkan kolom image jika database versi lama belum memilikinya. */
 $columnCheck = $conn->query("SHOW COLUMNS FROM news LIKE 'image'");
 if ($columnCheck && $columnCheck->num_rows === 0) {
@@ -21,7 +23,15 @@ $notice = "";
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    require_csrf();
+
     $id = (int) ($_POST["id"] ?? 0);
+    if ($id > 0) {
+        require_permission('news', 'update');
+    } else {
+        require_permission('news', 'create');
+    }
+
     $title = trim($_POST["title"] ?? "");
     $content = trim($_POST["content"] ?? "");
     $image = trim($_POST["old_image"] ?? "");
@@ -29,35 +39,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($title === "") {
         $error = "Judul berita wajib diisi.";
     } else {
-        $uploadError = $_FILES["image"]["error"] ?? UPLOAD_ERR_NO_FILE;
-        if ($uploadError !== UPLOAD_ERR_NO_FILE) {
-            if ($uploadError !== UPLOAD_ERR_OK) {
-                $error = "Upload gambar gagal. Periksa ukuran file dan pengaturan PHP.";
+        if (isset($_FILES["image"]) && $_FILES["image"]["error"] !== UPLOAD_ERR_NO_FILE) {
+            $upResult = cms_upload_image($_FILES["image"], "news", "news_");
+            if ($upResult["success"]) {
+                $image = $upResult["path"];
             } else {
-                $tmp = $_FILES["image"]["tmp_name"];
-                $ext = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
-                $allowed = ["jpg", "jpeg", "png", "webp"];
-                $valid = @getimagesize($tmp);
-                if (!in_array($ext, $allowed, true) || !$valid) {
-                    $error = "Pilih gambar JPG, PNG, atau WEBP yang valid.";
-                } elseif ((int) $_FILES["image"]["size"] > 5 * 1024 * 1024) {
-                    $error = "Ukuran gambar maksimal 5 MB.";
-                } else {
-                    $dir = __DIR__ . "/../uploads/news/";
-                    if (!is_dir($dir)) {
-                        mkdir($dir, 0755, true);
-                    }
-                    if (!is_writable($dir)) {
-                        $error = "Folder uploads/news tidak dapat ditulis.";
-                    } else {
-                        $filename = "news_" . date("Ymd_His") . "_" . mt_rand(1000, 9999) . "." . $ext;
-                        if (move_uploaded_file($tmp, $dir . $filename)) {
-                            $image = "uploads/news/" . $filename;
-                        } else {
-                            $error = "File gagal disimpan ke folder uploads/news.";
-                        }
-                    }
-                }
+                $error = $upResult["error"];
             }
         }
 
@@ -80,6 +67,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 if (isset($_GET["delete"])) {
+    require_csrf();
+    require_permission('news', 'delete');
+
     $id = (int) $_GET["delete"];
     $stmt = $conn->prepare("DELETE FROM news WHERE id = ?");
     $stmt->bind_param("i", $id);
@@ -98,7 +88,7 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Manage News</title>
+    <title>NPI CMS - Berita & Publikasi | PT Nihon Plast Indonesia</title>
 </head>
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
@@ -117,6 +107,7 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
             </div>
         <?php endif; ?>
         <form method="post" enctype="multipart/form-data" class="mt-3">
+            <?= csrf_field() ?>
             <input type="hidden" name="id" value="<?= (int) ($editItem["id"] ?? 0) ?>">
             <input type="hidden" name="old_image" value="<?= htmlspecialchars($editItem["image"] ?? "") ?>">
             <div class="mb-3">
@@ -156,7 +147,9 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
                         <td><?= htmlspecialchars(mb_strimwidth(strip_tags($item["content"] ?? ""), 0, 100, "...")) ?></td>
                         <td class="text-nowrap">
                             <a href="news.php?edit=<?= (int) $item["id"] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <a href="news.php?delete=<?= (int) $item["id"] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus berita ini?')">Hapus</a>
+                            <?php if (has_permission('news', 'delete')): ?>
+                                <a href="<?= csrf_url('news.php?delete=' . (int) $item["id"]) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus berita ini?')">Hapus</a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endwhile; endif; ?>

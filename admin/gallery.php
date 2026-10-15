@@ -31,6 +31,7 @@ if ($edit_id) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $id = (int)($_POST['id'] ?? 0);
     $title = trim($_POST['title'] ?? '');
     $currentImage = $editGallery['image'] ?? '';
@@ -63,6 +64,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             if ($_FILES['media']['size'][$i] > 10 * 1024 * 1024) {
                 $error = 'Ukuran foto maksimal 10 MB per file.';
+                break;
+            }
+            $tmpPath = $_FILES['media']['tmp_name'][$i];
+            $imgInfo = @getimagesize($tmpPath);
+            if (!$imgInfo || !in_array($imgInfo['mime'] ?? '', ['image/jpeg', 'image/png', 'image/webp'], true)) {
+                $error = 'File bukan citra gambar valid atau rusak.';
                 break;
             }
             $newFiles[] = ['i' => $i, 'ext' => $ext];
@@ -117,6 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Delete media item
 if (isset($_GET['delete_media'])) {
+    require_csrf();
     if (function_exists('require_permission')) {
         require_permission('gallery', 'delete');
     }
@@ -140,6 +148,7 @@ if (isset($_GET['delete_media'])) {
 
 // Delete whole gallery album
 if (isset($_GET['delete'])) {
+    require_csrf();
     if (function_exists('require_permission')) {
         require_permission('gallery', 'delete');
     }
@@ -178,7 +187,7 @@ $gallery = $conn->query('SELECT * FROM gallery ORDER BY id DESC');
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Manage Photo Gallery - Admin</title>
+    <title>NPI CMS - Galeri Foto | PT Nihon Plast Indonesia</title>
 </head>
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
@@ -212,6 +221,7 @@ $gallery = $conn->query('SELECT * FROM gallery ORDER BY id DESC');
         <div class="card-body p-4">
             <h4 class="card-title fw-bold mb-3"><?= $editGallery['id'] ? 'Edit Album' : 'Tambah Album Foto Baru' ?></h4>
             <form method="post" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= (int)$editGallery['id'] ?>">
                 
                 <div class="mb-3">
@@ -249,9 +259,11 @@ $gallery = $conn->query('SELECT * FROM gallery ORDER BY id DESC');
                         <div class="col-6 col-md-4 col-lg-3">
                             <div class="border rounded p-2 text-center h-100 bg-light">
                                 <img src="../uploads/gallery/<?= htmlspecialchars(basename($m['media_path'])) ?>" class="img-fluid rounded mb-2" style="height: 140px; object-fit: cover; width: 100%;" alt="Foto Dokumentasi">
-                                <a class="btn btn-sm btn-outline-danger w-100" href="gallery.php?delete_media=<?= (int)$m['id'] ?>" onclick="return confirm('Hapus foto ini dari galeri?')">
-                                    <i class="bi bi-trash me-1"></i> Hapus Foto
-                                </a>
+                                <?php if (has_permission('gallery', 'delete')): ?>
+                                    <a class="btn btn-sm btn-outline-danger w-100" href="<?= csrf_url('gallery.php?delete_media=' . (int)$m['id']) ?>" onclick="return confirm('Hapus foto ini dari galeri?')">
+                                        <i class="bi bi-trash me-1"></i> Hapus Foto
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endwhile; ?>
@@ -277,9 +289,11 @@ $gallery = $conn->query('SELECT * FROM gallery ORDER BY id DESC');
                             <a class="btn btn-sm btn-outline-primary" href="gallery.php?edit=<?= (int)$row['id'] ?>">
                                 <i class="bi bi-pencil me-1"></i> Kelola Foto
                             </a>
-                            <a class="btn btn-sm btn-outline-danger" href="gallery.php?delete=<?= (int)$row['id'] ?>" onclick="return confirm('Hapus album ini beserta semua fotonya?')">
-                                <i class="bi bi-trash me-1"></i> Hapus
-                            </a>
+                            <?php if (has_permission('gallery', 'delete')): ?>
+                                <a class="btn btn-sm btn-outline-danger" href="<?= csrf_url('gallery.php?delete=' . (int)$row['id']) ?>" onclick="return confirm('Hapus album ini beserta semua fotonya?')">
+                                    <i class="bi bi-trash me-1"></i> Hapus
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

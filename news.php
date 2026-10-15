@@ -5,10 +5,10 @@ require_once __DIR__ . "/includes/content_helpers.php";
 $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title>Berita & Informasi Perusahaan - PT Nihon Plast Indonesia</title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_news', 'Berita')) ?> & Informasi Korporat</title>
     <link rel="stylesheet" href="assets/css/content-clickable.css">
 </head>
 <body>

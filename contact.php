@@ -4,47 +4,81 @@ require_once __DIR__ . "/config/database.php";
 $success = "";
 $error = "";
 
+// Initialize form render timestamp for time-trap
+if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    $_SESSION['rfq_rendered_at'] = time();
+}
+
 // Fetch company profile
 $companyRes = $conn->query("SELECT * FROM company_profile WHERE id = 1 LIMIT 1");
 $company = $companyRes ? $companyRes->fetch_assoc() : [];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $companyName = trim($_POST["company_name"] ?? "");
-    $name = trim($_POST["name"] ?? "");
-    $email = trim($_POST["email"] ?? "");
-    $category = trim($_POST["category"] ?? "B2B Sourcing & RFQ");
-    $productLine = trim($_POST["product_line"] ?? "General");
-    $userMsg = trim($_POST["message"] ?? "");
-
-    if ($name !== "" && filter_var($email, FILTER_VALIDATE_EMAIL) && $userMsg !== "") {
-        // Format structured B2B inquiry message
-        $formattedMessage = "=== B2B INQUIRY & RFQ ===\n" .
-            "Company / Entity: " . ($companyName ?: "-") . "\n" .
-            "Inquiry Category: " . $category . "\n" .
-            "Component Interest: " . $productLine . "\n" .
-            "-----------------------------------\n" .
-            $userMsg;
-
-        $stmt = $conn->prepare(
-            "INSERT INTO messages (name, email, message, status) VALUES (?, ?, ?, 'unread')"
-        );
-        $stmt->bind_param("sss", $name, $email, $formattedMessage);
-
-        if ($stmt->execute()) {
-            $success = "Terima kasih. Permintaan B2B RFQ Anda telah berhasil dikirimkan ke tim Commercial & Engineering PT Nihon Plast Indonesia. Perwakilan kami akan segera menghubungi Anda.";
-        } else {
-            $error = "Terjadi kendala sistem saat mengirim pesan. Silakan coba kembali atau hubungi via telepon.";
-        }
+    // 1. Anti-Bot Honeypot check
+    $honeypot = trim($_POST["hp_organization_website"] ?? "");
+    if ($honeypot !== "") {
+        // Silently succeed to fool the spambot
+        $success = "Terima kasih. Permintaan B2B RFQ Anda telah berhasil dikirimkan.";
+    } elseif (!verify_csrf()) {
+        $error = "Token keamanan form kedaluwarsa. Silakan muat ulang halaman.";
     } else {
-        $error = "Mohon lengkapi nama, alamat email valid, dan isi pesan kebutuhan Anda.";
+        // 2. Time-trap check (submitted in less than 2 seconds)
+        $renderedAt = $_SESSION['rfq_rendered_at'] ?? 0;
+        if ($renderedAt > 0 && (time() - $renderedAt) < 2) {
+            // Silently succeed for instant bot submitters
+            $success = "Terima kasih. Permintaan B2B RFQ Anda telah berhasil dikirimkan.";
+        } else {
+            // 3. Flood rate-limiting (cooldown 10s per session)
+            $lastSubmit = $_SESSION['last_rfq_submit'] ?? 0;
+            if ((time() - $lastSubmit) < 10) {
+                $error = "Mohon menunggu beberapa detik sebelum mengirim pesan berikutnya.";
+            } else {
+                $companyName = htmlspecialchars(trim($_POST["company_name"] ?? ""), ENT_QUOTES, 'UTF-8');
+                $name = htmlspecialchars(trim($_POST["name"] ?? ""), ENT_QUOTES, 'UTF-8');
+                $email = filter_var(trim($_POST["email"] ?? ""), FILTER_SANITIZE_EMAIL);
+                $category = htmlspecialchars(trim($_POST["category"] ?? "B2B Sourcing & RFQ"), ENT_QUOTES, 'UTF-8');
+                $productLine = htmlspecialchars(trim($_POST["product_line"] ?? "General"), ENT_QUOTES, 'UTF-8');
+                $userMsg = strip_tags(trim($_POST["message"] ?? ""));
+
+                if ($name !== "" && filter_var($email, FILTER_VALIDATE_EMAIL) && $userMsg !== "") {
+                    // Length guards
+                    $name = mb_substr($name, 0, 100);
+                    $companyName = mb_substr($companyName, 0, 100);
+                    $userMsg = mb_substr($userMsg, 0, 3000);
+
+                    // Format structured B2B inquiry message
+                    $formattedMessage = "=== B2B INQUIRY & RFQ ===\n" .
+                        "Company / Entity: " . ($companyName ?: "-") . "\n" .
+                        "Inquiry Category: " . $category . "\n" .
+                        "Component Interest: " . $productLine . "\n" .
+                        "-----------------------------------\n" .
+                        $userMsg;
+
+                    $stmt = $conn->prepare(
+                        "INSERT INTO messages (name, email, message, status) VALUES (?, ?, ?, 'unread')"
+                    );
+                    $stmt->bind_param("sss", $name, $email, $formattedMessage);
+
+                    if ($stmt->execute()) {
+                        $_SESSION['last_rfq_submit'] = time();
+                        $success = "Terima kasih. Permintaan B2B RFQ Anda telah berhasil dikirimkan ke tim Commercial & Engineering PT Nihon Plast Indonesia. Perwakilan kami akan segera menghubungi Anda.";
+                    } else {
+                        $error = "Terjadi kendala sistem saat mengirim pesan. Silakan coba kembali atau hubungi via telepon.";
+                    }
+                    $stmt->close();
+                } else {
+                    $error = "Mohon lengkapi nama, alamat email valid, dan isi pesan kebutuhan Anda.";
+                }
+            }
+        }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title>Kontak & B2B RFQ - PT Nihon Plast Indonesia</title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_contact', 'Kontak')) ?> & Pengajuan B2B RFQ</title>
 </head>
 <body>
 
@@ -193,6 +227,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <?php endif; ?>
 
                     <form method="post" action="contact.php">
+                        <?= csrf_field() ?>
+                        <!-- Honeypot anti-spam field (hidden from real users) -->
+                        <div style="display:none !important;" aria-hidden="true">
+                            <label for="hp_organization_website">Leave this field blank</label>
+                            <input type="text" id="hp_organization_website" name="hp_organization_website" tabindex="-1" autocomplete="off">
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Nama Perusahaan / APM OEM</label>

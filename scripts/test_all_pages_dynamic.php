@@ -170,8 +170,8 @@ $adminFiles = [
 foreach ($adminFiles as $af) {
     $fullAdminPath = __DIR__ . "/../" . $af;
     $out = [];
-    $ret = 0;
-    exec("\"C:\\laragon\\bin\\php\\php-8.3.33-Win32-vs16-x64\\php.exe\" -l \"{$fullAdminPath}\" 2>&1", $out, $ret);
+    $phpBin = defined('PHP_BINARY') && file_exists(PHP_BINARY) ? PHP_BINARY : "php";
+    exec("\"{$phpBin}\" -l \"{$fullAdminPath}\" 2>&1", $out, $ret);
     assertTest(file_exists($fullAdminPath) && $ret === 0, "Admin file syntax valid: {$af}");
 }
 

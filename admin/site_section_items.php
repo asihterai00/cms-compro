@@ -9,6 +9,7 @@ $error = "";
 
 // 1. Quick 1-Click Toggle Active / Inactive
 if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])) {
+    require_csrf();
     if (!has_permission('site_section_items', 'update')) {
         $_SESSION['flash_error'] = "Anda tidak memiliki izin untuk mengubah status sub-item ini.";
     } else {
@@ -27,6 +28,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])
 
 // 2. Handle Delete Sub-Item
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+    require_csrf();
     require_permission('site_section_items', 'delete');
     $id = (int)$_GET['id'];
     $stmt = $conn->prepare("SELECT image FROM site_section_items WHERE id = ?");
@@ -76,6 +78,7 @@ if ($editId > 0) {
 
 // Handle Form Submission (Add or Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $id = (int)($_POST['id'] ?? 0);
     $sectionKey = trim($_POST['section_key'] ?? '');
     $itemKey = trim($_POST['item_key'] ?? '');
@@ -245,7 +248,7 @@ $iconCategories = [
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Dynamic Sub-Items & Cards - Admin</title>
+    <title>NPI CMS - Kartu & Sub-Elemen | PT Nihon Plast Indonesia</title>
     <style>
         .badge-active { background-color: #005A36; color: #FFFFFF; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 50px; font-size: 0.75rem; }
         .badge-inactive { background-color: #64748b; color: #FFFFFF; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 50px; font-size: 0.75rem; }
@@ -377,6 +380,7 @@ $iconCategories = [
         </div>
         <div class="card-body p-4">
             <form method="post" action="site_section_items.php?section_key=<?= urlencode($filterSection) ?>" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= (int)($editRow['id'] ?? 0) ?>">
                 <input type="hidden" name="existing_image" value="<?= htmlspecialchars($editRow['image'] ?? '') ?>">
                 <input type="hidden" name="selected_library_image" id="selected_library_image" value="">
@@ -556,19 +560,25 @@ $iconCategories = [
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <a href="site_section_items.php?action=toggle&id=<?= (int)$it['id'] ?>&section_key=<?= urlencode($filterSection) ?>" 
-                                           class="text-decoration-none d-inline-block" 
-                                           title="Klik untuk toggle status aktif">
-                                            <?php if ($it['is_active']): ?>
-                                                <span class="badge-active d-inline-flex align-items-center gap-1">
-                                                    <i class="bi bi-check-circle-fill"></i> ACTIVE
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="badge-inactive d-inline-flex align-items-center gap-1">
-                                                    <i class="bi bi-eye-slash-fill"></i> NOT ACTIVE
-                                                </span>
-                                            <?php endif; ?>
-                                        </a>
+                                        <?php if (has_permission('site_section_items', 'update')): ?>
+                                            <a href="<?= csrf_url('site_section_items.php?action=toggle&id=' . (int)$it['id'] . '&section_key=' . urlencode($filterSection)) ?>" 
+                                               class="text-decoration-none d-inline-block" 
+                                               title="Klik untuk toggle status aktif">
+                                                <?php if ($it['is_active']): ?>
+                                                    <span class="badge-active d-inline-flex align-items-center gap-1">
+                                                        <i class="bi bi-check-circle-fill"></i> ACTIVE
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="badge-inactive d-inline-flex align-items-center gap-1">
+                                                        <i class="bi bi-eye-slash-fill"></i> NOT ACTIVE
+                                                    </span>
+                                                <?php endif; ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="<?= $it['is_active'] ? 'badge-active' : 'badge-inactive' ?> d-inline-flex align-items-center gap-1">
+                                                <?= $it['is_active'] ? 'ACTIVE' : 'NOT ACTIVE' ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-end pe-3">
                                         <div class="btn-group btn-group-sm">
@@ -576,7 +586,7 @@ $iconCategories = [
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <?php if (has_permission('site_section_items', 'delete')): ?>
-                                                <a href="site_section_items.php?action=delete&id=<?= (int)$it['id'] ?>&section_key=<?= urlencode($filterSection) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus sub-item <?= htmlspecialchars(addslashes($it['title'])) ?>?')">
+                                                <a href="<?= csrf_url('site_section_items.php?action=delete&id=' . (int)$it['id'] . '&section_key=' . urlencode($filterSection)) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus sub-item <?= htmlspecialchars(addslashes($it['title'])) ?>?')">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
                                             <?php endif; ?>

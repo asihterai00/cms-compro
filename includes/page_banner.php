@@ -103,7 +103,11 @@ if ($storedBannerImage !== "") {
         $storedBannerImage = "uploads/pages/" . basename($storedBannerImage);
     }
 
-    $bannerImage = $storedBannerImage;
+    if (!preg_match("~^https?://~i", $storedBannerImage) && !file_exists(__DIR__ . "/../" . $storedBannerImage)) {
+        $bannerImage = $defaultBannerImages[$bannerKey] ?? $defaultBannerImages["about"];
+    } else {
+        $bannerImage = $storedBannerImage;
+    }
 } else {
     $bannerImage = $defaultBannerImages[$bannerKey] ?? $defaultBannerImages["about"];
 }
@@ -118,20 +122,52 @@ if ($bannerImage !== "") {
 }
 ?>
 <section
-    class="page-banner"
-    style="background-image: linear-gradient(90deg, rgba(0, 38, 22, 0.90), rgba(0, 90, 54, 0.45)), url('<?= htmlspecialchars($bannerImage, ENT_QUOTES) ?><?= strpos($bannerImage, "uploads/") === 0 ? "?v=" . @filemtime(__DIR__ . "/../" . $bannerImage) : "" ?>');"
+    class="page-banner position-relative overflow-hidden"
+    style="background-image: linear-gradient(105deg, rgba(0, 38, 22, 0.94) 0%, rgba(0, 56, 34, 0.88) 55%, rgba(0, 90, 54, 0.70) 100%), url('<?= htmlspecialchars($bannerImage, ENT_QUOTES) ?><?= strpos($bannerImage, "uploads/") === 0 ? "?v=" . @filemtime(__DIR__ . "/../" . $bannerImage) : "" ?>'); background-size: cover; background-position: center;"
 >
-    <div class="container">
-        <p class="page-banner-eyebrow">
-            <?= htmlspecialchars(strtoupper($bannerKey === "home" ? "Company Profile" : $bannerKey)) ?>
-        </p>
-        <h1>
-            <?= nl2br(htmlspecialchars($banner["title"])) ?>
-        </h1>
-        <?php if (!empty($banner["subtitle"])): ?>
-            <p class="page-banner-subtitle">
-                <?= nl2br(htmlspecialchars($banner["subtitle"])) ?>
-            </p>
-        <?php endif; ?>
+    <!-- Precision Background Grid Texture -->
+    <div class="position-absolute pointer-events-none opacity-25" style="background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 28px 28px; inset: 0;"></div>
+
+    <div class="container position-relative py-3 py-lg-4" style="z-index: 2;">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <!-- Breadcrumbs & Eyebrow Badge -->
+                <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                    <span class="badge bg-white bg-opacity-10 text-white border border-white border-opacity-20 px-3 py-2 rounded-pill fw-bold text-uppercase" style="letter-spacing: 0.12em; font-size: 0.72rem;">
+                        <i class="bi bi-shield-check text-success me-1"></i> PT NIHON PLAST INDONESIA
+                    </span>
+                    <span class="text-white-50 small d-none d-sm-inline">&bull;</span>
+                    <nav aria-label="breadcrumb" class="d-none d-sm-inline-block">
+                        <ol class="breadcrumb mb-0 small">
+                            <li class="breadcrumb-item"><a href="index.php" class="text-white-50 text-decoration-none"><i class="bi bi-house-door me-1"></i>Beranda</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page"><?= htmlspecialchars(strtoupper($bannerKey === "home" ? "Company Profile" : $bannerKey)) ?></li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <h1 class="display-6 fw-bold text-white mb-2" style="letter-spacing: -0.02em; line-height: 1.2;">
+                    <?= nl2br(htmlspecialchars($banner["title"])) ?>
+                </h1>
+
+                <?php if (!empty($banner["subtitle"])): ?>
+                    <p class="lead text-white-50 mb-0" style="max-width: 680px; font-size: 1.05rem; line-height: 1.6;">
+                        <?= nl2br(htmlspecialchars($banner["subtitle"])) ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+
+            <div class="col-lg-4 d-none d-lg-flex justify-content-end">
+                <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-15 shadow-sm text-white" style="max-width: 300px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-patch-check-fill text-success fs-5"></i>
+                        <span class="fw-bold small">Tier-1 OEM Manufacturing</span>
+                    </div>
+                    <div class="small text-white-50" style="font-size: 0.8rem; line-height: 1.5;">
+                        IATF 16949 &bull; ISO 14001 &bull; ISO 45001<br>
+                        Kawasan Industri Indotaisei, Cikampek
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="22" height="16" class="flag-icon">
+  <path fill="#fff" d="M0 0h640v480H0z"/>
+  <g transform="translate(320,240)">
+    <g transform="rotate(-33.69)">
+      <path fill="#cd2e3a" d="M-120 0a120 120 0 0 1 240 0 60 60 0 0 1-120 0 60 60 0 0 0-120 0z"/>
+      <path fill="#0047a0" d="M120 0a120 120 0 0 1-240 0 60 60 0 0 1 120 0 60 60 0 0 0 120 0z"/>
+    </g>
+    <g fill="#000" transform="rotate(-33.69)">
+      <path d="M-180-80h20v160h-20zm30 0h20v160h-20zm30 0h20v160h-20z"/>
+      <path d="M100-80h20v70h-20zm0 90h20v70h-20zm30-90h20v70h-20zm0 90h20v70h-20zm30-90h20v70h-20zm0 90h20v70h-20z"/>
+    </g>
+  </g>
+</svg>

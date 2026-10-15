@@ -6,18 +6,19 @@
 function contentImageUrl($path, $folder = "") {
     $path = trim((string) $path);
     if ($path === "") {
-        return "";
+        return "assets/img/placeholder.svg";
     }
     if (filter_var($path, FILTER_VALIDATE_URL)) {
         return $path;
     }
     $path = ltrim(str_replace("\\", "/", $path), "/");
     if (strpos($path, "uploads/") === 0) {
-        return $path;
+        return safe_image_url($path);
     }
     if (strpos($path, "../uploads/") === 0) {
-        return substr($path, 3);
+        return safe_image_url(substr($path, 3));
     }
-    return $folder !== "" ? rtrim($folder, "/") . "/" . basename($path) : $path;
+    $resolved = $folder !== "" ? rtrim($folder, "/") . "/" . basename($path) : $path;
+    return safe_image_url($resolved);
 }
 ?>

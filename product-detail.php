@@ -13,10 +13,10 @@ if (!$product) {
 $image = contentImageUrl($product["image"] ?? "", "uploads/products");
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title><?= htmlspecialchars($product["name"] ?? "Detail Komponen Otomotif") ?> - PT Nihon Plast Indonesia</title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars($product["name"] ?? "Detail Komponen Otomotif") ?></title>
     <link rel="stylesheet" href="assets/css/product-detail-layout.css">
     <style>
         .spec-box-item {

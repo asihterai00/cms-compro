@@ -8,9 +8,9 @@ Laporan komprehensif mengenai struktur arsitektur, basis data, keamanan, dan alu
 
 | Komponen | Spesifikasi / Teknologi | Keterangan |
 | :--- | :--- | :--- |
-| **Bahasa Pemrograman** | PHP 8.3 (Native) | Dijalankan via Laragon `C:\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` |
+| **Bahasa Pemrograman** | PHP 8.3 (Native) | Dijalankan via Devaron `C:\Devaron\bin\php\php-8.3.30\php.exe` |
 | **Basis Data** | MySQL 8.0 (`db_cms_compro`) | Host: `192.168.1.6:3306`, User: `root`, Charset: `utf8mb4` |
-| **Web Server** | Apache / Nginx (Laragon) | Root direktori: `c:\laragon\www\cms-compro` |
+| **Web Server** | Apache / Nginx (Devaron) | Root direktori: `C:\Devaron\www\cms-compro` |
 | **Frontend Framework** | Bootstrap 5 + Bootstrap Icons | Disertai CSS modular (`home-scroll.css`, `product-detail-layout.css`, dll.) |
 | **Kontrol Versi** | Git 2.55 | Terinisialisasi lokal dengan `.gitignore` rapi |
 | **Lisensi Tooling** | 100% Free & Open-Source (MIT/Apache) | Tanpa biaya, tanpa paket berbayar/tiering, bebas langganan |
@@ -90,15 +90,15 @@ cms-compro/
 
 ---
 
-## 4. Temuan Audit Keamanan & Rekomendasi (Action Items)
+## 4. Status Audit Keamanan & Hardening (100% Terselesaikan)
 
-| Temuan | Tingkat Resiko | Analisis | Rekomendasi Solusi |
+| Temuan Awal | Tingkat Resiko | Solusi & Mitigasi yang Telah Diterapkan | Status |
 | :--- | :--- | :--- | :--- |
-| **1. Tabel `users` Kosong** | 🟡 Medium | Belum ada akun admin di database, sehingga login admin belum bisa digunakan sebelum `setup.php` dijalankan. | Buat user admin pertama melalui `admin/setup.php` atau helper CLI. |
-| **2. `admin/setup.php` Terbuka Publik** | 🔴 Tinggi | Script `admin/setup.php` belum memeriksa apakah user admin sudah ada atau belum, sehingga siapa pun bisa membuat akun admin tambahan jika dibiarkan di server produksi. | Tambahkan proteksi: jika `SELECT COUNT(*) FROM users` > 0, redirect ke `login.php` dan tolak pembuatan user baru. |
-| **3. Belum Ada CSRF Protection** | 🟡 Medium | Form pada admin panel dan `contact.php` belum memiliki token CSRF. | Pasang token CSRF sederhana via `$_SESSION['csrf_token']` di setiap form POST. |
-| **4. Validasi MIME Upload File** | 🟡 Medium | Pemeriksaan file upload saat ini lebih banyak mengandalkan ekstensi nama file. | Perketat menggunakan PHP `finfo` (`mime_content_type`) untuk memastikan hanya gambar asli (JPEG/PNG/WEBP) atau video asli (MP4/WEBM) yang dapat terunggah. |
-| **5. File Zip Cadangan di Root** | 🟢 Rendah | Terdapat file `gallery-detail.zip`, `index.zip`, `product-detail.zip` di direktori web. | Pindahkan atau bersihkan dari root agar tidak dapat diunduh publik secara langsung. |
+| **1. Akun Admin Awal** | 🟡 Medium | Akun Superadmin telah diinisialisasi secara aman via hash bcrypt dan role superadmin aktif. | ✅ **RESOLVED** |
+| **2. Proteksi `admin/setup.php`** | 🔴 Tinggi | Jika `SELECT COUNT(*) FROM users` > 0 langsung redirect ke `login.php`. Ditambahkan `require_csrf()` token untuk pencegahan CSRF. | ✅ **RESOLVED** |
+| **3. Perlindungan CSRF Terpusat** | 🟡 Medium | Modul `includes/csrf.php` crypto-secure token `random_bytes(32)`, `csrf_token()`, `csrf_field()`, `csrf_url()`, dan `require_csrf()` aktif di seluruh form POST & link mutasi GET. | ✅ **RESOLVED** |
+| **4. Validasi Upload & Anti-RCE** | 🔴 Tinggi | Helper `cms_upload_image()` & `uploads/.htaccess` melarang eksekusi PHP/CGI di uploads, whitelist ekstensi ketat, deep inspection bitmap via `getimagesize()` dan SVG script stripping. | ✅ **RESOLVED** |
+| **5. File Zip Cadangan di Root** | 🟢 Rendah | Arsip cadangan lama dibersihkan dari root web publik dan konfigurasi `.htaccess` root memblokir akses ke file sensitif (`.env`, `.git`, `.sql`, `.zip`). | ✅ **RESOLVED** |
 
 ---
 

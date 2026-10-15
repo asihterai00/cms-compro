@@ -6,49 +6,64 @@ require_once __DIR__ . "/../config/database.php";
 
 $error = "";
 
+// Initialize brute-force throttling tracker
+if (!isset($_SESSION['login_failed_attempts'])) {
+    $_SESSION['login_failed_attempts'] = 0;
+    $_SESSION['login_last_attempt_time'] = 0;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // 1. Check rate limit
+    $now = time();
+    $attempts = $_SESSION['login_failed_attempts'];
+    $lastAttempt = $_SESSION['login_last_attempt_time'];
 
-    $username = trim($_POST["username"] ?? "");
-    $password = $_POST["password"] ?? "";
-
-    $stmt = $conn->prepare(
-        "SELECT *
-         FROM users
-         WHERE username = ?
-         LIMIT 1"
-    );
-
-    $stmt->bind_param(
-        "s",
-        $username
-    );
-
-    $stmt->execute();
-
-    $user = $stmt
-        ->get_result()
-        ->fetch_assoc();
-
-    if (
-        $user &&
-        password_verify(
-            $password,
-            $user["password"]
-        )
-    ) {
-        if (($user["status"] ?? "active") !== "active") {
-            $error = "Akun Anda berstatus non-aktif. Silakan hubungi Super Administrator.";
-        } else {
-            $_SESSION["admin_id"] = (int)$user["id"];
-            $_SESSION["admin_username"] = $user["username"];
-            $_SESSION["admin_role"] = $user["role"] ?? "admin";
-            $_SESSION["admin_full_name"] = $user["full_name"] ?? $user["username"];
-
-            header("Location: dashboard.php");
-            exit;
-        }
+    if ($attempts >= 5 && ($now - $lastAttempt) < 30) {
+        $remaining = 30 - ($now - $lastAttempt);
+        $error = "Terlalu banyak percobaan login gagal. Demi keamanan, silakan tunggu {$remaining} detik.";
     } else {
-        $error = "Username atau password salah.";
+        // 2. Verify CSRF
+        if (!verify_csrf()) {
+            $error = "Token keamanan sesi tidak valid atau kedaluwarsa. Silakan muat ulang halaman.";
+        } else {
+            $username = trim($_POST["username"] ?? "");
+            $password = $_POST["password"] ?? "";
+
+            $stmt = $conn->prepare(
+                "SELECT * FROM users WHERE username = ? LIMIT 1"
+            );
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if ($user && password_verify($password, $user["password"])) {
+                if (($user["status"] ?? "active") !== "active") {
+                    $error = "Akun Anda berstatus non-aktif. Silakan hubungi Super Administrator.";
+                } else {
+                    // Prevent session fixation by regenerating session ID
+                    session_regenerate_id(true);
+
+                    // Reset brute force counter
+                    $_SESSION['login_failed_attempts'] = 0;
+                    $_SESSION['login_last_attempt_time'] = 0;
+
+                    $_SESSION["admin_id"] = (int)$user["id"];
+                    $_SESSION["admin_username"] = $user["username"];
+                    $_SESSION["admin_role"] = $user["role"] ?? "admin";
+                    $_SESSION["admin_full_name"] = $user["full_name"] ?? $user["username"];
+
+                    header("Location: dashboard.php");
+                    exit;
+                }
+            } else {
+                // Throttling: record failure and sleep 1s to deter brute-force
+                $_SESSION['login_failed_attempts']++;
+                $_SESSION['login_last_attempt_time'] = time();
+                sleep(1);
+                $error = "Username atau password salah.";
+            }
+        }
     }
 }
 
@@ -61,9 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <?php include __DIR__ . "/../includes/head.php"; ?>
 
-    <title>
-        Admin Login
-    </title>
+    <title>NPI CMS - Login | PT Nihon Plast Indonesia</title>
 
 </head>
 
@@ -92,6 +105,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <?php endif; ?>
 
                     <form method="post">
+                        <?= csrf_field() ?>
 
                         <div class="mb-3">
 

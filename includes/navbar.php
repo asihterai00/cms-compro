@@ -20,6 +20,7 @@ $navPhone  = $companyNav["phone"] ?? "+62-264-351-888";
 $navEmail  = $companyNav["email"] ?? "corporate@n-plast.co.id";
 $currentPage = basename($_SERVER["PHP_SELF"]);
 $currentLang = current_lang();
+$currentLangInfo = get_current_lang_info();
 $supportedLanguages = get_supported_languages();
 ?>
 
@@ -45,14 +46,31 @@ $supportedLanguages = get_supported_languages();
                     <i class="bi bi-envelope-fill text-primary"></i> <?= htmlspecialchars($navEmail) ?>
                 </a>
                 <span class="text-secondary opacity-50">|</span>
-                <div class="lang-switcher" id="langSwitcher" role="group" aria-label="Language selection">
-                    <?php foreach ($supportedLanguages as $code => $langInfo): ?>
-                        <a href="<?= htmlspecialchars(get_lang_switch_url($code)) ?>" 
-                           class="lang-btn <?= $currentLang === $code ? 'active' : '' ?>" 
-                           title="<?= htmlspecialchars($langInfo['name']) ?>">
-                           <?= htmlspecialchars($langInfo['short']) ?>
-                        </a>
-                    <?php endforeach; ?>
+                <!-- Sleek Single Flag Combobox -->
+                <div class="dropdown lang-combobox-wrapper" id="langSwitcherDesktop">
+                    <button class="btn btn-sm lang-combobox-btn dropdown-toggle d-inline-flex align-items-center gap-2" type="button" id="langDropdownDesktop" data-bs-toggle="dropdown" aria-expanded="false" title="<?= htmlspecialchars(__('choose_language', 'Pilih Bahasa')) ?>">
+                        <img src="<?= htmlspecialchars($currentLangInfo['flag']) ?>" alt="<?= htmlspecialchars($currentLangInfo['short']) ?>" class="lang-flag-current">
+                        <span class="lang-name-current fw-bold"><?= htmlspecialchars($currentLangInfo['short']) ?></span>
+                        <i class="bi bi-chevron-down lang-chevron"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end lang-dropdown-menu shadow-lg border-0 py-2" aria-labelledby="langDropdownDesktop">
+                        <li class="dropdown-header text-uppercase small text-muted px-3 py-1 fw-bold" style="font-size: 0.68rem; letter-spacing: 0.08em;">
+                            <i class="bi bi-translate me-1"></i> Language / 言語 / 언어
+                        </li>
+                        <?php foreach ($supportedLanguages as $code => $langInfo): ?>
+                            <li>
+                                <a class="dropdown-item lang-dropdown-item d-flex align-items-center gap-2 px-3 py-2 <?= $currentLang === $code ? 'active-lang' : '' ?>" href="<?= htmlspecialchars(get_lang_switch_url($code)) ?>">
+                                    <img src="<?= htmlspecialchars($langInfo['flag']) ?>" alt="<?= htmlspecialchars($langInfo['short']) ?>" class="lang-flag-item">
+                                    <span class="lang-name-text"><?= htmlspecialchars($langInfo['name']) ?></span>
+                                    <?php if ($currentLang === $code): ?>
+                                        <i class="bi bi-check-circle-fill text-success ms-auto"></i>
+                                    <?php else: ?>
+                                        <span class="badge bg-light text-muted border ms-auto small"><?= htmlspecialchars($langInfo['short']) ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -141,14 +159,31 @@ $supportedLanguages = get_supported_languages();
                     </a>
                 </li>
 
-                <!-- Mobile Only Language Switcher -->
+                <!-- Mobile Only Language Switcher (Combobox) -->
                 <li class="nav-item d-lg-none pt-2 pb-2 border-top border-light">
                     <div class="d-flex align-items-center justify-content-between">
-                        <span class="small text-muted fw-bold">Language:</span>
-                        <div class="lang-switcher" role="group" aria-label="Language selection">
-                            <?php foreach ($supportedLanguages as $code => $langInfo): ?>
-                                <a href="<?= htmlspecialchars(get_lang_switch_url($code)) ?>" class="lang-btn <?= $currentLang === $code ? 'active' : '' ?>"><?= htmlspecialchars($langInfo['short']) ?></a>
-                            <?php endforeach; ?>
+                        <span class="small text-muted fw-bold"><i class="bi bi-translate me-1"></i> Language:</span>
+                        <div class="dropdown lang-combobox-wrapper" id="langSwitcherMobile">
+                            <button class="btn btn-sm lang-combobox-btn dropdown-toggle d-inline-flex align-items-center gap-2" type="button" id="langDropdownMobile" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="<?= htmlspecialchars($currentLangInfo['flag']) ?>" alt="<?= htmlspecialchars($currentLangInfo['short']) ?>" class="lang-flag-current">
+                                <span class="lang-name-current fw-bold"><?= htmlspecialchars($currentLangInfo['short']) ?></span>
+                                <i class="bi bi-chevron-down lang-chevron"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end lang-dropdown-menu shadow-lg border-0 py-2" aria-labelledby="langDropdownMobile">
+                                <?php foreach ($supportedLanguages as $code => $langInfo): ?>
+                                    <li>
+                                        <a class="dropdown-item lang-dropdown-item d-flex align-items-center gap-2 px-3 py-2 <?= $currentLang === $code ? 'active-lang' : '' ?>" href="<?= htmlspecialchars(get_lang_switch_url($code)) ?>">
+                                            <img src="<?= htmlspecialchars($langInfo['flag']) ?>" alt="<?= htmlspecialchars($langInfo['short']) ?>" class="lang-flag-item">
+                                            <span class="lang-name-text"><?= htmlspecialchars($langInfo['name']) ?></span>
+                                            <?php if ($currentLang === $code): ?>
+                                                <i class="bi bi-check-circle-fill text-success ms-auto"></i>
+                                            <?php else: ?>
+                                                <span class="badge bg-light text-muted border ms-auto small"><?= htmlspecialchars($langInfo['short']) ?></span>
+                                            <?php endif; ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
                         </div>
                     </div>
                 </li>

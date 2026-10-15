@@ -78,10 +78,29 @@ function is_section_active($page, $section_key, $default = true) {
  */
 function get_section_val($page, $section_key, $field, $default = '') {
     $sections = get_page_sections($page);
+    $val = '';
     if (isset($sections[$section_key]) && isset($sections[$section_key][$field]) && $sections[$section_key][$field] !== '' && $sections[$section_key][$field] !== null) {
-        return $sections[$section_key][$field];
+        $val = $sections[$section_key][$field];
+    } else {
+        $val = $default;
     }
-    return $default;
+
+    // Multilingual Translation Support across EN, JA, ZH, KO
+    if (function_exists('current_lang') && current_lang() !== 'id' && function_exists('__')) {
+        $transKey = $section_key . '_' . $field;
+        $t = __($transKey, null);
+        if ($t !== null && $t !== $transKey) {
+            return $t;
+        }
+        if (is_string($val) && strlen($val) < 255) {
+            $tVal = __($val, null);
+            if ($tVal !== null && $tVal !== $val) {
+                return $tVal;
+            }
+        }
+    }
+
+    return $val;
 }
 
 /**
@@ -93,11 +112,11 @@ function get_section_val($page, $section_key, $field, $default = '') {
  */
 function resolve_image_path($path, $folder = "") {
     $path = trim((string)$path);
-    if ($path === "") return "";
+    if ($path === "") return "assets/img/placeholder.svg";
     if (filter_var($path, FILTER_VALIDATE_URL)) return $path;
-    if (strpos($path, "uploads/") === 0) return $path;
-    if ($folder !== "") return rtrim($folder, "/") . "/" . basename($path);
-    return $path;
+    if (strpos($path, "uploads/") === 0) return safe_image_url($path);
+    if ($folder !== "") return safe_image_url(rtrim($folder, "/") . "/" . basename($path));
+    return safe_image_url($path);
 }
 
 /**
@@ -144,6 +163,18 @@ function get_section_items($section_key, $onlyActive = true, $resetCache = false
                             $row['extra'] = $decoded;
                         }
                     }
+                    if (function_exists('current_lang') && current_lang() !== 'id' && function_exists('__')) {
+                        $itemTitleKey = ($row['item_key'] ?? '') . '_title';
+                        $tTitle = __($itemTitleKey, null);
+                        if ($tTitle !== null && $tTitle !== $itemTitleKey) {
+                            $row['title'] = $tTitle;
+                        }
+                        $itemSubKey = ($row['item_key'] ?? '') . '_sub';
+                        $tSub = __($itemSubKey, null);
+                        if ($tSub !== null && $tSub !== $itemSubKey) {
+                            $row['subtitle'] = $tSub;
+                        }
+                    }
                     $cachedSectionItems[$cacheKey][] = $row;
                 }
                 $stmt->close();
@@ -169,4 +200,111 @@ function clear_section_items_cache($section_key = null) {
 function sec_items($section_key) {
     return get_section_items($section_key, true);
 }
+
+/**
+ * Standardized Secure File Upload Helper
+ *
+ * @param array $fileArray $_FILES['key']
+ * @param string $targetSubdir e.g. 'products', 'news', 'certifications'
+ * @param string $prefix File name prefix
+ * @param int $maxBytes Max file size (default 5MB)
+ * @param array $allowedExts Whitelist of allowed extensions
+ * @return array ['success' => bool, 'path' => string, 'error' => string]
+ */
+function cms_upload_image($fileArray, $targetSubdir, $prefix = 'img_', $maxBytes = 5242880, $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'svg']) {
+    if (!isset($fileArray) || !is_array($fileArray)) {
+        return ['success' => false, 'error' => 'Data file tidak valid.'];
+    }
+
+    $error = $fileArray['error'] ?? UPLOAD_ERR_NO_FILE;
+    if ($error === UPLOAD_ERR_NO_FILE) {
+        return ['success' => false, 'error' => 'Tidak ada file yang dipilih.'];
+    }
+    if ($error !== UPLOAD_ERR_OK) {
+        return ['success' => false, 'error' => 'Kode error upload file: ' . $error];
+    }
+
+    $tmpName = $fileArray['tmp_name'];
+    if (!is_uploaded_file($tmpName)) {
+        return ['success' => false, 'error' => 'File bukan merupakan file upload HTTP yang sah.'];
+    }
+
+    // Size validation
+    $size = (int)($fileArray['size'] ?? 0);
+    if ($size <= 0 || $size > $maxBytes) {
+        $mb = round($maxBytes / 1048576, 1);
+        return ['success' => false, 'error' => "Ukuran file melebihi batas maksimal ({$mb} MB)."];
+    }
+
+    // Extension validation
+    $ext = strtolower(pathinfo($fileArray['name'] ?? '', PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowedExts, true)) {
+        return ['success' => false, 'error' => 'Format file tidak diizinkan. Gunakan: ' . implode(', ', $allowedExts)];
+    }
+
+    // Content & MIME inspection
+    if ($ext === 'svg') {
+        $svgContent = @file_get_contents($tmpName);
+        if ($svgContent === false || stripos($svgContent, '<svg') === false) {
+            return ['success' => false, 'error' => 'File SVG tidak valid.'];
+        }
+        // Basic SVG sanitize check: prevent embedded scripts or event handlers
+        if (preg_match('/<script|onload=|onerror=|onclick=/i', $svgContent)) {
+            return ['success' => false, 'error' => 'File SVG mengandung skrip yang tidak aman.'];
+        }
+    } else {
+        $imgInfo = @getimagesize($tmpName);
+        if ($imgInfo === false) {
+            return ['success' => false, 'error' => 'File yang diupload bukan gambar bitmap yang valid.'];
+        }
+    }
+
+    // Target directory resolution
+    $cleanSubdir = trim(str_replace(['..', '/', '\\'], '', $targetSubdir));
+    $baseUploadDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . $cleanSubdir . DIRECTORY_SEPARATOR;
+
+    if (!is_dir($baseUploadDir)) {
+        if (!@mkdir($baseUploadDir, 0755, true)) {
+            return ['success' => false, 'error' => 'Gagal membuat direktori upload: ' . $cleanSubdir];
+        }
+    }
+
+    if (!is_writable($baseUploadDir)) {
+        return ['success' => false, 'error' => 'Direktori upload tidak memiliki izin tulis: ' . $cleanSubdir];
+    }
+
+    // Unique random filename
+    $filename = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $destination = $baseUploadDir . $filename;
+
+    if (!move_uploaded_file($tmpName, $destination)) {
+        return ['success' => false, 'error' => 'Gagal memindahkan file upload ke tujuan akhir.'];
+    }
+
+    $relativePath = 'uploads/' . $cleanSubdir . '/' . $filename;
+    return ['success' => true, 'path' => $relativePath, 'error' => ''];
+}
+
+/**
+ * Fallback-safe image URL resolver
+ *
+ * @param string|null $path
+ * @param string $fallback
+ * @return string
+ */
+function safe_image_url($path, $fallback = 'assets/img/placeholder.svg') {
+    if (empty($path)) {
+        return $fallback;
+    }
+    if (strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0 || strpos($path, 'data:') === 0) {
+        return $path;
+    }
+    $root = dirname(__DIR__) . DIRECTORY_SEPARATOR;
+    $localFile = $root . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, ltrim($path, '/\\'));
+    if (file_exists($localFile)) {
+        return $path;
+    }
+    return $fallback;
+}
+
 

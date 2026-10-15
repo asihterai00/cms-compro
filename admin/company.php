@@ -3,6 +3,8 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('company', 'read');
+
 $success = "";
 $error = "";
 
@@ -37,6 +39,8 @@ if (!$company) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    require_csrf();
+    require_permission('company', 'update');
 
     $company_name = trim(
         $_POST["company_name"] ?? ""
@@ -88,89 +92,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (
             isset($_FILES["logo"]) &&
-            $_FILES["logo"]["error"] === UPLOAD_ERR_OK
+            $_FILES["logo"]["error"] !== UPLOAD_ERR_NO_FILE
         ) {
-
-            $allowed = [
-                "jpg",
-                "jpeg",
-                "png",
-                "webp",
-                "svg"
-            ];
-
-            $extension = strtolower(
-                pathinfo(
-                    $_FILES["logo"]["name"],
-                    PATHINFO_EXTENSION
-                )
-            );
-
-            if (!in_array(
-                $extension,
-                $allowed,
-                true
-            )) {
-
-                $error =
-                    "Format logo tidak didukung.";
-
-            } elseif (
-                $_FILES["logo"]["size"]
-                > 2 * 1024 * 1024
-            ) {
-
-                $error =
-                    "Ukuran logo maksimal 2 MB.";
-
+            $upRes = cms_upload_image($_FILES["logo"], "company", "logo_", 2097152);
+            if ($upRes["success"]) {
+                $logo = basename($upRes["path"]);
             } else {
-
-                $filename =
-                    "logo_" .
-                    time() .
-                    "." .
-                    $extension;
-
-                $uploadDir =
-                    __DIR__ .
-                    "/../uploads/company/";
-
-                if (!is_dir($uploadDir)) {
-
-                    mkdir(
-                        $uploadDir,
-                        0755,
-                        true
-                    );
-                }
-
-                if (!is_writable($uploadDir)) {
-
-                    $error =
-                        "Folder upload logo tidak dapat ditulis. " .
-                        "Periksa permission folder uploads/company.";
-
-                } else {
-
-                    $target =
-                        $uploadDir .
-                        $filename;
-
-                    if (
-                        move_uploaded_file(
-                            $_FILES["logo"]["tmp_name"],
-                            $target
-                        )
-                    ) {
-
-                    $logo = $filename;
-
-                    } else {
-
-                        $error =
-                            "Logo gagal diupload.";
-                    }
-                }
+                $error = $upRes["error"];
             }
         }
 
@@ -270,9 +198,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         href="assets/admin.css"
     >
 
-    <title>
-        Company Profile
-    </title>
+    <title>NPI CMS - Profil Perusahaan | PT Nihon Plast Indonesia</title>
 
 </head>
 
@@ -331,6 +257,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         method="post"
         enctype="multipart/form-data"
     >
+        <?= csrf_field() ?>
 
         <div class="row g-4">
 

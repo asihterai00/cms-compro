@@ -25,7 +25,7 @@ if ($item && !$rows && !empty($item['image'])) {
 <html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title><?= htmlspecialchars($item['title'] ?? __('nav_gallery', 'Galeri Foto')) ?> - <?= htmlspecialchars(__('brand_name', 'PT Nihon Plast Indonesia')) ?></title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars($item['title'] ?? __('nav_gallery', 'Galeri Foto')) ?></title>
     <link rel="stylesheet" href="assets/css/content-clickable.css">
     <style>
         .gallery-photo-card {

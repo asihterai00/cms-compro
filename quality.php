@@ -4,10 +4,10 @@ require_once __DIR__ . "/config/database.php";
 $certList = $conn->query("SELECT * FROM certifications WHERE status = 'active' ORDER BY sort_order ASC, id ASC");
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title>Quality & ISO Certifications - PT Nihon Plast Indonesia</title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_quality', 'Kebijakan Mutu')) ?> & Sertifikasi ISO</title>
     <meta name="description" content="Standar Mutu IATF 16949, ISO 9001, ISO 14001, ISO 45001 / SMK3, dan Kepatuhan Regulasi Pemerintah Indonesia di PT Nihon Plast Indonesia.">
 </head>
 <body>
@@ -103,7 +103,7 @@ $certList = $conn->query("SELECT * FROM certifications WHERE status = 'active' O
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="cert-card-icon d-flex align-items-center justify-content-center p-1">
                                     <?php if (!empty($cert['image'])): ?>
-                                        <img src="<?= htmlspecialchars($cert['image']) ?>" alt="<?= htmlspecialchars($cert['name']) ?>" style="width: 100%; height: 100%; object-fit: contain;">
+                                        <img src="<?= htmlspecialchars(safe_image_url($cert['image'])) ?>" alt="<?= htmlspecialchars($cert['name']) ?>" style="width: 100%; height: 100%; object-fit: contain;">
                                     <?php else: ?>
                                         <i class="bi bi-award"></i>
                                     <?php endif; ?>

@@ -15,10 +15,10 @@ if ($categoryFilter !== "") {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title>Lini Produk & Sistem Komponen Otomotif - PT Nihon Plast Indonesia</title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_products', 'Katalog Produk')) ?> & Sistem Komponen Otomotif</title>
     <link rel="stylesheet" href="assets/css/content-clickable.css">
     <style>
         .product-filter-btn {

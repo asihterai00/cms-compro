@@ -14,7 +14,7 @@ if ($machineryQuery) {
 <html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title><?= htmlspecialchars(__('nav_facility', 'Fasilitas & Teknologi')) ?> - <?= htmlspecialchars(__('brand_name', 'PT Nihon Plast Indonesia')) ?></title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_facility', 'Fasilitas & Teknologi')) ?> & Mesin Presisi</title>
     <meta name="description" content="<?= htmlspecialchars(get_section_val('facility', 'facility_plant_overview', 'subtitle', 'Fasilitas manufaktur presisi tinggi berstandar IATF 16949 di Kawasan Industri Cikampek, Karawang.')) ?>">
 </head>
 <body>

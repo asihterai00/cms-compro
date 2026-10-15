@@ -9,6 +9,7 @@ $error = "";
 
 // 1. Handle Quick 1-Click Toggle Active / Inactive
 if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])) {
+    require_csrf();
     if (!has_permission('site_sections', 'update')) {
         $_SESSION['flash_error'] = "Anda tidak memiliki izin untuk mengubah status elemen.";
     } else {
@@ -27,6 +28,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])
 
 // 2. Handle Delete Section
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+    require_csrf();
     require_permission('site_sections', 'delete');
     $id = (int)$_GET['id'];
     $stmt = $conn->prepare("SELECT image, bg_image FROM site_sections WHERE id = ?");
@@ -83,6 +85,7 @@ if ($editId > 0) {
 
 // 4. Handle POST Form Submission (Create or Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $id = (int)($_POST['id'] ?? 0);
     $page = trim($_POST['page'] ?? 'home');
     $sectionKey = trim($_POST['section_key'] ?? '');
@@ -251,7 +254,7 @@ $pageLabels = [
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Dynamic CMS Elements - All Pages - Admin</title>
+    <title>NPI CMS - Elemen Halaman Dinamis | PT Nihon Plast Indonesia</title>
     <style>
         .badge-active { background-color: #005A36; color: #FFFFFF; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 50px; font-size: 0.75rem; }
         .badge-inactive { background-color: #64748b; color: #FFFFFF; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 50px; font-size: 0.75rem; }
@@ -379,6 +382,7 @@ $pageLabels = [
             </div>
             <div class="card-body p-4">
                 <form method="post" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= (int)($editRow['id'] ?? 0) ?>">
                     <input type="hidden" name="existing_image" value="<?= htmlspecialchars($editRow['image'] ?? '') ?>">
                     <input type="hidden" name="existing_bg_image" value="<?= htmlspecialchars($editRow['bg_image'] ?? '') ?>">
@@ -583,35 +587,43 @@ $pageLabels = [
                                     </td>
                                     <td>
                                         <!-- 1-Click Quick Toggle -->
-                                        <a href="site_sections.php?action=toggle&id=<?= (int)$s['id'] ?>&page=<?= urlencode($filterPage) ?>" 
-                                           class="text-decoration-none d-inline-block" 
-                                           title="Klik untuk mengubah status aktif/nonaktif">
-                                            <?php if ($s['is_active']): ?>
-                                                <span class="badge-active d-inline-flex align-items-center gap-1">
-                                                    <i class="bi bi-check-circle-fill"></i> ACTIVE
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="badge-inactive d-inline-flex align-items-center gap-1">
-                                                    <i class="bi bi-eye-slash-fill"></i> NOT ACTIVE
-                                                </span>
-                                            <?php endif; ?>
-                                        </a>
+                                        <?php if (has_permission('site_sections', 'update')): ?>
+                                            <a href="<?= csrf_url('site_sections.php?action=toggle&id=' . (int)$s['id'] . '&page=' . urlencode($filterPage)) ?>" 
+                                               class="text-decoration-none d-inline-block" 
+                                               title="Klik untuk mengubah status aktif/nonaktif">
+                                                <?php if ($s['is_active']): ?>
+                                                    <span class="badge-active d-inline-flex align-items-center gap-1">
+                                                        <i class="bi bi-check-circle-fill"></i> ACTIVE
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="badge-inactive d-inline-flex align-items-center gap-1">
+                                                        <i class="bi bi-eye-slash-fill"></i> NOT ACTIVE
+                                                    </span>
+                                                <?php endif; ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="<?= $s['is_active'] ? 'badge-active' : 'badge-inactive' ?> d-inline-flex align-items-center gap-1">
+                                                <?= $s['is_active'] ? 'ACTIVE' : 'NOT ACTIVE' ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-end pe-3">
                                         <div class="btn-group btn-group-sm">
                                             <!-- Quick Toggle Button -->
-                                            <a href="site_sections.php?action=toggle&id=<?= (int)$s['id'] ?>&page=<?= urlencode($filterPage) ?>" 
-                                               class="btn <?= $s['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" 
-                                               title="<?= $s['is_active'] ? 'Nonaktifkan elemen ini' : 'Aktifkan elemen ini' ?>">
-                                                <i class="bi <?= $s['is_active'] ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
-                                            </a>
+                                            <?php if (has_permission('site_sections', 'update')): ?>
+                                                <a href="<?= csrf_url('site_sections.php?action=toggle&id=' . (int)$s['id'] . '&page=' . urlencode($filterPage)) ?>" 
+                                                   class="btn <?= $s['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" 
+                                                   title="<?= $s['is_active'] ? 'Nonaktifkan elemen ini' : 'Aktifkan elemen ini' ?>">
+                                                    <i class="bi <?= $s['is_active'] ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
+                                                </a>
+                                            <?php endif; ?>
                                             <!-- Edit Button -->
                                             <a href="site_sections.php?edit=<?= (int)$s['id'] ?>&page=<?= urlencode($filterPage) ?>#formSection" class="btn btn-outline-primary" title="Edit konten elemen ini">
                                                 <i class="bi bi-pencil"></i> Edit
                                             </a>
                                             <!-- Delete Button -->
                                             <?php if (has_permission('site_sections', 'delete')): ?>
-                                                <a href="site_sections.php?action=delete&id=<?= (int)$s['id'] ?>&page=<?= urlencode($filterPage) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus elemen <?= htmlspecialchars($s['section_name']) ?>?')">
+                                                <a href="<?= csrf_url('site_sections.php?action=delete&id=' . (int)$s['id'] . '&page=' . urlencode($filterPage)) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus elemen <?= htmlspecialchars($s['section_name']) ?>?')">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
                                             <?php endif; ?>

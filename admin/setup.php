@@ -14,7 +14,7 @@ if ((int)($row['total'] ?? 0) > 0) {
 $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
+    require_csrf();
     $username = trim($_POST["username"] ?? "");
     $password = $_POST["password"] ?? "";
 
@@ -69,9 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <?php include __DIR__ . "/../includes/head.php"; ?>
 
-    <title>
-        Setup Admin
-    </title>
+    <title>NPI CMS - Inisialisasi Akun | PT Nihon Plast Indonesia</title>
 
 </head>
 
@@ -100,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <?php endif; ?>
 
                     <form method="post">
-
+                        <?= csrf_field() ?>
                         <div class="mb-3">
 
                             <label class="form-label">

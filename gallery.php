@@ -66,7 +66,7 @@ if ($galleryItems) {
 <html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title><?= htmlspecialchars(__('nav_gallery', 'Galeri Foto')) ?> - <?= htmlspecialchars(__('brand_name', 'PT Nihon Plast Indonesia')) ?></title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_gallery', 'Galeri Foto')) ?> & Dokumentasi Pabrik</title>
     <link rel="stylesheet" href="assets/css/content-clickable.css">
     <style>
         .gallery-modal-card-trigger { cursor: pointer; }
@@ -142,7 +142,7 @@ if ($galleryItems) {
                                 </h2>
                                 <span class="text-muted small mb-3"><?= (int)$item['count'] ?> <?= htmlspecialchars(__('specifications', 'Foto Presisi')) ?></span>
                                 <div class="mt-auto">
-                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill gallery-modal-card-trigger"
+                                    <button type="button" class="btn btn-outline-success btn-sm rounded-pill gallery-modal-card-trigger"
                                         data-gallery-open-content="<?= $item['id'] ?>">
                                         <?= htmlspecialchars(__('read_more', 'Buka Galeri')) ?> →
                                     </button>

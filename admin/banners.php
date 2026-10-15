@@ -2,6 +2,8 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('banners', 'read');
+
 $conn->query("
     CREATE TABLE IF NOT EXISTS page_banners (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -39,6 +41,9 @@ $success = "";
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    require_csrf();
+    require_permission('banners', 'update');
+
     $key = $_POST["page_key"] ?? "";
     $title = trim($_POST["page_title"] ?? "");
     $subtitle = trim($_POST["subtitle"] ?? "");
@@ -56,49 +61,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $old = $stmt->get_result()->fetch_assoc();
         $image = $old["image"] ?? "";
 
-        $uploadError = $_FILES["banner_image"]["error"] ?? UPLOAD_ERR_NO_FILE;
-
-        if ($uploadError !== UPLOAD_ERR_NO_FILE) {
-            if ($uploadError !== UPLOAD_ERR_OK) {
-                $errorMessages = [
-                    UPLOAD_ERR_INI_SIZE => "Ukuran file melebihi batas upload_max_filesize pada php.ini.",
-                    UPLOAD_ERR_FORM_SIZE => "Ukuran file melebihi batas form.",
-                    UPLOAD_ERR_PARTIAL => "File hanya terupload sebagian. Coba upload ulang.",
-                    UPLOAD_ERR_NO_TMP_DIR => "Folder temporary PHP tidak ditemukan.",
-                    UPLOAD_ERR_CANT_WRITE => "PHP gagal menulis file temporary. Periksa izin folder.",
-                    UPLOAD_ERR_EXTENSION => "Upload dihentikan oleh ekstensi PHP."
-                ];
-                $error = $errorMessages[$uploadError] ?? "Upload gagal dengan kode error " . $uploadError . ".";
+        if (isset($_FILES["banner_image"]) && $_FILES["banner_image"]["error"] !== UPLOAD_ERR_NO_FILE) {
+            $upResult = cms_upload_image($_FILES["banner_image"], "pages", "banner_" . $key . "_");
+            if ($upResult["success"]) {
+                $image = $upResult["path"];
             } else {
-                $tmp = $_FILES["banner_image"]["tmp_name"];
-                $ext = strtolower(pathinfo($_FILES["banner_image"]["name"], PATHINFO_EXTENSION));
-                $allowed = ["jpg", "jpeg", "png", "webp"];
-                $size = (int) $_FILES["banner_image"]["size"];
-                $validImage = @getimagesize($tmp);
-
-                if (!in_array($ext, $allowed, true) || !$validImage) {
-                    $error = "Pilih file gambar JPG, PNG, atau WEBP yang valid.";
-                } elseif ($size > 5 * 1024 * 1024) {
-                    $error = "Ukuran gambar maksimal 5 MB.";
-                } else {
-                    $relativeDir = "uploads/pages/";
-                    $absoluteDir = __DIR__ . "/../uploads/pages/";
-
-                    if (!is_dir($absoluteDir) && !mkdir($absoluteDir, 0755, true)) {
-                        $error = "Folder uploads/pages gagal dibuat.";
-                    } elseif (!is_writable($absoluteDir)) {
-                        $error = "Folder uploads/pages tidak dapat ditulis. Periksa izin folder.";
-                    } else {
-                        $filename = "banner_" . $key . "_" . date("Ymd_His") . "_" . mt_rand(1000, 9999) . "." . $ext;
-                        $destination = $absoluteDir . $filename;
-
-                        if (move_uploaded_file($tmp, $destination)) {
-                            $image = $relativeDir . $filename;
-                        } else {
-                            $error = "File gagal dipindahkan ke uploads/pages. Periksa folder dan izin tulis.";
-                        }
-                    }
-                }
+                $error = $upResult["error"];
             }
         }
 
@@ -109,11 +77,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                  WHERE page_key = ?"
             );
             $stmt->bind_param("ssss", $title, $subtitle, $image, $key);
-
             if ($stmt->execute()) {
-                $success = "Banner berhasil disimpan.";
+                $success = "Banner halaman berhasil diperbarui.";
             } else {
-                $error = "Database gagal menyimpan banner: " . $conn->error;
+                $error = "Gagal memperbarui banner: " . $conn->error;
             }
         }
     }
@@ -137,7 +104,7 @@ $all = $conn->query("SELECT * FROM page_banners ORDER BY id ASC");
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Page Banner Management</title>
+    <title>NPI CMS - Banners | PT Nihon Plast Indonesia</title>
 </head>
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
@@ -179,6 +146,7 @@ $all = $conn->query("SELECT * FROM page_banners ORDER BY id ASC");
                 <h4 class="mb-4">Edit Banner: <?= htmlspecialchars($pages[$selected][0]) ?></h4>
 
                 <form method="post" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="page_key" value="<?= htmlspecialchars($selected) ?>">
 
                     <div class="mb-3">

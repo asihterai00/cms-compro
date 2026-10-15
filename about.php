@@ -8,7 +8,7 @@ $company = $result ? $result->fetch_assoc() : [];
 <html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title><?= htmlspecialchars(__('nav_about', 'Tentang Kami')) ?> - <?= htmlspecialchars($company["company_name"] ?? __('brand_name', 'PT Nihon Plast Indonesia')) ?></title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_about', 'Tentang Kami')) ?> & Profil Perusahaan</title>
     <meta name="description" content="<?= htmlspecialchars(get_section_val('about', 'about_dna', 'subtitle', 'PT Nihon Plast Indonesia - Tier-1 Global Automotive Supplier berspesialisasi dalam Roda Kemudi, Modul Airbag, dan Komponen Resin.')) ?>">
 </head>
 <body>

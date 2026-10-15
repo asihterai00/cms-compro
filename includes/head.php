@@ -1,5 +1,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<?php
+$headAssetPrefix = (isset($is_admin) && $is_admin) || (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/admin/') !== false) ? '../' : '';
+?>
+<!-- Favicon & Touch Icons (NPI Emerald Monozukuri Edition) -->
+<link rel="icon" type="image/svg+xml" href="<?= $headAssetPrefix ?>assets/img/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="<?= $headAssetPrefix ?>assets/img/favicon.png?v=2">
+<link rel="alternate icon" type="image/png" sizes="32x32" href="<?= $headAssetPrefix ?>assets/img/favicon.png?v=2">
+<link rel="shortcut icon" href="<?= $headAssetPrefix ?>favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="<?= $headAssetPrefix ?>assets/img/apple-touch-icon.png?v=2">
 <!-- Google Fonts: Plus Jakarta Sans for Japanese precision automotive look -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -1,7 +1,7 @@
 # 🧠 CMS Company Profile - Project Memory Bank
 
 > Auto-exported from MySQL Database `db_cms_compro.project_memory`
-> Generated on: 2026-10-14 09:50:56
+> Generated on: 2026-10-15 09:57:49
 
 
 ## 📂 Category: ARCHITECTURE
@@ -66,6 +66,61 @@ Migrated all static HTML cards and lists to site_section_items table (77 dynamic
 - **Author:** antigravity-ai
 
 Modernized the UI architecture by eliminating clustered nav wrapping (strict white-space: nowrap with utility topbar and fluid container), integrating Swiper 11 hero carousel with dynamic HUD cards, horizontal progress bar and slide counter, continuous linear OEM marquee ticker, ambient automotive canvas particle motion, SweetAlert2 modal and toast feedback, and AOS (Animate on Scroll) animations. 100% Free & Open Source without third-party paid dependencies.
+
+---
+
+### #21 - MCP Filesystem Server, DB Indexing &amp; Apache Performance Caching
+- **Recorded At:** 2026-10-15 14:02:56
+- **Author:** antigravity-ai
+
+Installed @modelcontextprotocol/server-filesystem and configured it in mcp_config.json for fast direct codebase operations. Created composite index idx_section_active_sort on site_section_items and idx_created_at on products for sub-millisecond queries. Created production-grade .htaccess with Gzip compression, browser caching headers, and security headers.
+
+---
+
+### #22 - Engineering Documentation (PRD, Architecture, Roadmap) &amp; Specialized Subagent Squad
+- **Recorded At:** 2026-10-15 14:08:45
+- **Author:** antigravity-ai
+
+Established comprehensive engineering documentation in docs/ (PRD.md, ARCHITECTURE.md, ROADMAP.md) to keep project goals crystal clear and prevent scope creep. Defined specialized Antigravity subagents (ui-ux-designer, backend-architect, security-qa-auditor) with dedicated system prompts and runbooks in docs/agents/ to optimize ongoing development.
+
+---
+
+### #24 - Streamlined Automotive B2B Homepage Hierarchy, Image 500 Fix, and High-Contrast UI Overhaul
+- **Recorded At:** 2026-10-15 15:55:23
+- **Author:** antigravity-ai
+
+Resolved UI/UX issues and performance bottlenecks reported by user:
+1. Root Cause of Broken Images: Fixed uploads/.htaccess which was throwing Apache 500 error ('Invalid command Order'). Migrated to native Apache 2.4 directives (Require all granted / Require all denied). All images and SVGs now return HTTP 200 OK instantly.
+2. Root Cause of Dark-on-Dark Hero Text: Overcame CSS specificity where .hero-corporate h1 forced dark navy text (#0F172A) on dark hero background. Enforced pure white (#FFFFFF !important) with soft drop shadow and crisp emerald/slate accents.
+3. Streamlined B2B Customer-Centric Section Flow: Replaced bloated 11-section layout with focused 8-stage customer journey (Hero -> OEM Trust & Stats -> Core Products -> Manufacturing Facility -> Certifications -> Company Profile -> Compact News -> B2B RFQ CTA).
+4. Bloat Elimination: Disabled broken vehicle hotspot widget, removed missing plant_tour.mp4 video tag, removed duplicate OEM marquee, reducing page weight and eliminating network stalls.
+5. Verification: All 26 dynamic CMS unit tests pass, comprehensive audit reports 0 issues.
+
+---
+
+### #25 - Favicon Suite Multi-Platform &amp; Standardisasi Judul Halaman NPI
+- **Recorded At:** 2026-10-15 16:18:36
+- **Author:** antigravity-ai
+- **Metadata:** `{"author":"antigravity-ai","status":"completed","endpoints_verified":7,"pages_standardized":25}`
+
+Implementasi lengkap favicon multi-platform (SVG, PNG 64x64/32x32, ICO, Apple Touch Icon) bertema Emerald Monozukuri NPI (#005A36). Dideploy ke root server C:/Devaron/www/, root proyek C:/Devaron/www/cms-compro/, admin/assets/img/, dan admin/. Diperkuat dengan cache busting ?v=2 dan deteksi asset prefix pada includes/head.php (100% HTTP 200 OK di semua endpoint). Standardisasi seluruh judul halaman publik (12 halaman) dan admin (13 halaman) dengan prefiks 'NPI - PT Nihon Plast Indonesia | [Nama Halaman]' dan 'NPI CMS - [Menu] | PT Nihon Plast Indonesia' sehingga identitas tab browser selalu jelas. Hardening resolve_image_path() untuk otomatis membungkus fallback safe_image_url(). 26/26 dynamic test suite dan 78 PHP syntax passed dengan 0 isu.
+
+---
+
+### #26 - Pemberantasan PHP Warning Banner, Redesain Page Banner &amp; UI/UX Elevasi Seluruh Halaman
+- **Recorded At:** 2026-10-15 16:45:03
+- **Author:** antigravity-ai
+- **Metadata:** `{"author":"antigravity-ai","status":"completed","zero_warnings_passed":12,"dynamic_tests_passed":26}`
+
+Menuntaskan akar masalah teks acak PHP Warning yang mencemari tata letak di bawah navbar pada tangkapan layar multi-halaman. Memperbaiki includes/page_banner.php sehingga variabel $bannerImage selalu terdefinisi dengan fallback valid. Menguji seluruh 12 halaman publik via scripts/test_zero_warnings.php (100% bebas dari segala PHP Warning/Notice/Deprecated). Melakukan redesain total pada page banner dengan breadcrumb navigation, badge Tier-1 OEM, precision technical grid texture, dan HUD Card kredibilitas manufaktur Cikampek. Menyelaraskan seluruh warna tombol sekunder ke tema resmi Forest Green (#005A36).
+
+---
+
+### #27 - Single-Flag Combobox Language Switcher and Full Multilingual Audit Across All 12 Public Pages
+- **Recorded At:** 2026-10-15 16:57:36
+- **Author:** antigravity-ai
+
+1. Generated 5 official 4:3 vector SVG flags in assets/img/flags/ (id, en, ja, zh, ko). 2. Replaced the 5 exposed language buttons with a sleek Single-Flag Combobox in navbar.php & modern-dribbble.css showing only active flag and code on the header, expanding to a soft-shadow dropdown with native labels and active indicators. 3. Fixed undefined supportedLanguages variable in navbar.php. 4. Updated 7 public pages from static lang=id to dynamic get_html_lang(). 5. Automated test scripts/test_all_languages_and_pages.php passed 60/60 scenarios (12 pages x 5 languages). 6. Comprehensive audit verified 76 files with 0 syntax errors and 0 security vulnerabilities.
 
 ---
 
@@ -170,6 +225,14 @@ Local environment specifications:
 
 ---
 
+### #20 - Devaron Web Environment Realignment &amp; PHP Runtime Fix
+- **Recorded At:** 2026-10-15 14:02:48
+- **Author:** antigravity-ai
+
+Identified and corrected local web server environment from C:\laragon to C:\Devaron\www\cms-compro. Fixed php.ini extension_dir, session.save_path, and error_log paths in C:\Devaron\bin\php\php-8.3.30\php.ini to eliminate all PHP startup warnings. Created C:\Devaron\tmp for sessions.
+
+---
+
 
 ## 📂 Category: FINDINGS
 
@@ -200,6 +263,28 @@ Comprehensive benchmark of Nihon Plast Co., Ltd. (Japan - n-plast.co.jp) and 202
 - **Author:** antigravity-ai
 
 Benchmarked key Tier-1 interior and safety competitors: Japan (Toyoda Gosei, Tokai Rika, Ashimori), Indonesia (PT TGSSI, PT Astra Sugity, PT Kasai Teck See), China (Yanfeng, Joyson Safety), Korea (Hyundai Mobis, Seoyon E-Hwa). Identified 8 critical feature gaps: 1. Interactive Vehicle Zone Component Explorer; 2. Technical Machinery & Injection Tonnage Matrix; 3. ISO/IATF 16949 & TKDN Public Verification Hub; 4. OEM Customer Trust & Awards Showcase; 5. In-house Safety Testing & CMM Lab Specs; 6. Green Monozukuri & Recycled Resin ESG Roadmap; 7. B2B RFQ / Company Profile PDF Download; 8. Dual Language (ID/EN) Switcher.
+
+---
+
+
+## 📂 Category: SECURITY
+
+### #23 - Full Codebase Security Hardening, Bug Fixes &amp; Robustness Engineering
+- **Recorded At:** 2026-10-15 14:53:53
+- **Author:** antigravity-ai
+
+Comprehensive bug audit, security fixes, and robustness engineering across the PT Nihon Plast Indonesia CMS:
+1. Automated Security Audit Engine: Built scripts/comprehensive_audit.php covering syntax, php.ini paths, obsolete runtime paths, RBAC enforcement, CSRF coverage, SQL injection detection, and file upload safety.
+2. PHP Runtime Remediation: Fixed php.ini include_path, sendmail_path, and provisioned SSL CA bundle at C:/Devaron/etc/ssl/cacert.pem.
+3. RCE Prevention: Hardened uploads/.htaccess to completely disable PHP engine, remove CGI handlers, and block all executable extensions.
+4. Centralized CSRF Protection: Built includes/csrf.php providing crypto-secure random_bytes(32) tokens, csrf_field(), csrf_url(), require_csrf(), and verify_csrf() integrated into all forms and state-mutating links.
+5. Database Resilience & .env: Native .env parsing with graceful 503 maintenance fallback without credential exposure.
+6. Centralized Media Uploads: Built cms_upload_image() with extension whitelist, getimagesize() bitmap verification, SVG script stripping, and safe_image_url() with automotive placeholder fallback.
+7. Fixed SQL Injection: Parameterized prepared statement in admin/users.php edit fetch.
+8. Auth Security: Added session_regenerate_id() and brute force throttling in admin/login.php.
+9. RBAC & CSRF Protection across all 13 Admin Modules: Enforced require_permission() and CSRF verification across all admin pages.
+10. Public RFQ Hardening: contact.php protected with CSRF, anti-bot honeypot, time-trap, and flood rate-limiting.
+11. Verification: All 26 dynamic CMS tests pass, all RBAC tests pass, and comprehensive audit reports 0 issues across all 76 PHP files.
 
 ---
 

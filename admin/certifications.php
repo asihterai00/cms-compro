@@ -2,12 +2,17 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('certifications', 'read');
+
 $editItem = null;
 $message = "";
 $error = "";
 
 // Handle Delete
 if (isset($_GET["delete"])) {
+    require_csrf();
+    require_permission('certifications', 'delete');
+
     $id = (int)$_GET["delete"];
     $stmt = $conn->prepare("SELECT image FROM certifications WHERE id = ?");
     $stmt->bind_param("i", $id);
@@ -38,7 +43,15 @@ if (isset($_GET["edit"])) {
 
 // Handle Form Submit (Insert / Update)
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    require_csrf();
+
     $id = (int)($_POST["id"] ?? 0);
+    if ($id > 0) {
+        require_permission('certifications', 'update');
+    } else {
+        require_permission('certifications', 'create');
+    }
+
     $name = trim($_POST["name"] ?? "");
     $category = trim($_POST["category"] ?? "Automotive & Quality");
     $certificateNumber = trim($_POST["certificate_number"] ?? "");
@@ -56,25 +69,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Nama sertifikasi wajib diisi.";
     } else {
         // Handle file upload
-        if (isset($_FILES["image_file"]) && $_FILES["image_file"]["error"] === UPLOAD_ERR_OK) {
-            $allowedMimes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
-            $fileType = mime_content_type($_FILES["image_file"]["tmp_name"]);
-
-            if (in_array($fileType, $allowedMimes, true) || str_ends_with(strtolower($_FILES["image_file"]["name"]), '.svg')) {
-                $ext = strtolower(pathinfo($_FILES["image_file"]["name"], PATHINFO_EXTENSION));
-                $newFilename = "cert_" . uniqid() . "." . $ext;
-                $uploadDir = __DIR__ . "/../uploads/certifications/";
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                $dest = $uploadDir . $newFilename;
-                if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $dest)) {
-                    $image = "uploads/certifications/" . $newFilename;
-                } else {
-                    $error = "Gagal memindahkan file yang diunggah.";
-                }
+        if (isset($_FILES["image_file"]) && $_FILES["image_file"]["error"] !== UPLOAD_ERR_NO_FILE) {
+            $upRes = cms_upload_image($_FILES["image_file"], "certifications", "cert_");
+            if ($upRes["success"]) {
+                $image = $upRes["path"];
             } else {
-                $error = "Format file tidak didukung. Harap unggah file JPG, PNG, WEBP, atau SVG.";
+                $error = $upRes["error"];
             }
         }
 
@@ -108,7 +108,7 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
 <html lang="id">
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
-    <title>Manajemen Sertifikasi & ISO - Admin</title>
+    <title>NPI CMS - Sertifikasi & ISO | PT Nihon Plast Indonesia</title>
     <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body class="admin-body">
@@ -147,6 +147,7 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
             </div>
             <div class="card-body pt-0">
                 <form method="post" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= (int)($editItem['id'] ?? 0) ?>">
                     <input type="hidden" name="old_image" value="<?= htmlspecialchars($editItem['image'] ?? '') ?>">
 
@@ -339,9 +340,11 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
                                             <a href="certifications.php?edit=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-primary" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <a href="certifications.php?delete=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus sertifikasi ini?')" title="Hapus">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
+                                            <?php if (has_permission('certifications', 'delete')): ?>
+                                                <a href="<?= csrf_url('certifications.php?delete=' . (int)$row['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus sertifikasi ini?')" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>

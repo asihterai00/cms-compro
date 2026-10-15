@@ -4,10 +4,10 @@ require_once __DIR__ . "/config/database.php";
 $careers = $conn->query("SELECT * FROM careers ORDER BY id ASC");
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title>Karir & Peluang Kerja - PT Nihon Plast Indonesia</title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars(__('nav_career', 'Karir')) ?> & Peluang Kerja</title>
 </head>
 <body>
 

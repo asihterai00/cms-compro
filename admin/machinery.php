@@ -9,6 +9,7 @@ $error = "";
 
 // 1. Toggle Active
 if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])) {
+    require_csrf();
     if (!has_permission('facility', 'update')) {
         $_SESSION['flash_error'] = "Anda tidak memiliki izin untuk mengubah status mesin.";
     } else {
@@ -25,6 +26,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])
 
 // 2. Delete Machine
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+    require_csrf();
     require_permission('facility', 'delete');
     $id = (int)$_GET['id'];
     $stmt = $conn->prepare("DELETE FROM facility_machinery WHERE id = ?");
@@ -60,6 +62,7 @@ if ($editId > 0) {
 
 // 4. Handle POST Save
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $id = (int)($_POST['id'] ?? 0);
     $category = trim($_POST['category'] ?? '');
     $modelBrand = trim($_POST['model_brand'] ?? '');
@@ -114,7 +117,7 @@ $machineryList = $conn->query("SELECT * FROM facility_machinery ORDER BY sort_or
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Manage Machinery Matrix - Admin</title>
+    <title>NPI CMS - Matriks Mesin & Presisi | PT Nihon Plast Indonesia</title>
 </head>
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
@@ -163,6 +166,7 @@ $machineryList = $conn->query("SELECT * FROM facility_machinery ORDER BY sort_or
             </div>
             <div class="card-body p-4">
                 <form method="post">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= (int)($editRow['id'] ?? 0) ?>">
 
                     <div class="row g-3">
@@ -242,24 +246,32 @@ $machineryList = $conn->query("SELECT * FROM facility_machinery ORDER BY sort_or
                                 <td class="small text-muted"><?= htmlspecialchars($m['application']) ?></td>
                                 <td class="small text-muted"><?= htmlspecialchars($m['automation']) ?></td>
                                 <td>
-                                    <a href="machinery.php?action=toggle&id=<?= (int)$m['id'] ?>" class="text-decoration-none" title="Klik untuk ubah status">
-                                        <?php if ($m['is_active']): ?>
-                                            <span class="badge bg-success rounded-pill px-2 py-1">ACTIVE</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary rounded-pill px-2 py-1">NOT ACTIVE</span>
-                                        <?php endif; ?>
-                                    </a>
+                                    <?php if (has_permission('facility', 'update')): ?>
+                                        <a href="<?= csrf_url('machinery.php?action=toggle&id=' . (int)$m['id']) ?>" class="text-decoration-none" title="Klik untuk ubah status">
+                                            <?php if ($m['is_active']): ?>
+                                                <span class="badge bg-success rounded-pill px-2 py-1">ACTIVE</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary rounded-pill px-2 py-1">NOT ACTIVE</span>
+                                            <?php endif; ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="badge <?= $m['is_active'] ? 'bg-success' : 'bg-secondary' ?> rounded-pill px-2 py-1">
+                                            <?= $m['is_active'] ? 'ACTIVE' : 'NOT ACTIVE' ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="text-end pe-3">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="machinery.php?action=toggle&id=<?= (int)$m['id'] ?>" class="btn <?= $m['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" title="Toggle status">
-                                            <i class="bi <?= $m['is_active'] ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
-                                        </a>
+                                        <?php if (has_permission('facility', 'update')): ?>
+                                            <a href="<?= csrf_url('machinery.php?action=toggle&id=' . (int)$m['id']) ?>" class="btn <?= $m['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" title="Toggle status">
+                                                <i class="bi <?= $m['is_active'] ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
+                                            </a>
+                                        <?php endif; ?>
                                         <a href="machinery.php?edit=<?= (int)$m['id'] ?>#formMachinery" class="btn btn-outline-primary" title="Edit mesin">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <?php if (has_permission('facility', 'delete')): ?>
-                                            <a href="machinery.php?action=delete&id=<?= (int)$m['id'] ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus data mesin ini?')">
+                                            <a href="<?= csrf_url('machinery.php?action=delete&id=' . (int)$m['id']) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus data mesin ini?')">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php endif; ?>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="npiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006A3F" />
+      <stop offset="100%" stop-color="#00351F" />
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+  <!-- Rounded Squircle / Hex Shield -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#npiGrad)" stroke="url(#borderGrad)" stroke-width="2.5" />
+  <!-- Precision Automotive Wheel Arc / Monozukuri Accent -->
+  <path d="M12 16 C 24 10, 40 10, 52 16" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" opacity="0.7" />
+  <!-- NPI Bold Typographic Monogram -->
+  <text x="32" y="40" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="21" letter-spacing="-0.5px">NPI</text>
+  <!-- Precision Bottom Indicator -->
+  <rect x="24" y="47" width="16" height="3" rx="1.5" fill="#10B981" />
+</svg>

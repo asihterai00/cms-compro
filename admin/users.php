@@ -10,6 +10,7 @@ $appMenus = get_app_menus();
 
 // 1. Handle Delete User
 if (isset($_GET["delete"])) {
+    require_csrf();
     require_permission('users', 'delete');
     $id = (int)$_GET["delete"];
 
@@ -50,7 +51,10 @@ if ($editId > 0) {
     $stmt->close();
 
     if ($editUser) {
-        $pRes = $conn->query("SELECT * FROM user_permissions WHERE user_id = {$editId}");
+        $pStmt = $conn->prepare("SELECT * FROM user_permissions WHERE user_id = ?");
+        $pStmt->bind_param("i", $editId);
+        $pStmt->execute();
+        $pRes = $pStmt->get_result();
         while ($p = $pRes->fetch_assoc()) {
             $userPerms[$p['menu_key']] = [
                 'create' => (int)$p['can_create'],
@@ -59,11 +63,13 @@ if ($editId > 0) {
                 'delete' => (int)$p['can_delete'],
             ];
         }
+        $pStmt->close();
     }
 }
 
 // 3. Handle POST: Add or Update User with Granular CRUD Permissions
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    require_csrf();
     $userId = (int)($_POST["user_id"] ?? 0);
     $username = trim($_POST["username"] ?? "");
     $password = $_POST["password"] ?? "";
@@ -165,7 +171,7 @@ $users = $conn->query("SELECT * FROM users ORDER BY id ASC");
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Users & RBAC Authorization - Admin</title>
+    <title>NPI CMS - Manajemen Pengguna & Hak Akses | PT Nihon Plast Indonesia</title>
     <style>
         .role-badge-superadmin { background-color: #7c3aed; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 50px; }
         .role-badge-admin { background-color: #005A36; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 50px; }
@@ -223,6 +229,7 @@ $users = $conn->query("SELECT * FROM users ORDER BY id ASC");
             </div>
             <div class="card-body p-4">
                 <form method="post">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="user_id" value="<?= (int)($editUser['id'] ?? 0) ?>">
 
                     <div class="row g-3">
@@ -416,7 +423,7 @@ $users = $conn->query("SELECT * FROM users ORDER BY id ASC");
                                             <i class="bi bi-pencil me-1"></i> Edit & Izin
                                         </a>
                                         <?php if ((int)$u["id"] !== (int)$_SESSION["admin_id"] && (int)$u["id"] !== 1): ?>
-                                            <a href="users.php?delete=<?= $u["id"] ?>" class="btn btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus user <?= htmlspecialchars($u['username']) ?> beserta izinnya?')">
+                                            <a href="<?= csrf_url('users.php?delete=' . (int)$u["id"]) ?>" class="btn btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus user <?= htmlspecialchars($u['username']) ?> beserta izinnya?')">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php endif; ?>

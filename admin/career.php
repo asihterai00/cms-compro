@@ -3,6 +3,8 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('career', 'read');
+
 $success = "";
 $error = "";
 
@@ -42,9 +44,17 @@ if ($edit_id > 0) {
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+    require_csrf();
+
     $id = (int) (
         $_POST["id"] ?? 0
     );
+
+    if ($id > 0) {
+        require_permission('career', 'update');
+    } else {
+        require_permission('career', 'create');
+    }
 
     $position = trim(
         $_POST["position"] ?? ""
@@ -145,6 +155,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 if (isset($_GET["delete"])) {
 
+    require_csrf();
+    require_permission('career', 'delete');
+
     $id = (int) $_GET["delete"];
 
     $stmt = $conn->prepare(
@@ -186,9 +199,7 @@ $careers = $conn->query(
         href="assets/admin.css"
     >
 
-    <title>
-        Manage Career
-    </title>
+    <title>NPI CMS - Karir & Lowongan | PT Nihon Plast Indonesia</title>
 
 </head>
 
@@ -261,6 +272,7 @@ $careers = $conn->query(
             </h3>
 
             <form method="post">
+                <?= csrf_field() ?>
 
                 <input
                     type="hidden"
@@ -461,17 +473,19 @@ $careers = $conn->query(
                                     Edit
                                 </a>
 
-                                <a
-                                    href="career.php?delete=<?= (int) $row["id"] ?>"
-                                    class="btn btn-sm btn-danger"
-                                    onclick="
-                                        return confirm(
-                                            'Hapus career ini?'
-                                        );
-                                    "
-                                >
-                                    Hapus
-                                </a>
+                                <?php if (has_permission('career', 'delete')): ?>
+                                    <a
+                                        href="<?= csrf_url('career.php?delete=' . (int) $row["id"]) ?>"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="
+                                            return confirm(
+                                                'Hapus career ini?'
+                                            );
+                                        "
+                                    >
+                                        Hapus
+                                    </a>
+                                <?php endif; ?>
 
                             </td>
 

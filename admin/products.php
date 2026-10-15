@@ -3,6 +3,8 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('products', 'read');
+
 $editItem = null;
 $uploadError = "";
 
@@ -26,7 +28,15 @@ if (isset($_GET["edit"])) {
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+    require_csrf();
+
     $id = (int) ($_POST["id"] ?? 0);
+    if ($id > 0) {
+        require_permission('products', 'update');
+    } else {
+        require_permission('products', 'create');
+    }
+
     $name = trim($_POST["name"] ?? "");
     $description = trim($_POST["description"] ?? "");
     $image = trim($_POST["old_image"] ?? "");
@@ -37,75 +47,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (
         isset($_FILES["image_file"]) &&
-        $_FILES["image_file"]["error"] === UPLOAD_ERR_OK
+        $_FILES["image_file"]["error"] !== UPLOAD_ERR_NO_FILE
     ) {
-
-        $allowed = [
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            "image/svg+xml"
-        ];
-
-        if (
-            in_array(
-                $_FILES["image_file"]["type"],
-                $allowed,
-                true
-            )
-        ) {
-
-            $extension = pathinfo(
-                $_FILES["image_file"]["name"],
-                PATHINFO_EXTENSION
-            );
-
-            $filename =
-                uniqid("product_", true)
-                . "."
-                . strtolower($extension);
-
-            $uploadDir =
-                __DIR__
-                . "/../uploads/products/";
-
-            if (!is_dir($uploadDir)) {
-
-                mkdir(
-                    $uploadDir,
-                    0755,
-                    true
-                );
-            }
-
-            if (!is_writable($uploadDir)) {
-
-                $uploadError =
-                    "Folder upload product tidak dapat ditulis.";
-
-            } else {
-
-                $destination =
-                    $uploadDir
-                    . $filename;
-
-                if (
-                    move_uploaded_file(
-                        $_FILES["image_file"]["tmp_name"],
-                        $destination
-                    )
-                ) {
-
-                    $image =
-                        "uploads/products/"
-                        . $filename;
-
-                } else {
-
-                    $uploadError =
-                        "Gambar product gagal diupload.";
-                }
-            }
+        $uploadResult = cms_upload_image($_FILES["image_file"], "products", "product_");
+        if ($uploadResult["success"]) {
+            $image = $uploadResult["path"];
+        } else {
+            $uploadError = $uploadResult["error"];
         }
     }
 
@@ -163,6 +111,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 if (isset($_GET["delete"])) {
 
+    require_csrf();
+    require_permission('products', 'delete');
+
     $id = (int) $_GET["delete"];
 
     $stmt = $conn->prepare(
@@ -197,9 +148,7 @@ $products = $conn->query(
         href="assets/admin.css"
     >
 
-    <title>
-        Manage Products
-    </title>
+    <title>NPI CMS - Produk Otomotif | PT Nihon Plast Indonesia</title>
 
 </head>
 
@@ -236,6 +185,7 @@ $products = $conn->query(
             enctype="multipart/form-data"
             class="mt-3"
         >
+            <?= csrf_field() ?>
 
             <input
                 type="hidden"
@@ -419,13 +369,15 @@ $products = $conn->query(
                                 Edit
                             </a>
 
-                            <a
-                                href="products.php?delete=<?= $item["id"] ?>"
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="return confirm('Delete this product?')"
-                            >
-                                Delete
-                            </a>
+                            <?php if (has_permission('products', 'delete')): ?>
+                                <a
+                                    href="<?= csrf_url('products.php?delete=' . (int)$item["id"]) ?>"
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Delete this product?')"
+                                >
+                                    Delete
+                                </a>
+                            <?php endif; ?>
 
                         </td>
 

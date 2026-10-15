@@ -195,7 +195,7 @@ function require_permission($menu_key, $action = 'read') {
         <head>
             <?php include __DIR__ . "/../includes/head.php"; ?>
             <link rel="stylesheet" href="assets/admin.css">
-            <title>403 - Akses Ditolak</title>
+            <title>NPI CMS - 403 Akses Ditolak | PT Nihon Plast Indonesia</title>
         </head>
         <body class="bg-light">
             <div class="container py-5">

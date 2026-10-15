@@ -2,6 +2,8 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('dashboard', 'read');
+
 $productCount = $conn->query("SELECT COUNT(*) AS total FROM products")->fetch_assoc()["total"] ?? 0;
 $newsCount = $conn->query("SELECT COUNT(*) AS total FROM news")->fetch_assoc()["total"] ?? 0;
 $careerCount = $conn->query("SELECT COUNT(*) AS total FROM careers")->fetch_assoc()["total"] ?? 0;
@@ -17,7 +19,7 @@ $userCount = $conn->query("SELECT COUNT(*) AS total FROM users WHERE status = 'a
 <head>
     <?php include __DIR__ . "/../includes/head.php"; ?>
     <link rel="stylesheet" href="assets/admin.css">
-    <title>Admin Dashboard - PT Nihon Plast Indonesia</title>
+    <title>NPI CMS - Dashboard | PT Nihon Plast Indonesia</title>
 </head>
 <body>
 

@@ -1,0 +1,17 @@
+# ==============================================================================
+# PT NIHON PLAST INDONESIA - UPLOADS SECURITY RESTRICTION (.htaccess)
+# Apache 2.4 Native Syntax - Prevent script execution & allow media files
+# ==============================================================================
+
+# Disable directory browsing & script execution
+Options -ExecCGI -Indexes
+
+# Block all executable file extensions explicitly in Apache 2.4
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phps|cgi|pl|py|sh|bash|exe|bat|cmd|com|vbs|msi)$">
+    Require all denied
+</FilesMatch>
+
+# Allow safe media and documents to be requested directly
+<FilesMatch "\.(?i:jpe?g|png|gif|webp|svg|ico|pdf|mp4|webm|ogg)$">
+    Require all granted
+</FilesMatch>

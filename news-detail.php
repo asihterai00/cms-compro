@@ -13,10 +13,10 @@ if (!$article) {
 $image = contentImageUrl($article["image"] ?? "", "uploads/news");
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_html_lang()) ?>">
 <head>
     <?php include __DIR__ . "/includes/head.php"; ?>
-    <title><?= htmlspecialchars($article["title"] ?? "Berita tidak ditemukan") ?></title>
+    <title>NPI - PT Nihon Plast Indonesia | <?= htmlspecialchars($article["title"] ?? "Berita") ?></title>
 </head>
 <body>
 <?php include __DIR__ . "/includes/navbar.php"; ?>

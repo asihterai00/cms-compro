@@ -5,14 +5,14 @@ $entries = [
     [
         'category' => 'architecture',
         'title' => 'CMS Architecture & Tech Stack',
-        'content' => "PT Nihon Plast Indonesia Company Profile CMS.\n- Backend: Native PHP 8.3 (Laragon)\n- Database: MySQL 8 (Host: 192.168.1.6:3306, DB: db_cms_compro, User: root)\n- Frontend: Bootstrap 5, Bootstrap Icons, responsive custom CSS (home-scroll.css, content-clickable.css, product-detail-layout.css)\n- Templating: Modular includes (includes/head.php, includes/navbar.php, includes/footer.php, includes/page_banner.php, includes/content_helpers.php)\n- Admin Panel: Located in /admin/ protected by session auth (admin/auth.php).\n- Uploads: Stored under uploads/company/, uploads/gallery/, uploads/products/, uploads/pages/.",
-        'metadata' => json_encode(['tech' => ['PHP 8.3', 'MySQL', 'Bootstrap 5', 'Laragon']])
+        'content' => "PT Nihon Plast Indonesia Company Profile CMS.\n- Backend: Native PHP 8.3 (Devaron)\n- Database: MySQL 8 (Host: 192.168.1.6:3306, DB: db_cms_compro, User: root)\n- Frontend: Bootstrap 5, Bootstrap Icons, responsive custom CSS (home-scroll.css, content-clickable.css, product-detail-layout.css)\n- Templating: Modular includes (includes/head.php, includes/navbar.php, includes/footer.php, includes/page_banner.php, includes/content_helpers.php)\n- Admin Panel: Located in /admin/ protected by session auth (admin/auth.php).\n- Uploads: Stored under uploads/company/, uploads/gallery/, uploads/products/, uploads/pages/.",
+        'metadata' => json_encode(['tech' => ['PHP 8.3', 'MySQL', 'Bootstrap 5', 'Devaron']])
     ],
     [
         'category' => 'environment',
         'title' => 'Development Environment & Binaries',
-        'content' => "Local environment specifications:\n- OS: Windows\n- Web server suite: Laragon (Apache/Nginx/MySQL)\n- PHP Binary: C:\\laragon\\bin\\php\\php-8.3.33-Win32-vs16-x64\\php.exe\n- Node.js: v22.19.0 (C:\\Program Files\\nodejs\\node.exe)\n- NPM: 10.9.3\n- Git: 2.55.0.windows.4\n- MySQL Connection: 192.168.1.6:3306 (user: root, db: db_cms_compro)\n- Workspace Root: C:\\laragon\\www\\cms-compro",
-        'metadata' => json_encode(['os' => 'Windows', 'php' => '8.3.33', 'node' => '22.19.0'])
+        'content' => "Local environment specifications:\n- OS: Windows\n- Web server suite: Devaron (Apache/Nginx/MySQL)\n- PHP Binary: C:\\Devaron\\bin\\php\\php-8.3.30\\php.exe\n- Node.js: v22.19.0 (C:\\Program Files\\nodejs\\node.exe)\n- NPM: 10.9.3\n- Git: 2.55.0.windows.4\n- MySQL Connection: 192.168.1.6:3306 (user: root, db: db_cms_compro)\n- Workspace Root: C:\\Devaron\\www\\cms-compro",
+        'metadata' => json_encode(['os' => 'Windows', 'php' => '8.3.30', 'node' => '22.19.0'])
     ],
     [
         'category' => 'database',

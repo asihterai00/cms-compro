@@ -16,31 +16,36 @@ $LANG_LIST = [
         'code' => 'id',
         'short' => 'ID',
         'name' => 'Bahasa Indonesia',
-        'html_lang' => 'id'
+        'html_lang' => 'id',
+        'flag' => 'assets/img/flags/id.svg'
     ],
     'en' => [
         'code' => 'en',
         'short' => 'EN',
         'name' => 'English',
-        'html_lang' => 'en'
+        'html_lang' => 'en',
+        'flag' => 'assets/img/flags/en.svg'
     ],
     'ja' => [
         'code' => 'ja',
         'short' => 'JA',
         'name' => '日本語',
-        'html_lang' => 'ja'
+        'html_lang' => 'ja',
+        'flag' => 'assets/img/flags/ja.svg'
     ],
     'zh' => [
         'code' => 'zh',
         'short' => 'ZH',
         'name' => '简体中文',
-        'html_lang' => 'zh-CN'
+        'html_lang' => 'zh-CN',
+        'flag' => 'assets/img/flags/zh.svg'
     ],
     'ko' => [
         'code' => 'ko',
         'short' => 'KO',
         'name' => '한국어',
-        'html_lang' => 'ko'
+        'html_lang' => 'ko',
+        'flag' => 'assets/img/flags/ko.svg'
     ]
 ];
 
@@ -151,6 +156,17 @@ function get_html_lang() {
 function get_supported_languages() {
     global $LANG_LIST;
     return $LANG_LIST;
+}
+
+/**
+ * Get current active language detail (code, short, name, html_lang, flag)
+ *
+ * @return array
+ */
+function get_current_lang_info() {
+    global $LANG_LIST;
+    $c = current_lang();
+    return $LANG_LIST[$c] ?? $LANG_LIST['id'];
 }
 
 /**

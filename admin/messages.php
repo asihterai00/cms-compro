@@ -3,7 +3,12 @@
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
 
+require_permission('messages', 'read');
+
 if (isset($_GET["read"])) {
+
+    require_csrf();
+    require_permission('messages', 'update');
 
     $id = (int) $_GET["read"];
 
@@ -21,6 +26,9 @@ if (isset($_GET["read"])) {
 }
 
 if (isset($_GET["delete"])) {
+
+    require_csrf();
+    require_permission('messages', 'delete');
 
     $id = (int) $_GET["delete"];
 
@@ -56,9 +64,7 @@ $messages = $conn->query(
         href="assets/admin.css"
     >
 
-    <title>
-        Messages
-    </title>
+    <title>NPI CMS - Pesan & RFQ Masuk | PT Nihon Plast Indonesia</title>
 
 </head>
 
@@ -137,10 +143,10 @@ $messages = $conn->query(
 
                         <td>
 
-                            <?php if ($item["status"] === "unread"): ?>
+                            <?php if ($item["status"] === "unread" && has_permission('messages', 'update')): ?>
 
                                 <a
-                                    href="messages.php?read=<?= $item["id"] ?>"
+                                    href="<?= csrf_url('messages.php?read=' . (int)$item["id"]) ?>"
                                     class="btn btn-sm btn-outline-primary"
                                 >
                                     Mark Read
@@ -148,13 +154,15 @@ $messages = $conn->query(
 
                             <?php endif; ?>
 
-                            <a
-                                href="messages.php?delete=<?= $item["id"] ?>"
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="return confirm('Delete this message?')"
-                            >
-                                Delete
-                            </a>
+                            <?php if (has_permission('messages', 'delete')): ?>
+                                <a
+                                    href="<?= csrf_url('messages.php?delete=' . (int)$item["id"]) ?>"
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Delete this message?')"
+                                >
+                                    Delete
+                                </a>
+                            <?php endif; ?>
 
                         </td>
 
