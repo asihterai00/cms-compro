@@ -138,5 +138,24 @@ return [
     'footer_contact_info' => '공장 연락처',
     'footer_address' => '인도네시아 서부 자바주 카라왕 치캄펙 인도시타이세이 산업단지 1A구역 P-1블록 우편번호 41373',
     'footer_phone' => '+62-264-351-888',
-    'footer_email' => 'corporate@n-plast.co.id'
+    'footer_email' => 'corporate@n-plast.co.id',
+
+    // Extended Topbar, Footer & Plant Elements
+    'topbar_cert' => 'IATF 16949 • ISO 14001 • ISO 45001 인증 획득',
+    'topbar_location' => '서부 자바주 카라왕 치캄펙 인도타이세이 산업단지',
+    'matrix_machines_lab' => '설비 제원 매트릭스 및 연구소',
+    'integrated_plant_title' => '치캄펙 산업 복합 단지 내 통합 자동차 부품 제조 공장',
+    'integrated_plant_desc' => '미쓰토요 3D CMM 측정기, 에어백 고속 전개 시험 챔버, 제논 내후성 시험기 및 자동 로봇 도장 라인을 완비하여 글로벌 Tier-1 품질을 보증합니다.',
+    'office_plant_title' => '본사 및 제조 공장 시설',
+    'office_plant_sub' => '서부 자바주 카라왕 치캄펙 인도타이세이 산업단지',
+    'office_plant_address' => '공장 주소:',
+    'office_plant_phone' => '대표 전화:',
+    'office_plant_email' => '공식 이메일:',
+    'corporate_vision_title' => '기업 비전',
+    'core_values_title' => '핵심 가치',
+    'footer_tagline' => '자동차 안전 및 정밀 모노즈쿠리 • 일본 플라스트 그룹 계열사 (일본)',
+    'prod_steering' => '스티어링 휠 안전 시스템',
+    'prod_airbag' => '탑승자 보호 에어백 모듈',
+    'prod_interior' => '콕핏 및 고급 내장재 수지 부품',
+    'prod_exterior' => '외장 트림 및 에어로 파츠',
 ];

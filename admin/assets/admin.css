@@ -1,111 +1,506 @@
+/**
+ * PT Nihon Plast Indonesia - Dashboard V14 Design System
+ * 100% Faithful to Dashboard V14 (@code.xr) - Modern & Minimal UI
+ * 100% Free & Open Source | Zero Paid External APIs
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --admin-dark: #0b1724;
-    --admin-primary: #073b66;
-    --admin-light: #f4f7fa;
+    /* V14 Theme Canvas & Surfaces */
+    --v14-canvas: #F8FAFC;
+    --v14-surface: #FFFFFF;
+    --v14-surface-subtle: #F1F5F9;
+    --v14-border: #EAEFF5;
+    --v14-border-subtle: #F1F5F9;
+
+    /* Text & Neutrals */
+    --v14-text-title: #0F172A;
+    --v14-text-body: #334155;
+    --v14-text-muted: #64748B;
+    --v14-text-subtle: #94A3B8;
+
+    /* Official PT Nihon Plast Indonesia Forest Green Identity */
+    --v14-primary: #005A36;
+    --v14-primary-hover: #007A4A;
+    --v14-primary-accent: #00A862;
+    --v14-primary-pill: #EBF7EE;
+    --v14-primary-border: #D1E7DD;
+
+    --v14-blue: #005A36;
+    --v14-blue-pill: #EBF7EE;
+    --v14-blue-border: #D1E7DD;
+
+    --v14-green: #059669;
+    --v14-green-pill: #ECFDF5;
+    --v14-green-border: #D1FAE5;
+
+    --v14-purple: #7C3AED;
+    --v14-purple-pill: #F5F3FF;
+    --v14-purple-border: #EDE9FE;
+
+    --v14-amber: #D97706;
+    --v14-amber-pill: #FFFBEB;
+
+    --v14-red: #EF4444;
+    --v14-red-pill: #FEF2F2;
+
+    /* Layout Metrics */
+    --v14-sidebar-w: 240px;
+    --v14-topbar-h: 68px;
+    --v14-radius: 18px;
+    --v14-radius-sm: 12px;
+    --v14-radius-pill: 50px;
+    --v14-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    --v14-shadow-hover: 0 10px 25px -4px rgba(37, 99, 235, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
+    --v14-transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 body {
-    background: var(--admin-light);
+    background-color: var(--v14-canvas);
+    color: var(--v14-text-body);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
+/* =========================================================
+   1. DASHBOARD V14 SIDEBAR (CLEAN, MINIMAL, UNCLUTTERED)
+   ========================================================= */
 .admin-sidebar {
-    width: 260px;
+    width: var(--v14-sidebar-w);
     min-height: 100vh;
     position: fixed;
     left: 0;
     top: 0;
-    background: var(--admin-dark);
-    z-index: 1000;
+    bottom: 0;
+    background: #FFFFFF;
+    border-right: 1px solid var(--v14-border);
+    z-index: 1040;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
+.admin-sidebar::-webkit-scrollbar {
+    width: 3px;
+}
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background: #E2E8F0;
+    border-radius: 3px;
+}
+
+/* Sidebar Brand Header */
 .admin-brand {
-    padding: 22px;
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 800;
-    border-bottom: 1px solid rgba(255,255,255,.1);
-}
-
-.admin-menu {
-    padding: 15px 12px;
-}
-
-.admin-menu a {
-    display: block;
-    padding: 12px 14px;
-    margin-bottom: 4px;
-    color: #cbd5df;
+    padding: 1.4rem 1.4rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     text-decoration: none;
-    border-radius: 8px;
 }
 
-.admin-menu a:hover,
-.admin-menu a.active {
-    color: white;
-    background: var(--admin-primary);
-}
-
-.admin-main {
-    margin-left: 260px;
-    min-height: 100vh;
-}
-
-.admin-topbar {
-    min-height: 70px;
-    background: white;
-    border-bottom: 1px solid #e5e9ee;
-}
-
-.stat-card {
-    border: 0;
-    border-radius: 14px;
-    box-shadow: 0 6px 25px rgba(0,0,0,.06);
-}
-
-.stat-icon {
-    width: 48px;
-    height: 48px;
+.admin-brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #005A36 0%, #00A862 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
-    background: #eaf3fa;
-    color: var(--admin-primary);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(0, 90, 54, 0.25);
+    flex-shrink: 0;
+}
+
+.admin-brand-title {
+    font-size: 1.15rem;
     font-weight: 800;
+    color: var(--v14-text-title);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
 }
 
-.table-card {
-    border: 0;
-    border-radius: 14px;
-    box-shadow: 0 6px 25px rgba(0,0,0,.06);
+/* Minimalist Nav Menu List */
+.admin-menu {
+    padding: 0.8rem 1rem 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
 }
 
-.thumb {
-    width: 70px;
-    height: 50px;
+.admin-menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.68rem 0.95rem;
+    color: var(--v14-text-muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-radius: var(--v14-radius-sm);
+    text-decoration: none;
+    transition: var(--v14-transition);
+}
+
+.admin-menu-link i.admin-menu-icon {
+    font-size: 1.15rem;
+    margin-right: 0.85rem;
+    color: var(--v14-text-subtle);
+    transition: var(--v14-transition);
+}
+
+.admin-menu-link:hover {
+    background-color: var(--v14-canvas);
+    color: var(--v14-blue);
+}
+
+.admin-menu-link:hover i.admin-menu-icon {
+    color: var(--v14-blue);
+}
+
+/* V14 Active Menu Pill (Nihon Plast Forest Green) */
+.admin-menu-link.active {
+    background-color: var(--v14-primary-pill) !important;
+    color: var(--v14-primary) !important;
+    font-weight: 700 !important;
+}
+
+.admin-menu-link.active i.admin-menu-icon {
+    color: var(--v14-primary) !important;
+}
+
+/* Notification Red Dot */
+.nav-dot-badge {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #EF4444;
+    display: inline-block;
+    box-shadow: 0 0 0 2px #FFFFFF;
+}
+
+/* =========================================================
+   2. DASHBOARD V14 MAIN LAYOUT & TOPBAR
+   ========================================================= */
+.admin-main {
+    margin-left: var(--v14-sidebar-w);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--v14-canvas);
+}
+
+.admin-topbar {
+    height: var(--v14-topbar-h);
+    background: transparent;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+/* Rounded Pill Search Input */
+.admin-search-box {
+    position: relative;
+    width: 320px;
+}
+
+.admin-search-box input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.6rem;
+    background: #EEF2F6;
+    border: 1px solid transparent;
+    border-radius: var(--v14-radius-pill);
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--v14-text-title);
+    outline: none;
+    transition: var(--v14-transition);
+}
+
+.admin-search-box input:focus {
+    background: #FFFFFF;
+    border-color: var(--v14-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.admin-search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--v14-text-subtle);
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+/* Topbar Action Buttons */
+.topbar-circle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid var(--v14-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--v14-text-muted);
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: var(--v14-transition);
+    text-decoration: none;
+}
+
+.topbar-circle-btn:hover {
+    background: #FFFFFF;
+    color: var(--v14-blue);
+    border-color: var(--v14-blue-border);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+/* User Avatar Dropdown Pill */
+.topbar-avatar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.admin-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--v14-primary-pill);
+    color: var(--v14-primary);
+    border: 1px solid rgba(0, 90, 54, 0.15);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Date Range Picker Pill */
+.v14-date-pill {
+    background: #FFFFFF;
+    border: 1px solid var(--v14-border);
+    border-radius: var(--v14-radius-sm);
+    padding: 0.55rem 1.1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--v14-text-body);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+/* =========================================================
+   3. DASHBOARD V14 CARDS & KPI ROW
+   ========================================================= */
+.v14-card {
+    background: var(--v14-surface);
+    border: 1px solid var(--v14-border);
+    border-radius: var(--v14-radius);
+    box-shadow: var(--v14-shadow);
+    transition: var(--v14-transition);
+}
+
+.v14-card:hover {
+    box-shadow: var(--v14-shadow-hover);
+}
+
+/* KPI Stat Cards */
+.v14-stat-card {
+    background: var(--v14-surface);
+    border: 1px solid var(--v14-border);
+    border-radius: var(--v14-radius);
+    padding: 1.45rem 1.6rem;
+    box-shadow: var(--v14-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: var(--v14-transition);
+}
+
+.v14-stat-card:hover {
+    box-shadow: var(--v14-shadow-hover);
+    transform: translateY(-2px);
+}
+
+/* Squircle Icon Wrapper */
+.v14-icon-squircle {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.v14-icon-blue   { background: var(--v14-blue-pill); color: var(--v14-blue); }
+.v14-icon-green  { background: var(--v14-green-pill); color: var(--v14-green); }
+.v14-icon-purple { background: var(--v14-purple-pill); color: var(--v14-purple); }
+
+.v14-stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--v14-text-muted);
+    margin-bottom: 0.2rem;
+}
+
+.v14-stat-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--v14-text-title);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.35rem;
+}
+
+.v14-stat-growth {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--v14-green);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+/* Wave Sparkline */
+.v14-sparkline-area {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 140px;
+    height: 60px;
+    pointer-events: none;
+}
+
+/* =========================================================
+   4. TWO-COLUMN BENTO: REVENUE GROWTH & TOP PRODUCTS
+   ========================================================= */
+.v14-card-header {
+    padding: 1.35rem 1.6rem 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.v14-card-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--v14-text-title);
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.v14-filter-pill {
+    background: #F8FAFC;
+    border: 1px solid var(--v14-border);
+    border-radius: var(--v14-radius-pill);
+    padding: 0.35rem 0.9rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--v14-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+}
+
+/* Top Products Rows */
+.v14-product-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--v14-border-subtle);
+}
+
+.v14-product-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0.2rem;
+}
+
+.v14-product-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: #0F172A;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.v14-product-thumb img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border-radius: 7px;
 }
 
-@media (max-width: 991px) {
-    .admin-sidebar {
-        width: 220px;
-    }
-
-    .admin-main {
-        margin-left: 220px;
-    }
+.v14-product-info {
+    margin-left: 0.95rem;
+    flex-grow: 1;
 }
 
-@media (max-width: 767px) {
-    .admin-sidebar {
-        position: static;
-        width: 100%;
-        min-height: auto;
-    }
+.v14-product-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--v14-text-title);
+    line-height: 1.25;
+}
 
+.v14-product-sold {
+    font-size: 0.74rem;
+    color: var(--v14-text-subtle);
+}
+
+.v14-product-price {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--v14-text-title);
+    text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    .admin-sidebar.is-open {
+        transform: translateX(0);
+    }
     .admin-main {
         margin-left: 0;
+    }
+    .admin-topbar {
+        padding: 0 1rem;
+    }
+    .admin-search-box {
+        width: 180px;
     }
 }

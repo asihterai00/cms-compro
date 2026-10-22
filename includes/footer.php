@@ -1,11 +1,15 @@
 <?php
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/translation_helpers.php";
 
 $footerComp = null;
 if (isset($conn)) {
-    $res = $conn->query("SELECT company_name, address, phone, email, tagline FROM company_profile WHERE id = 1 LIMIT 1");
+    $res = $conn->query("SELECT id, company_name, address, phone, email, tagline FROM company_profile WHERE id = 1 LIMIT 1");
     if ($res) {
         $footerComp = $res->fetch_assoc();
+        if ($footerComp && function_exists('translate_entity_row')) {
+            $footerComp = translate_entity_row('company_profile', $footerComp);
+        }
     }
 }
 $companyName = $footerComp["company_name"] ?? "PT Nihon Plast Indonesia";
@@ -36,10 +40,10 @@ $email = $footerComp["email"] ?? "corporate@n-plast.co.id";
             <div class="col-6 col-md-3 col-lg-2">
                 <h5><?= htmlspecialchars(__('footer_products', 'Lini Produk')) ?></h5>
                 <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-                    <li><a href="products.php">Steering Wheel Systems</a></li>
-                    <li><a href="products.php">Airbag Safety Modules</a></li>
-                    <li><a href="products.php">Cockpit & Interior Resins</a></li>
-                    <li><a href="products.php">Exterior & Aero Trims</a></li>
+                    <li><a href="products.php"><?= htmlspecialchars(__('prod_steering', 'Steering Wheel Systems')) ?></a></li>
+                    <li><a href="products.php"><?= htmlspecialchars(__('prod_airbag', 'Airbag Safety Modules')) ?></a></li>
+                    <li><a href="products.php"><?= htmlspecialchars(__('prod_interior', 'Cockpit & Interior Resins')) ?></a></li>
+                    <li><a href="products.php"><?= htmlspecialchars(__('prod_exterior', 'Exterior & Aero Trims')) ?></a></li>
                     <li><a href="quality.php"><?= htmlspecialchars(__('nav_quality', 'Quality & ISO')) ?></a></li>
                 </ul>
             </div>
@@ -79,7 +83,7 @@ $email = $footerComp["email"] ?? "corporate@n-plast.co.id";
                 &copy; <?= date("Y") ?> <?= htmlspecialchars($companyName) ?>. <?= htmlspecialchars(__('all_rights_reserved', 'All rights reserved.')) ?>
             </div>
             <div class="small text-muted">
-                Automotive Safety & Precision Monozukuri • Member of Nihon Plast Group (Japan)
+                <?= htmlspecialchars(__('footer_tagline', 'Automotive Safety & Precision Monozukuri • Member of Nihon Plast Group (Japan)')) ?>
             </div>
         </div>
     </div>

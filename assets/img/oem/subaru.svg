@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" fill="none">
+  <!-- Subaru Pleiades Six Stars Crest -->
+  <g>
+    <!-- Oval Background -->
+    <ellipse cx="60" cy="45" rx="52" ry="32" fill="#013C74" stroke="#4A77A5" stroke-width="2.5"/>
+    <!-- Outer Rim Highlight -->
+    <ellipse cx="60" cy="45" rx="48" ry="28" fill="none" stroke="#25598F" stroke-width="1.5"/>
+    
+    <!-- Big Star (Fuji Heavy Industries) -->
+    <!-- Center (42, 42) -->
+    <path fill="#FFFFFF" d="M42 27c0 7-5 12-12 15 7 3 12 8 12 15 0-7 5-12 12-15-7-3-12-8-12-15z"/>
+    
+    <!-- 5 Smaller Stars (Group Companies) -->
+    <!-- Star 2 (top right 1) -->
+    <path fill="#FFFFFF" d="M63 26c0 4-3 6.5-6.5 8 3.5 1.5 6.5 4 6.5 8 0-4 3-6.5 6.5-8-3.5-1.5-6.5-4-6.5-8z"/>
+    <!-- Star 3 (top right 2) -->
+    <path fill="#FFFFFF" d="M80 32c0 3.5-2.5 5.5-5.5 7 3 1.5 5.5 3.5 5.5 7 0-3.5 2.5-5.5 5.5-7-3-1.5-5.5-3.5-5.5-7z"/>
+    <!-- Star 4 (mid right) -->
+    <path fill="#FFFFFF" d="M68 45c0 3.5-2.5 5.5-5.5 7 3 1.5 5.5 3.5 5.5 7 0-3.5 2.5-5.5 5.5-7-3-1.5-5.5-3.5-5.5-7z"/>
+    <!-- Star 5 (lower mid) -->
+    <path fill="#FFFFFF" d="M84 48c0 3-2 5-5 6 3 1 5 3 5 6 0-3 2-5 5-6-3-1-5-3-5-6z"/>
+    <!-- Star 6 (bottom right) -->
+    <path fill="#FFFFFF" d="M74 61c0 3-2 4.5-4.5 5.5 2.5 1 4.5 2.5 4.5 5.5 0-3 2-4.5 4.5-5.5-2.5-1-4.5-2.5-4.5-5.5z"/>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" fill="none">
+  <!-- Mitsubishi Official Three Diamonds Crest -->
+  <g fill="#E60012">
+    <!-- Top Diamond -->
+    <polygon points="60,11 73,33.5 60,56 47,33.5"/>
+    <!-- Bottom Left Diamond -->
+    <polygon points="60,56 47,78.5 21,78.5 34,56"/>
+    <!-- Bottom Right Diamond -->
+    <polygon points="60,56 86,56 99,78.5 73,78.5"/>
+  </g>
+</svg>

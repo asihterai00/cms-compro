@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/config/database.php";
 require_once __DIR__ . "/includes/content_helpers.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $categoryFilter = trim($_GET["category"] ?? "");
 
@@ -88,7 +89,9 @@ if ($categoryFilter !== "") {
         <!-- Product Grid -->
         <div class="row g-4">
             <?php if ($products && $products->num_rows > 0): ?>
-                <?php while ($product = $products->fetch_assoc()): ?>
+                <?php while ($product = $products->fetch_assoc()): 
+                    if (function_exists('translate_entity_row')) $product = translate_entity_row('product', $product);
+                ?>
                     <?php $image = contentImageUrl($product["image"] ?? "", "uploads/products"); ?>
                     <div class="col-md-6 col-lg-3">
                         <article class="product-card-modern">

@@ -138,5 +138,24 @@ return [
     'footer_contact_info' => '工厂联络方式',
     'footer_address' => '印尼西爪哇省加拉璜县芝坎佩克 Indotaisei 工业园区 1A区 P-1地块 邮编41373',
     'footer_phone' => '+62-264-351-888',
-    'footer_email' => 'corporate@n-plast.co.id'
+    'footer_email' => 'corporate@n-plast.co.id',
+
+    // Extended Topbar, Footer & Plant Elements
+    'topbar_cert' => 'IATF 16949 • ISO 14001 • ISO 45001 权威认证',
+    'topbar_location' => '西爪哇省卡拉旺县芝坎佩印多泰成工业区',
+    'matrix_machines_lab' => '设备规格矩阵与实验室',
+    'integrated_plant_title' => '位于芝坎佩现代工业廊道的一体化汽车零部件智造基地',
+    'integrated_plant_desc' => '配备三丰3D三坐标检测仪、安全气囊毫秒级点火展开测试舱、氙灯耐气候试验机及自动化机器人涂装线，全面满足主机厂品质。',
+    'office_plant_title' => '公司总部与核心生产基地',
+    'office_plant_sub' => '西爪哇省卡拉旺县芝坎佩印多泰成工业区',
+    'office_plant_address' => '厂区地址:',
+    'office_plant_phone' => '电话:',
+    'office_plant_email' => '官方邮箱:',
+    'corporate_vision_title' => '企业愿景',
+    'core_values_title' => '核心价值观',
+    'footer_tagline' => '汽车安全与高精工匠造物 • 日本精塑株式会社集团成员（日本）',
+    'prod_steering' => '多功能方向盘安全集成系统',
+    'prod_airbag' => '乘员保护安全气囊模块',
+    'prod_interior' => '座舱与中控内饰树脂件',
+    'prod_exterior' => '外观饰件与空气动力学组件',
 ];

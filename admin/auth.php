@@ -21,82 +21,129 @@ require_once __DIR__ . "/../config/database.php";
 function get_app_menus() {
     return [
         'dashboard' => [
-            'name' => 'Dashboard',
+            'name' => 'Dashboard Overview',
             'icon' => 'bi-speedometer2',
             'url' => 'dashboard.php',
-            'desc' => 'Ringkasan sistem & statistik'
+            'desc' => 'Ringkasan operasional sistem, KPI & status CMS',
+            'group' => 'overview',
+            'group_label' => 'RINGKASAN UTAMA'
         ],
+        // 1. CMS Halaman Web (Page Sections & Banners)
         'site_sections' => [
-            'name' => 'Dynamic CMS Elements',
+            'name' => 'Elemen Halaman (Sections)',
             'icon' => 'bi-layout-text-window-reverse',
             'url' => 'site_sections.php',
-            'desc' => 'Ubah teks, judul, icon, background, gambar & toggle aktif/nonaktif'
+            'desc' => 'Edit teks, judul, gambar, dan toggle aktif/nonaktif per halaman',
+            'group' => 'pages',
+            'group_label' => '1. CMS HALAMAN (PAGE BUILDER)'
         ],
         'site_section_items' => [
-            'name' => 'Sub-Item & Card Elements',
+            'name' => 'Sub-Item & Kartu Komponen',
             'icon' => 'bi-collection',
             'url' => 'site_section_items.php',
-            'desc' => 'Kelola kartu, pilar, zone kendaraan, OEM badges & sub-elemen'
+            'desc' => 'Kelola kartu bento, pilar, zone kendaraan, OEM badges & sub-elemen',
+            'group' => 'pages',
+            'group_label' => '1. CMS HALAMAN (PAGE BUILDER)'
         ],
         'banners' => [
-            'name' => 'Page Banners',
+            'name' => 'Banner Header Halaman',
             'icon' => 'bi-image',
             'url' => 'banners.php',
-            'desc' => 'Banner header tiap halaman'
+            'desc' => 'Banner header dan judul jumbotron tiap halaman publik',
+            'group' => 'pages',
+            'group_label' => '1. CMS HALAMAN (PAGE BUILDER)'
         ],
-        'company' => [
-            'name' => 'Company Profile',
-            'icon' => 'bi-building',
-            'url' => 'company.php',
-            'desc' => 'Profil perusahaan, kontak & logo'
-        ],
-        'certifications' => [
-            'name' => 'Certifications & ISO',
-            'icon' => 'bi-patch-check',
-            'url' => 'certifications.php',
-            'desc' => 'Akreditasi IATF 16949, ISO & regulasi'
-        ],
+        // 2. Posting, Katalog & Artikel (Products, News, Career, Gallery, Facility)
         'products' => [
-            'name' => 'Products Management',
+            'name' => 'Katalog Produk Otomotif',
             'icon' => 'bi-box-seam',
             'url' => 'products.php',
-            'desc' => 'Katalog 4 pilar produk manufaktur'
-        ],
-        'machinery' => [
-            'name' => 'Machinery Matrix',
-            'icon' => 'bi-cpu',
-            'url' => 'machinery.php',
-            'desc' => 'Spesifikasi mesin injeksi 150T-2500T'
-        ],
-        'gallery' => [
-            'name' => 'Photo Gallery',
-            'icon' => 'bi-camera',
-            'url' => 'gallery.php',
-            'desc' => 'Dokumentasi foto presisi manufaktur'
+            'desc' => 'Katalog 4 pilar produk manufaktur interior & safety',
+            'group' => 'posts',
+            'group_label' => '2. POSTING & KATALOG (CONTENT)'
         ],
         'news' => [
-            'name' => 'News & Updates',
+            'name' => 'Berita & Publikasi',
             'icon' => 'bi-newspaper',
             'url' => 'news.php',
-            'desc' => 'Berita & agenda korporat'
+            'desc' => 'Artikel, rilis pers, berita & agenda korporat',
+            'group' => 'posts',
+            'group_label' => '2. POSTING & KATALOG (CONTENT)'
         ],
         'career' => [
-            'name' => 'Career & Recruitment',
+            'name' => 'Karir & Lowongan Kerja',
             'icon' => 'bi-briefcase',
             'url' => 'career.php',
-            'desc' => 'Lowongan karir & rekrutmen'
+            'desc' => 'Lowongan kerja, kualifikasi & tahap rekrutmen',
+            'group' => 'posts',
+            'group_label' => '2. POSTING & KATALOG (CONTENT)'
         ],
+        'gallery' => [
+            'name' => 'Galeri Foto Manufaktur',
+            'icon' => 'bi-camera',
+            'url' => 'gallery.php',
+            'desc' => 'Dokumentasi foto presisi manufaktur & fasilitas',
+            'group' => 'posts',
+            'group_label' => '2. POSTING & KATALOG (CONTENT)'
+        ],
+        'machinery' => [
+            'name' => 'Spesifikasi Mesin Injeksi',
+            'icon' => 'bi-cpu',
+            'url' => 'machinery.php',
+            'desc' => 'Spesifikasi mesin injeksi presisi 150T - 2500T',
+            'group' => 'posts',
+            'group_label' => '2. POSTING & KATALOG (CONTENT)'
+        ],
+        'certifications' => [
+            'name' => 'Akreditasi Mutu & ISO',
+            'icon' => 'bi-patch-check',
+            'url' => 'certifications.php',
+            'desc' => 'Sertifikasi IATF 16949, ISO 14001, ISO 45001 & SMK3',
+            'group' => 'posts',
+            'group_label' => '2. POSTING & KATALOG (CONTENT)'
+        ],
+        // 3. Upload & File Media Assets
+        'media' => [
+            'name' => 'Media & Upload Library',
+            'icon' => 'bi-images',
+            'url' => 'media.php',
+            'desc' => 'Manajemen gambar, logo OEM, foto aset & berkas upload',
+            'group' => 'media',
+            'group_label' => '3. UPLOAD & FILE MEDIA (ASSETS)'
+        ],
+        // 4. Interaksi & Leads (Messages)
         'messages' => [
-            'name' => 'B2B RFQ Messages',
+            'name' => 'Pesan Masuk B2B RFQ',
             'icon' => 'bi-envelope',
             'url' => 'messages.php',
-            'desc' => 'Pesan formulir penawaran masuk'
+            'desc' => 'Pesan formulir penawaran masuk dari prospek & klien',
+            'group' => 'inquiries',
+            'group_label' => '4. INTERAKSI & LEADS B2B'
+        ],
+        // 5. Konfigurasi & Pengaturan Sistem (Config)
+        'translations' => [
+            'name' => 'Pusat Terjemahan Multibahasa',
+            'icon' => 'bi-translate',
+            'url' => 'translations.php',
+            'desc' => 'Pusat pengelolaan translasi dinamis 5 bahasa (ID, EN, JA, ZH, KO)',
+            'group' => 'config',
+            'group_label' => '5. KONFIGURASI SISTEM (CONFIG)'
+        ],
+        'company' => [
+            'name' => 'Profil Perusahaan & Kontak',
+            'icon' => 'bi-building',
+            'url' => 'company.php',
+            'desc' => 'Profil PT Nihon Plast Indonesia, kantor pusat & pabrik',
+            'group' => 'config',
+            'group_label' => '5. KONFIGURASI SISTEM (CONFIG)'
         ],
         'users' => [
-            'name' => 'Users & RBAC Authorization',
+            'name' => 'Manajemen Pengguna & RBAC',
             'icon' => 'bi-people',
             'url' => 'users.php',
-            'desc' => 'Pengguna & izin CRUD tiap menu'
+            'desc' => 'Kelola akun admin, role, dan izin CRUD per menu',
+            'group' => 'config',
+            'group_label' => '5. KONFIGURASI SISTEM (CONFIG)'
         ]
     ];
 }

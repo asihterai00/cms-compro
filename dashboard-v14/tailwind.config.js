@@ -1,0 +1,1 @@
+export default {content:['./index.html','./src/**/*.{js,jsx}'],darkMode:'class',theme:{extend:{fontFamily:{sans:['Plus Jakarta Sans','sans-serif']},colors:{canvas:'#F8FAFC',primary:'#2563EB'},borderRadius:{card:'18px'}}},plugins:[]};

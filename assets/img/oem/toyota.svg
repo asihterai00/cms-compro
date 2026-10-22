@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" fill="none">
+  <!-- Toyota Iconic Triple Ellipse Emblem -->
+  <g fill="#EB0A1E">
+    <!-- Outer Horizontal Ellipse -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M60 10C29.6 10 5 25.7 5 45s24.6 35 55 35 55-15.7 55-35-24.6-35-55-35zm0 8c25.4 0 46 12.1 46 27s-20.6 27-46 27-46-12.1-46-27 20.6-27 46-27z"/>
+    <!-- Inner Vertical Ellipse (Heart of Customer) -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M60 18c-10.5 0-19 11.2-19 25 0 13.5 8.1 24.5 18.2 25 0.5 0 0.8 0 0.8 0s0.3 0 0.8 0c10.1-0.5 18.2-11.5 18.2-25 0-13.8-8.5-25-19-25zm0 7.5c6.1 0 11 7.8 11 17.5s-4.9 17.5-11 17.5-11-7.8-11-17.5 4.9-17.5 11-17.5z"/>
+    <!-- Inner Horizontal Ellipse (Heart of Company - Intersecting 'T') -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M60 27c-17.7 0-32 5.8-32 13s14.3 13 32 13 32-5.8 32-13-14.3-13-32-13zm0 6.5c12.2 0 22 2.9 22 6.5s-9.8 6.5-22 6.5-22-2.9-22-6.5 9.8-6.5 22-6.5z"/>
+  </g>
+</svg>

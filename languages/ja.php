@@ -138,5 +138,24 @@ return [
     'footer_contact_info' => '工場所在地・連絡先',
     'footer_address' => 'インドネシア共和国西ジャワ州カラワン県チカンペック インドタイセイ工業団地 セクター1A ブロックP-1 郵便番号41373',
     'footer_phone' => '+62-264-351-888',
-    'footer_email' => 'corporate@n-plast.co.id'
+    'footer_email' => 'corporate@n-plast.co.id',
+
+    // Extended Topbar, Footer & Plant Elements
+    'topbar_cert' => 'IATF 16949 • ISO 14001 • ISO 45001 認証取得',
+    'topbar_location' => '西ジャワ州カラワン県チカンペック インドタイセイ工業団地',
+    'matrix_machines_lab' => '保有設備マトリクス・試験室',
+    'integrated_plant_title' => 'チカンペック工業回廊における総合自動車部品製造拠点',
+    'integrated_plant_desc' => 'ミツトヨ製3D三次元測定機、エアバッグ高速展開試験チャンバー、キセノン耐候試験機、自動ロボット塗装ラインを備え、Tier-1 OEM基準の品質を保証。',
+    'office_plant_title' => '本社および生産工場拠点',
+    'office_plant_sub' => '西ジャワ州カラワン県チカンペック インドタイセイ工業団地',
+    'office_plant_address' => '工場住所:',
+    'office_plant_phone' => '代表電話:',
+    'office_plant_email' => '公式メール:',
+    'corporate_vision_title' => '企業ビジョン',
+    'core_values_title' => 'コアバリュー（企業価値）',
+    'footer_tagline' => '自動車安全・精密モノづくり • 日本プラスト株式会社グループ（日本）',
+    'prod_steering' => 'ステアリングホイールシステム',
+    'prod_airbag' => 'エアバッグ安全モジュール',
+    'prod_interior' => 'コックピット＆内装樹脂部品',
+    'prod_exterior' => 'エクステリア＆エアロトリム',
 ];

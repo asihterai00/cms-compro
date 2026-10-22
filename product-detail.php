@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/config/database.php";
 require_once __DIR__ . "/includes/content_helpers.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $id = (int) ($_GET["id"] ?? 0);
 $stmt = $conn->prepare("SELECT * FROM products WHERE id = ? LIMIT 1");
@@ -9,6 +10,9 @@ $stmt->execute();
 $product = $stmt->get_result()->fetch_assoc();
 if (!$product) {
     http_response_code(404);
+}
+if ($product && function_exists('translate_entity_row')) {
+    $product = translate_entity_row('product', $product);
 }
 $image = contentImageUrl($product["image"] ?? "", "uploads/products");
 ?>

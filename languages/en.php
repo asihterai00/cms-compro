@@ -138,5 +138,24 @@ return [
     'footer_contact_info' => 'Plant Contact',
     'footer_address' => 'Kawasan Industri Indotaisei Sektor 1A Blok P-1, Cikampek, Karawang 41373, West Java, Indonesia',
     'footer_phone' => '+62-264-351-888',
-    'footer_email' => 'corporate@n-plast.co.id'
+    'footer_email' => 'corporate@n-plast.co.id',
+
+    // Extended Topbar, Footer & Plant Elements
+    'topbar_cert' => 'IATF 16949 • ISO 14001 • ISO 45001 CERTIFIED',
+    'topbar_location' => 'Indotaisei Industrial Estate, Karawang, West Java',
+    'matrix_machines_lab' => 'Machinery Matrix & Labs',
+    'integrated_plant_title' => 'Integrated Automotive Plant at Cikampek Industrial Corridor',
+    'integrated_plant_desc' => 'Equipped with Mitutoyo 3D CMM metrology, high-speed airbag deployment test chambers, Xenon Arc UV weatherometer, and automated robotic painting cells to ensure Tier-1 OEM standards.',
+    'office_plant_title' => 'Headquarters & Manufacturing Plant',
+    'office_plant_sub' => 'Indotaisei Industrial Estate, Cikampek, Karawang',
+    'office_plant_address' => 'Plant Address:',
+    'office_plant_phone' => 'Phone:',
+    'office_plant_email' => 'Official Email:',
+    'corporate_vision_title' => 'Corporate Vision',
+    'core_values_title' => 'Core Values',
+    'footer_tagline' => 'Automotive Safety & Precision Monozukuri • Member of Nihon Plast Group (Japan)',
+    'prod_steering' => 'Steering Wheel Systems',
+    'prod_airbag' => 'Airbag Safety Modules',
+    'prod_interior' => 'Cockpit & Interior Resins',
+    'prod_exterior' => 'Exterior & Aero Trims',
 ];

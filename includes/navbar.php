@@ -1,16 +1,20 @@
 <?php
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/translation_helpers.php";
 
 $companyNav = null;
 if (isset($conn)) {
     $companyResult = $conn->query(
-        "SELECT company_name, logo, phone, email, address
+        "SELECT id, company_name, logo, phone, email, address
          FROM company_profile
          ORDER BY id ASC
          LIMIT 1"
     );
     if ($companyResult) {
         $companyNav = $companyResult->fetch_assoc();
+        if ($companyNav && function_exists('translate_entity_row')) {
+            $companyNav = translate_entity_row('company_profile', $companyNav);
+        }
     }
 }
 
@@ -30,11 +34,11 @@ $supportedLanguages = get_supported_languages();
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <span class="site-topbar-badge">
-                    <i class="bi bi-patch-check-fill text-success me-1"></i> IATF 16949 &bull; ISO 14001 &bull; ISO 45001 CERTIFIED
+                    <i class="bi bi-patch-check-fill text-success me-1"></i> <?= htmlspecialchars(__('topbar_cert', 'IATF 16949 • ISO 14001 • ISO 45001 CERTIFIED')) ?>
                 </span>
                 <span class="text-secondary opacity-50">|</span>
                 <span class="text-muted small">
-                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Kawasan Industri Indotaisei, Karawang, Jawa Barat
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> <?= htmlspecialchars(__('topbar_location', 'Kawasan Industri Indotaisei, Karawang, Jawa Barat')) ?>
                 </span>
             </div>
             <div class="d-flex align-items-center gap-3">

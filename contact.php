@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config/database.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $success = "";
 $error = "";
@@ -12,6 +13,9 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 // Fetch company profile
 $companyRes = $conn->query("SELECT * FROM company_profile WHERE id = 1 LIMIT 1");
 $company = $companyRes ? $companyRes->fetch_assoc() : [];
+if ($company && function_exists('translate_entity_row')) {
+    $company = translate_entity_row('company_profile', $company);
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // 1. Anti-Bot Honeypot check

@@ -391,10 +391,12 @@ p {
     border-radius: var(--np-radius-md);
     box-shadow: var(--np-shadow-md);
     border: 1px solid var(--np-border);
-    padding: 1.5rem 1.75rem;
-    margin-top: -2.75rem;
-    position: relative;
-    z-index: 20;
+    padding: 1.75rem 2rem;
+    margin: 0 auto !important;
+    margin-top: 0 !important;
+    position: static !important;
+    transform: none !important;
+    clear: both !important;
 }
 
 .stat-item {

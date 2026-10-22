@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config/database.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $certList = $conn->query("SELECT * FROM certifications WHERE status = 'active' ORDER BY sort_order ASC, id ASC");
 ?>
@@ -97,7 +98,9 @@ $certList = $conn->query("SELECT * FROM certifications WHERE status = 'active' O
 
         <div class="row g-4">
             <?php if ($certList && $certList->num_rows > 0): ?>
-                <?php while ($cert = $certList->fetch_assoc()): ?>
+                <?php while ($cert = $certList->fetch_assoc()): 
+                    if (function_exists('translate_entity_row')) $cert = translate_entity_row('certification', $cert);
+                ?>
                     <div class="col-md-6 col-lg-4">
                         <div class="cert-card <?= str_contains($cert['name'], 'IATF') ? 'featured-iatf' : '' ?>">
                             <div class="d-flex justify-content-between align-items-start mb-2">

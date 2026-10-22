@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" fill="none">
+  <!-- Mazda Flying 'M' Wing Crest -->
+  <g fill="#910000">
+    <!-- Outer Oval Ring -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M60 12C28 12 6 26.8 6 45s22 33 54 33 54-14.8 54-33-22-33-54-33zm0 6c27 0 47 12.1 47 27s-20 27-47 27-47-12.1-47-27 20-27 47-27z"/>
+    <!-- Dynamic Winged 'M' Center Motif -->
+    <path d="M60 48c4.5-8.5 14-14 24-14 4.5 0 8.5 1.2 12 3.5-3.8 6.5-12 12-23 15-4 1.1-8.5 1.7-13 1.7s-9-0.6-13-1.7c-11-3-19.2-8.5-23-15 3.5-2.3 7.5-3.5 12-3.5 10 0 19.5 5.5 24 14z"/>
+    <path d="M60 52l-5 18h10l-5-18z"/>
+  </g>
+</svg>

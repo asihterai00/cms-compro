@@ -1,7 +1,7 @@
 # 🧠 CMS Company Profile - Project Memory Bank
 
 > Auto-exported from MySQL Database `db_cms_compro.project_memory`
-> Generated on: 2026-10-15 09:57:49
+> Generated on: 2026-10-22 09:40:49
 
 
 ## 📂 Category: ARCHITECTURE
@@ -121,6 +121,80 @@ Menuntaskan akar masalah teks acak PHP Warning yang mencemari tata letak di bawa
 - **Author:** antigravity-ai
 
 1. Generated 5 official 4:3 vector SVG flags in assets/img/flags/ (id, en, ja, zh, ko). 2. Replaced the 5 exposed language buttons with a sleek Single-Flag Combobox in navbar.php & modern-dribbble.css showing only active flag and code on the header, expanding to a soft-shadow dropdown with native labels and active indicators. 3. Fixed undefined supportedLanguages variable in navbar.php. 4. Updated 7 public pages from static lang=id to dynamic get_html_lang(). 5. Automated test scripts/test_all_languages_and_pages.php passed 60/60 scenarios (12 pages x 5 languages). 6. Comprehensive audit verified 76 files with 0 syntax errors and 0 security vulnerabilities.
+
+---
+
+### #28 - Dynamic Multilingual Database Schema and CMS Translation Engine
+- **Recorded At:** 2026-10-16 08:51:17
+- **Author:** antigravity-ai
+
+Implemented content_translations table with unique index (entity_type, entity_id, lang_code, field_name). Seeded 244 translations across products, company_profile, page_banners, news, careers, certifications, and facility_machinery. Created includes/translation_helpers.php with cached bulk lookup and save helpers. Added admin/translations.php multilingual management hub and 5-language tabbed editors in admin/products.php and admin/news.php. Integrated dynamically into all 12 public pages.
+
+---
+
+### #29 - Full Site Section and Section Items Database Translation Seeding
+- **Recorded At:** 2026-10-16 09:59:47
+- **Author:** antigravity-ai
+
+Seeded 1008 translations into content_translations covering all 44 site_sections and 84 site_section_items. Converted static facility preview cards to dynamic sec_items('facility_preview'). Translated hero slide buttons, stats, industrial capability banner, office and plant contact cards, vision, values, topbar and footer. Verified with test_full_page_translations.php across all 5 languages.
+
+---
+
+### #30 - Executive OEM Partner Brand Showcase, Vector SVG Emblems, Authentic Typography &amp; Zero-Overlap Stats Bar Layout
+- **Recorded At:** 2026-10-16 10:50:28
+- **Author:** antigravity-ai
+- **Metadata:** `{"oem_count":10,"svg_directory":"assets/img/oem/","css_files_updated":["assets/css/style.css","assets/css/modern-dribbble.css"],"layout_fix":"Removed negative margin-top on .stats-bar","status":"COMPLETED_AND_VERIFIED"}`
+
+Menyelesaikan tuntas keluhan user mengenai tampilan strip OEM yang ter-cluster / tumpang tindih dengan stats bar dan teks polosan:
+1. Root Cause Overlap: In style.css, .stats-bar had `margin-top: -2.75rem` which pulled the stats box up by 44px directly slicing through the bottom half of the OEM ticker pills. Fixed by setting clean margin-top: 2.25rem with dedicated breathing room.
+2. Authentic OEM Vector SVG Logos: Dibuat 10 file SVG emblem resmi di assets/img/oem/ (toyota.svg, honda.svg, nissan.svg, daihatsu.svg, mitsubishi.svg, suzuki.svg, subaru.svg, mazda.svg, isuzu.svg, hyundai.svg) dengan matematika vektor presisi tanpa ketergantungan API pihak ketiga (100% FOSS).
+3. Brand Identity & Typography: Masing-masing OEM dilengkapi warna resmi (Toyota Red #EB0A1E, Honda Red #E40521, Nissan Crimson #C3002F, Daihatsu Red #D52B1E, Mitsubishi Red #E60012, Suzuki Blue #003882, Subaru Blue #013C74, Mazda Red #910000, Isuzu Red #EC1C24, Hyundai Blue #002C6C) dan tipografi otentik melalui extra_data JSON di database.
+4. Dynamic CMS & Multilingual Support: 10 OEM items lengkap dengan judul, subtitle multibahasa (ID, EN, JA, ZH, KO), sort_order 1-10, dan integrasi penuh dengan admin site_section_items.php.
+5. Executive Micro-Interactions: Efek hover 3D lift, border illumination sesuai warna pabrikan, accent bottom indicator, dan Swiper pause-on-hover.
+
+---
+
+### #31 - Total Redesign Admin Dashboard &amp; Categorized Architecture (TailAdmin &amp; Dribbble Grade)
+- **Recorded At:** 2026-10-16 11:00:03
+- **Author:** antigravity-ai
+- **Metadata:** `{"admin_pages_tested":15,"pass_rate":"15/15 (100%)","new_file":"admin/media.php","status":"COMPLETED_AND_VERIFIED"}`
+
+Menuntaskan keluhan user mengenai tampilan admin dashboard yang acak-acakan dan fungsinya mencar-mencar:
+1. Rekonstruksi & Kategorisasi Menu Navigasi (admin/auth.php & admin/includes/header.php):
+   - Mengelompokkan 15 modul admin ke dalam 6 kategori terstruktur: RINGKASAN, CMS HALAMAN WEB, KATALOG & POSTING, FASILITAS & MUTU, MEDIA & FILE ASSETS, INTERAKSI & INQUIRY, PENGATURAN & SISTEM.
+   - Dilengkapi lencana notifikasi pesan belum dibaca, badge 5-lang, avatar user role, dan topbar dengan Global Instant Search (Ctrl+K).
+2. 'CMS ke Page Mana' -> Visual Page Explorer Hub (admin/dashboard.php):
+   - Dibuat grid interaktif 9 halaman publik (Home, About, Products, Facility, Quality, Career, News, Contact, Gallery) lengkap dengan rute URL, jumlah section aktif/total, tombol langsung 'Kelola Elemen CMS' (site_sections.php?page=...), dan tombol 'Pratinjau Halaman'.
+3. 'Upload Mana' -> Media & Asset Repository Library (admin/media.php):
+   - Dibuat halaman khusus pengelolaan berkas media mandiri (100% FOSS) dengan upload drag-and-drop (JPG, PNG, WEBP, SVG), filter kategori (Produk, Berita, Banner, OEM, Fasilitas), preview kartu, ukuran file, dan tombol 1-Click 'Salin Path' untuk memudahkan pengisian form CMS.
+4. 'Ke Post Mana & Config Mana':
+   - Segmentasi jelas antara postingan berkala (Produk, Berita, Karir, Galeri) dan konfigurasi sistem (Translasi 5 Bahasa, Profil Perusahaan, Otorisasi RBAC).
+5. Desain Estetika Dribbble / TailAdmin Grade (admin/assets/admin.css):
+   - Palet warna dark slate #0F172A, aksen emerald Monozukuri #005A36 / #10B981, kartu bento border halus #E2E8F0, shadow ambient, dan 100% responsif mobile drawer.
+
+---
+
+### #33 - Vibe Coding Skills Suite &amp; PHP Runtime Alignment
+- **Recorded At:** 2026-10-22 14:36:00
+- **Author:** antigravity-ai
+
+Integrated 5 FOSS agent skills (ponytail, caveman, code-review, vibe-workflow, book-to-skill) into .agents/skills. Configured php.ini in C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64 enabling mysqli, mbstring, pdo_mysql, fileinfo. Aligned all runbooks and GEMINI.md.
+
+---
+
+### #34 - Production React Dashboard V14 Implementation &amp; CMS Integration
+- **Recorded At:** 2026-10-22 16:21:21
+- **Author:** antigravity-ai
+
+Integrated production-quality React 18, Tailwind CSS, Lucide React, and Recharts Dashboard V14 into admin/dashboard.php and dashboard-v14. Removed legacy Bootstrap and Chart.js from dashboard.php. Configured 66/34 bento layout, 3 KPI cards with integrated sparklines, 4 automotive product pillars (Steering Wheel, Airbag Module, Interior Parts, Resin Parts), live MySQL data injection, and full RBAC.
+
+---
+
+### #35 - Admin CMS Palette &amp; Navigation Alignment with Public Site
+- **Recorded At:** 2026-10-22 16:40:43
+- **Author:** antigravity-ai
+
+Harmonized Admin CMS color palette with official PT Nihon Plast Indonesia Forest Green identity (#005A36, #007A4A, #EBF7EE). Replaced legacy e-commerce navigation names (Orders, Customers) with clean, professional menu items that 1-to-1 match the public site structure and positioning: Dashboard, Page Builder, Products, Quality & ISO, Facilities, Gallery, News, Career, B2B RFQ, and Settings.
 
 ---
 
@@ -263,6 +337,17 @@ Comprehensive benchmark of Nihon Plast Co., Ltd. (Japan - n-plast.co.jp) and 202
 - **Author:** antigravity-ai
 
 Benchmarked key Tier-1 interior and safety competitors: Japan (Toyoda Gosei, Tokai Rika, Ashimori), Indonesia (PT TGSSI, PT Astra Sugity, PT Kasai Teck See), China (Yanfeng, Joyson Safety), Korea (Hyundai Mobis, Seoyon E-Hwa). Identified 8 critical feature gaps: 1. Interactive Vehicle Zone Component Explorer; 2. Technical Machinery & Injection Tonnage Matrix; 3. ISO/IATF 16949 & TKDN Public Verification Hub; 4. OEM Customer Trust & Awards Showcase; 5. In-house Safety Testing & CMM Lab Specs; 6. Green Monozukuri & Recycled Resin ESG Roadmap; 7. B2B RFQ / Company Profile PDF Download; 8. Dual Language (ID/EN) Switcher.
+
+---
+
+
+## 📂 Category: NOTES
+
+### #32 - CMS Documentation Markdown Created
+- **Recorded At:** 2026-10-21 17:07:55
+- **Author:** antigravity-ai
+
+Created comprehensive CMS documentation artifact at cms-documentation.md covering: system overview, tech stack, file structure, 16 database tables with full schema, 10 public pages, Dashboard V14, 14 admin modules with CRUD details, RBAC security system, 5-language multilingual engine, file upload system, and workflow diagrams (Mermaid ER, sequence, flowchart).
 
 ---
 

@@ -3,6 +3,7 @@
  * PT Nihon Plast Indonesia - Global Dynamic CMS & Section Helpers
  * Supports 100% dynamic element rendering and active/inactive toggle across all pages
  */
+require_once __DIR__ . '/translation_helpers.php';
 
 /**
  * Load all sections for a specific page from site_sections table
@@ -86,16 +87,26 @@ function get_section_val($page, $section_key, $field, $default = '') {
     }
 
     // Multilingual Translation Support across EN, JA, ZH, KO
-    if (function_exists('current_lang') && current_lang() !== 'id' && function_exists('__')) {
-        $transKey = $section_key . '_' . $field;
-        $t = __($transKey, null);
-        if ($t !== null && $t !== $transKey) {
-            return $t;
+    if (function_exists('current_lang') && current_lang() !== 'id') {
+        // 1. Check MySQL content_translations table first
+        if (isset($sections[$section_key]['id']) && function_exists('get_content_translation')) {
+            $dbTrans = get_content_translation('site_section', (int)$sections[$section_key]['id'], $field, current_lang());
+            if ($dbTrans !== null && $dbTrans !== '') {
+                return $dbTrans;
+            }
         }
-        if (is_string($val) && strlen($val) < 255) {
-            $tVal = __($val, null);
-            if ($tVal !== null && $tVal !== $val) {
-                return $tVal;
+        // 2. Check translation keys fallback
+        if (function_exists('__')) {
+            $transKey = $section_key . '_' . $field;
+            $t = __($transKey, null);
+            if ($t !== null && $t !== $transKey) {
+                return $t;
+            }
+            if (is_string($val) && strlen($val) < 255) {
+                $tVal = __($val, null);
+                if ($tVal !== null && $tVal !== $val) {
+                    return $tVal;
+                }
             }
         }
     }
@@ -162,6 +173,9 @@ function get_section_items($section_key, $onlyActive = true, $resetCache = false
                         if (json_last_error() === JSON_ERROR_NONE) {
                             $row['extra'] = $decoded;
                         }
+                    }
+                    if (function_exists('translate_entity_row')) {
+                        $row = translate_entity_row('site_section_item', $row);
                     }
                     if (function_exists('current_lang') && current_lang() !== 'id' && function_exists('__')) {
                         $itemTitleKey = ($row['item_key'] ?? '') . '_title';

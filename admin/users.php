@@ -183,49 +183,58 @@ $users = $conn->query("SELECT * FROM users ORDER BY id ASC");
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
 
-<div class="container py-4">
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h1 class="h3 fw-bold mb-1">
-                <i class="bi bi-people text-success me-2"></i>Multiple User Authorization (RBAC)
-            </h1>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-emerald-subtle text-emerald px-2 py-1 fs-xs fw-bold rounded-pill">
+                    <i class="bi bi-shield-lock me-1"></i> ACCESS CONTROL & RBAC
+                </span>
+                <span class="badge bg-light text-muted border px-2 py-1 fs-xs">
+                    Total <?= $users->num_rows ?> Akun
+                </span>
+            </div>
+            <h1 class="h3 fw-bold mb-1 text-dark tracking-tight">User Authorization & RBAC</h1>
             <p class="text-muted small mb-0">
-                Kelola akun pengguna dan konfigurasi izin Create, Read, Update, Delete (CRUD) secara granular per menu sistem.
+                Kelola akun operator dan konfigurasi izin Create, Read, Update, Delete (CRUD) secara granular per menu sistem.
             </p>
         </div>
-        <?php if (!$editUser && has_permission('users', 'create')): ?>
-            <a href="#userForm" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                <i class="bi bi-person-plus-fill"></i> Tambah Pengguna Baru
-            </a>
+        <?php if (has_permission('users', 'create')): ?>
+            <button class="btn btn-emerald btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1" type="button" data-bs-toggle="collapse" data-bs-target="#userFormCollapse" aria-expanded="<?= ($editUser || isset($_GET['new'])) ? 'true' : 'false' ?>">
+                <i class="bi bi-person-plus-fill me-1"></i> <?= $editUser ? 'Tutup Form' : 'Tambah Pengguna Baru' ?>
+            </button>
         <?php endif; ?>
     </div>
 
     <!-- Alert Messages -->
     <?php if ($message): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i><?= htmlspecialchars($message) ?>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2 text-success"></i><?= htmlspecialchars($message) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
     <?php if ($error): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i><?= htmlspecialchars($error) ?>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i><?= htmlspecialchars($error) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
 
-    <!-- USER FORM (CREATE / EDIT) -->
-    <?php if ($editUser || isset($_GET['new'])): ?>
-        <div class="card border-0 shadow-sm mb-4" id="userForm">
+    <!-- USER FORM (CREATE / EDIT) COLLAPSIBLE -->
+    <div class="collapse <?= ($editUser || isset($_GET['new'])) ? 'show' : '' ?> mb-4" id="userFormCollapse">
+        <div class="card border-0 shadow-sm rounded-4" id="userForm">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">
-                    <i class="bi <?= $editUser ? 'bi-person-gear text-primary' : 'bi-person-plus-fill text-success' ?> me-2"></i>
-                    <?= $editUser ? 'Edit Pengguna: ' . htmlspecialchars($editUser['username']) : 'Tambah Pengguna & Atur Hak Akses CRUD' ?>
-                </h5>
-                <a href="users.php" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-x-circle me-1"></i> Batal
-                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="avatar-sm rounded-3 bg-emerald-subtle text-emerald d-inline-flex align-items-center justify-content-center p-2">
+                        <i class="bi <?= $editUser ? 'bi-person-gear' : 'bi-person-plus-fill' ?>"></i>
+                    </span>
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <?= $editUser ? 'Edit Pengguna: ' . htmlspecialchars($editUser['username']) : 'Tambah Pengguna & Atur Hak Akses CRUD' ?>
+                    </h5>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-toggle="collapse" data-bs-target="#userFormCollapse">
+                    Tutup
+                </button>
             </div>
             <div class="card-body p-4">
                 <form method="post">
@@ -355,48 +364,48 @@ $users = $conn->query("SELECT * FROM users ORDER BY id ASC");
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary px-4">
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-emerald px-4 rounded-pill shadow-sm">
                             <i class="bi bi-save me-1"></i> Simpan Pengguna & Izin CRUD
                         </button>
-                        <a href="users.php" class="btn btn-secondary px-4">Batal</a>
+                        <button type="button" class="btn btn-light border px-4 rounded-pill" data-bs-toggle="collapse" data-bs-target="#userFormCollapse">Batal</button>
                     </div>
                 </form>
             </div>
         </div>
-    <?php endif; ?>
+    </div>
 
     <!-- USERS TABLE -->
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0">Daftar Pengguna Sistem</h5>
-            <span class="text-muted small">Total: <?= $users->num_rows ?> Pengguna</span>
+            <h5 class="fw-bold mb-0 text-dark">Daftar Pengguna Sistem</h5>
+            <span class="text-muted small">Total: <strong><?= $users->num_rows ?></strong> Pengguna</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-3" style="width: 60px;">ID</th>
+                            <th class="ps-4" style="width: 70px;">ID</th>
                             <th>Username & Nama</th>
                             <th>Email</th>
                             <th>Peran (Role)</th>
                             <th>Status</th>
                             <th>Terdaftar</th>
-                            <th class="text-end pe-3">Aksi</th>
+                            <th class="text-end pe-4" style="width: 140px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php while ($u = $users->fetch_assoc()): ?>
                             <tr>
-                                <td class="ps-3 fw-bold text-muted"><?= $u["id"] ?></td>
+                                <td class="ps-4 fw-bold text-muted"><?= $u["id"] ?></td>
                                 <td>
                                     <div class="fw-bold text-dark"><?= htmlspecialchars($u["username"]) ?></div>
                                     <?php if (!empty($u["full_name"])): ?>
                                         <small class="text-muted"><?= htmlspecialchars($u["full_name"]) ?></small>
                                     <?php endif; ?>
                                     <?php if ((int)$u["id"] === (int)$_SESSION["admin_id"]): ?>
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle small ms-1">Akun Anda</span>
+                                        <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle small ms-1">Akun Anda</span>
                                     <?php endif; ?>
                                 </td>
                                 <td><?= htmlspecialchars($u["email"] ?? '-') ?></td>
@@ -411,19 +420,19 @@ $users = $conn->query("SELECT * FROM users ORDER BY id ASC");
                                 </td>
                                 <td>
                                     <?php if (($u["status"] ?? 'active') === 'active'): ?>
-                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>AKTIF</span>
+                                        <span class="badge bg-emerald-subtle text-emerald rounded-pill px-3 py-1 fs-xs fw-bold border"><i class="bi bi-check-circle-fill me-1"></i>AKTIF</span>
                                     <?php else: ?>
-                                        <span class="badge bg-secondary"><i class="bi bi-dash-circle-fill me-1"></i>NONAKTIF</span>
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1 fs-xs fw-bold border"><i class="bi bi-dash-circle-fill me-1"></i>NONAKTIF</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="small text-muted"><?= htmlspecialchars(substr($u["created_at"] ?? '', 0, 10)) ?></td>
-                                <td class="text-end pe-3">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="users.php?edit=<?= $u["id"] ?>#userForm" class="btn btn-outline-primary" title="Edit Pengguna & Hak Akses CRUD">
-                                            <i class="bi bi-pencil me-1"></i> Edit & Izin
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="users.php?edit=<?= $u["id"] ?>#userFormCollapse" class="btn btn-sm btn-outline-primary rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 32px; text-align: center;" title="Edit Pengguna & Hak Akses CRUD">
+                                            <i class="bi bi-pencil"></i>
                                         </a>
                                         <?php if ((int)$u["id"] !== (int)$_SESSION["admin_id"] && (int)$u["id"] !== 1): ?>
-                                            <a href="<?= csrf_url('users.php?delete=' . (int)$u["id"]) ?>" class="btn btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus user <?= htmlspecialchars($u['username']) ?> beserta izinnya?')">
+                                            <a href="<?= csrf_url('users.php?delete=' . (int)$u["id"]) ?>" class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 32px; text-align: center;" title="Hapus User" onclick="return confirm('Apakah Anda yakin ingin menghapus user <?= htmlspecialchars($u['username']) ?> beserta izinnya?')">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php endif; ?>
@@ -436,7 +445,6 @@ $users = $conn->query("SELECT * FROM users ORDER BY id ASC");
             </div>
         </div>
     </div>
-</div>
 
 <script>
 function checkAllPerms(checked) {

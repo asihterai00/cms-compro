@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" fill="none">
+  <!-- Daihatsu Dynamic 'D' Crest -->
+  <g fill="#D52B1E">
+    <!-- Outer Oval Ring -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M60 12C28 12 6 26.8 6 45s22 33 54 33 54-14.8 54-33-22-33-54-33zm0 7c27 0 46 11.6 46 26s-19 26-46 26-46-11.6-46-26 19-26 46-26z"/>
+    <!-- Dynamic 'D' Center Motif -->
+    <path d="M34 26h18c14 0 25 7 25 19s-11 19-25 19H34V26zm14 9.5v19h4.5c8 0 13.5-3.8 13.5-9.5s-5.5-9.5-13.5-9.5H48z"/>
+    <path d="M73 34c4-3.5 10-4.5 15-2.5-1.5 2-3.8 3.5-6.5 4.5-3 1.2-6 1-8.5-2z"/>
+  </g>
+</svg>

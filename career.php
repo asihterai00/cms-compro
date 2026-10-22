@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config/database.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $careers = $conn->query("SELECT * FROM careers ORDER BY id ASC");
 ?>
@@ -160,7 +161,9 @@ $careers = $conn->query("SELECT * FROM careers ORDER BY id ASC");
 
         <div class="row g-4">
             <?php if ($careers && $careers->num_rows > 0): ?>
-                <?php while ($job = $careers->fetch_assoc()): ?>
+                <?php while ($job = $careers->fetch_assoc()): 
+                    if (function_exists('translate_entity_row')) $job = translate_entity_row('career', $job);
+                ?>
                     <div class="col-lg-6">
                         <div class="card h-100 border rounded-4 p-4 shadow-sm bg-white">
                             <div class="d-flex justify-content-between align-items-start mb-2">

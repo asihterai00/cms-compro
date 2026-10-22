@@ -7,19 +7,41 @@ require_permission('site_section_items', 'read');
 $success = "";
 $error = "";
 
-// 1. Quick 1-Click Toggle Active / Inactive
+// 1. Quick 1-Click Toggle Active / Inactive (supports AJAX & Synchronous)
 if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])) {
     require_csrf();
+    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || (isset($_GET['ajax']) && $_GET['ajax'] == 1);
+    
     if (!has_permission('site_section_items', 'update')) {
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Anda tidak memiliki izin untuk mengubah status sub-item ini.']);
+            exit;
+        }
         $_SESSION['flash_error'] = "Anda tidak memiliki izin untuk mengubah status sub-item ini.";
     } else {
         $id = (int)$_GET['id'];
         $stmt = $conn->prepare("UPDATE site_section_items SET is_active = IF(is_active = 1, 0, 1) WHERE id = ?");
         $stmt->bind_param("i", $id);
-        if ($stmt->execute()) {
-            $_SESSION['flash_success'] = "Status sub-item berhasil diperbarui.";
-        }
+        $stmt->execute();
         $stmt->close();
+
+        // Fetch updated status
+        $res = $conn->query("SELECT is_active, title FROM site_section_items WHERE id = " . $id)->fetch_assoc();
+        $newStatus = (int)($res['is_active'] ?? 0);
+        $title = $res['title'] ?? 'Sub-item';
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'id' => $id,
+                'is_active' => $newStatus,
+                'message' => 'Status "' . $title . '" diubah menjadi ' . ($newStatus ? 'AKTIF' : 'NONAKTIF')
+            ]);
+            exit;
+        }
+        $_SESSION['flash_success'] = "Status sub-item berhasil diperbarui.";
     }
     $secKey = isset($_GET['section_key']) ? '?section_key=' . urlencode($_GET['section_key']) : '';
     header("Location: site_section_items.php" . $secKey);
@@ -114,6 +136,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = "Format Extra Data harus berupa JSON yang valid. Contoh: {\"badges\": [\"A\", \"B\"]}";
         }
+    }
+
+    // Incorporate dedicated OEM Partner visual controls (brand_color, brand_role)
+    $brandColorInput = trim($_POST['brand_color'] ?? '');
+    $brandRoleInput = trim($_POST['brand_role'] ?? '');
+    if ($brandColorInput !== '' || $brandRoleInput !== '') {
+        $extraArray = !empty($extraData) ? json_decode($extraData, true) : [];
+        if (!is_array($extraArray)) $extraArray = [];
+        if ($brandColorInput !== '') {
+            $extraArray['brand_color'] = $brandColorInput;
+            if (preg_match('/^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i', $brandColorInput, $m)) {
+                $r = hexdec($m[1]); $g = hexdec($m[2]); $b = hexdec($m[3]);
+                $extraArray['brand_bg'] = "rgba($r, $g, $b, 0.05)";
+            }
+        }
+        if ($brandRoleInput !== '') {
+            $extraArray['badge_text'] = $brandRoleInput;
+        }
+        $extraData = json_encode($extraArray);
     }
 
     if ($error === '') {
@@ -267,23 +308,23 @@ $iconCategories = [
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
 
-<div class="container py-4">
+<div class="mb-4">
     <!-- Header Page -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h1 class="h3 fw-bold mb-1">
-                <i class="bi bi-collection text-success me-2"></i>Dynamic Sub-Items, Cards & Poin Elemen
+                <i class="bi bi-collection text-emerald me-2"></i>Dynamic Sub-Items, Cards & Poin Elemen
             </h1>
             <p class="text-muted small mb-0">
                 Kelola setiap kartu, mitra OEM, zona mobil interaktif, pilar mutu, fasilitas lab, dan spesifikasi secara dinamis.
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="site_sections.php" class="btn btn-outline-secondary">
-                <i class="bi bi-layout-text-window-reverse me-1"></i> Ke Halaman Elemen Induk
+            <a href="site_sections.php" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+                <i class="bi bi-layout-text-window-reverse"></i> Ke Halaman Elemen Induk
             </a>
-            <a href="#formItem" class="btn btn-np-primary">
-                <i class="bi bi-plus-circle me-1"></i> Tambah Sub-Item Baru
+            <a href="#formItem" class="btn btn-emerald btn-sm d-inline-flex align-items-center gap-1 shadow-sm px-3 py-2 fw-bold">
+                <i class="bi bi-plus-circle-fill"></i> Tambah Sub-Item Baru
             </a>
         </div>
     </div>
@@ -458,8 +499,51 @@ $iconCategories = [
 
                     <!-- Extra Data JSON -->
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small">Extra Data (JSON format untuk daftar badge/checklist)</label>
-                        <textarea name="extra_data" class="form-control font-monospace small" rows="2" placeholder='{"badges": ["Item 1", "Item 2"]}'><?= htmlspecialchars($editRow['extra_data'] ?? '') ?></textarea>
+                        <label class="form-label fw-semibold small">Extra Data (JSON format untuk konfigurasi lanjutan)</label>
+                        <textarea name="extra_data" id="extraDataInput" class="form-control font-monospace small" rows="2" placeholder='{"badges": ["Item 1", "Item 2"]}'><?= htmlspecialchars($editRow['extra_data'] ?? '') ?></textarea>
+                    </div>
+
+                    <?php
+                    $currentSecKey = $editRow['section_key'] ?? $filterSection;
+                    $editExtra = !empty($editRow['extra_data']) ? json_decode($editRow['extra_data'], true) : [];
+                    $currentBrandColor = $editExtra['brand_color'] ?? '#005A36';
+                    $currentBrandRole = $editExtra['badge_text'] ?? ($editRow['badge'] ?? '');
+                    ?>
+                    <!-- Dedicated OEM Partner Customization (Brand Color, Tier Role & Live Preview) -->
+                    <div class="col-12" id="oemControlsBox" style="<?= ($currentSecKey === 'oem_trust') ? '' : 'display: none;' ?>">
+                        <div class="p-3 rounded-3 border bg-light-subtle">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-palette2 text-success me-2"></i>Pengaturan Khusus OEM Automotive Partner</h6>
+                                <span class="badge bg-success-subtle text-success">Dynamic CMS Control</span>
+                            </div>
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-muted">Warna Resmi Brand (Corporate Hex Color)</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="brandColorPicker" value="<?= htmlspecialchars($currentBrandColor) ?>" title="Pilih warna resmi OEM">
+                                        <input type="text" name="brand_color" id="brandColorInput" class="form-control font-monospace" value="<?= htmlspecialchars($currentBrandColor) ?>" placeholder="#EB0A1E">
+                                    </div>
+                                    <div class="form-text small">Contoh: Toyota #EB0A1E, Honda #E40521, Nissan #C3002F, Suzuki #003882</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-muted">Label Peran / Tier Khusus (Role Badge)</label>
+                                    <input type="text" name="brand_role" id="brandRoleInput" class="form-control" value="<?= htmlspecialchars($currentBrandRole) ?>" placeholder="contoh: Strategic Platform Partner">
+                                    <div class="form-text small">Teks status tier-1 yang tampil di kartu publik</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-muted">Pratinjau Kartu OEM (Live Preview)</label>
+                                    <div id="oemLivePreviewCard" class="d-flex align-items-center gap-3 p-3 bg-white rounded-3 border shadow-sm" style="border-left: 4px solid <?= htmlspecialchars($currentBrandColor) ?> !important;">
+                                        <div style="width: 42px; height: 42px; background: #f8fafc; border: 1px solid #edf2f7; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: <?= htmlspecialchars($currentBrandColor) ?>;">
+                                            <i class="bi bi-shield-check fs-4"></i>
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <div id="prevBrandName" class="fw-bold small text-truncate" style="color: <?= htmlspecialchars($currentBrandColor) ?>; font-size: 0.95rem;"><?= htmlspecialchars($editRow['title'] ?? 'BRAND NAME') ?></div>
+                                            <div id="prevBrandRole" class="text-muted text-uppercase fw-semibold" style="font-size: 0.70rem;"><?= htmlspecialchars($currentBrandRole ?: 'OEM Tier-1 Partner') ?></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-12">
@@ -562,31 +646,40 @@ $iconCategories = [
                                     <td>
                                         <?php if (has_permission('site_section_items', 'update')): ?>
                                             <a href="<?= csrf_url('site_section_items.php?action=toggle&id=' . (int)$it['id'] . '&section_key=' . urlencode($filterSection)) ?>" 
-                                               class="text-decoration-none d-inline-block" 
+                                               class="btn-toggle-item-status text-decoration-none d-inline-block" 
+                                               data-id="<?= (int)$it['id'] ?>" 
+                                               data-csrf="<?= csrf_token() ?>"
                                                title="Klik untuk toggle status aktif">
-                                                <?php if ($it['is_active']): ?>
-                                                    <span class="badge-active d-inline-flex align-items-center gap-1">
-                                                        <i class="bi bi-check-circle-fill"></i> ACTIVE
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span class="badge-inactive d-inline-flex align-items-center gap-1">
-                                                        <i class="bi bi-eye-slash-fill"></i> NOT ACTIVE
-                                                    </span>
-                                                <?php endif; ?>
+                                                <span id="status-badge-item-<?= (int)$it['id'] ?>" class="<?= $it['is_active'] ? 'badge-active' : 'badge-inactive' ?> d-inline-flex align-items-center gap-1">
+                                                    <i class="bi <?= $it['is_active'] ? 'bi-check-circle-fill' : 'bi-eye-slash-fill' ?>"></i> 
+                                                    <?= $it['is_active'] ? 'ACTIVE' : 'NOT ACTIVE' ?>
+                                                </span>
                                             </a>
                                         <?php else: ?>
                                             <span class="<?= $it['is_active'] ? 'badge-active' : 'badge-inactive' ?> d-inline-flex align-items-center gap-1">
+                                                <i class="bi <?= $it['is_active'] ? 'bi-check-circle-fill' : 'bi-eye-slash-fill' ?>"></i>
                                                 <?= $it['is_active'] ? 'ACTIVE' : 'NOT ACTIVE' ?>
                                             </span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-end pe-3">
                                         <div class="btn-group btn-group-sm">
+                                            <!-- Toggle Button -->
+                                            <?php if (has_permission('site_section_items', 'update')): ?>
+                                                <a href="<?= csrf_url('site_section_items.php?action=toggle&id=' . (int)$it['id'] . '&section_key=' . urlencode($filterSection)) ?>" 
+                                                   id="toggle-item-btn-<?= (int)$it['id'] ?>"
+                                                   class="btn btn-toggle-item-status <?= $it['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" 
+                                                   data-id="<?= (int)$it['id'] ?>" 
+                                                   data-csrf="<?= csrf_token() ?>"
+                                                   title="<?= $it['is_active'] ? 'Nonaktifkan sub-item ini' : 'Aktifkan sub-item ini' ?>">
+                                                    <i class="bi <?= $it['is_active'] ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
+                                                </a>
+                                            <?php endif; ?>
                                             <a href="site_section_items.php?edit=<?= (int)$it['id'] ?>&section_key=<?= urlencode($filterSection) ?>#formItem" class="btn btn-outline-primary" title="Edit sub-item ini">
-                                                <i class="bi bi-pencil"></i>
+                                                <i class="bi bi-pencil"></i> Edit
                                             </a>
                                             <?php if (has_permission('site_section_items', 'delete')): ?>
-                                                <a href="<?= csrf_url('site_section_items.php?action=delete&id=' . (int)$it['id'] . '&section_key=' . urlencode($filterSection)) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus sub-item <?= htmlspecialchars(addslashes($it['title'])) ?>?')">
+                                                <a href="<?= csrf_url('site_section_items.php?action=delete&id=' . (int)$it['id'] . '&section_key=' . urlencode($filterSection)) ?>" class="btn btn-outline-danger" title="Hapus sub-item ini">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
                                             <?php endif; ?>
@@ -673,6 +766,109 @@ document.getElementById('iconSearchInput')?.addEventListener('input', function()
     document.querySelectorAll('.icon-picker-item').forEach(item => {
         const text = item.textContent.toLowerCase();
         item.style.display = text.includes(term) ? 'flex' : 'none';
+    });
+});
+
+// OEM Dynamic Controls & Live Preview
+document.addEventListener('DOMContentLoaded', function() {
+    const secSelect = document.querySelector('select[name="section_key"]');
+    const oemBox = document.getElementById('oemControlsBox');
+    const colorPicker = document.getElementById('brandColorPicker');
+    const colorInput = document.getElementById('brandColorInput');
+    const roleInput = document.getElementById('brandRoleInput');
+    const titleInput = document.querySelector('input[name="title"]');
+    const prevCard = document.getElementById('oemLivePreviewCard');
+    const prevName = document.getElementById('prevBrandName');
+    const prevRole = document.getElementById('prevBrandRole');
+
+    function updatePreview() {
+        if (!prevCard) return;
+        const color = (colorInput && colorInput.value.trim()) ? colorInput.value.trim() : '#005A36';
+        prevCard.style.borderLeftColor = color;
+        if (prevName) {
+            prevName.style.color = color;
+            prevName.textContent = (titleInput && titleInput.value.trim()) ? titleInput.value.trim() : 'BRAND NAME';
+        }
+        if (prevRole) {
+            prevRole.textContent = (roleInput && roleInput.value.trim()) ? roleInput.value.trim() : 'OEM Tier-1 Partner';
+        }
+    }
+
+    if (colorPicker && colorInput) {
+        colorPicker.addEventListener('input', function() {
+            colorInput.value = this.value;
+            updatePreview();
+        });
+        colorInput.addEventListener('input', function() {
+            if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+                colorPicker.value = this.value;
+            }
+            updatePreview();
+        });
+    }
+    if (roleInput) roleInput.addEventListener('input', updatePreview);
+    if (titleInput) titleInput.addEventListener('input', updatePreview);
+
+    if (secSelect && oemBox) {
+        secSelect.addEventListener('change', function() {
+            oemBox.style.display = (this.value === 'oem_trust') ? 'block' : 'none';
+        });
+    }
+    updatePreview();
+
+    // 1-Click Seamless AJAX Toggle for Sub-Items
+    document.querySelectorAll('.btn-toggle-item-status').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const csrf = this.getAttribute('data-csrf');
+            if (!id || !csrf) return;
+
+            const url = 'site_section_items.php?action=toggle&id=' + id + '&ajax=1&csrf_token=' + encodeURIComponent(csrf);
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        if (typeof showAdminToast === 'function') {
+                            showAdminToast(data.message, 'success');
+                        }
+                        // Update badge instantly
+                        const badgeEl = document.getElementById('status-badge-item-' + id);
+                        if (badgeEl) {
+                            if (data.is_active == 1) {
+                                badgeEl.className = 'badge-active d-inline-flex align-items-center gap-1';
+                                badgeEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> ACTIVE';
+                            } else {
+                                badgeEl.className = 'badge-inactive d-inline-flex align-items-center gap-1';
+                                badgeEl.innerHTML = '<i class="bi bi-eye-slash-fill"></i> NOT ACTIVE';
+                            }
+                        }
+                        // Update button icon instantly
+                        const toggleBtn = document.getElementById('toggle-item-btn-' + id);
+                        if (toggleBtn) {
+                            if (data.is_active == 1) {
+                                toggleBtn.className = 'btn btn-toggle-item-status btn-outline-warning';
+                                toggleBtn.title = 'Nonaktifkan sub-item ini';
+                                toggleBtn.innerHTML = '<i class="bi bi-toggle-on"></i>';
+                            } else {
+                                toggleBtn.className = 'btn btn-toggle-item-status btn-outline-success';
+                                toggleBtn.title = 'Aktifkan sub-item ini';
+                                toggleBtn.innerHTML = '<i class="bi bi-toggle-off"></i>';
+                            }
+                        }
+                    } else {
+                        if (typeof showAdminToast === 'function') {
+                            showAdminToast(data.message || 'Gagal mengubah status', 'error');
+                        } else {
+                            alert(data.message || 'Gagal mengubah status');
+                        }
+                    }
+                })
+                .catch(err => {
+                    // Fallback to regular full page reload
+                    window.location.href = this.getAttribute('href');
+                });
+        });
     });
 });
 </script>

@@ -10,19 +10,19 @@ This skill guides the agent in developing features, fixing bugs, and maintaining
 
 ## 1. Environment & Execution
 - **PHP CLI**: Always invoke using:
-  `& "C:\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe" <script.php>`
+  `& "C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe" <script.php>`
 - **Linting**: Before committing or concluding any edit, lint changed files:
-  `& "C:\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe" -l <file.php>`
+  `& "C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe" -l <file.php>`
 - **Database Status**: Check table row counts anytime with:
-  `& "C:\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe" scripts/db_check.php`
+  `& "C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe" scripts/db_check.php`
 
 ## 2. Mandatory Long-Term Memory Protocol
 Whenever a change or finding occurs:
 1. **Log to Database**:
-   `& "C:\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe" scripts/memory.php add --category=<cat> --title="<title>" --content="<content>"`
+   `& "C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe" scripts/memory.php add --category=<cat> --title="<title>" --content="<content>"`
    Categories: `architecture`, `environment`, `database`, `findings`, `changelog`, `security`, `todo`, `notes`.
 2. **Sync to Markdown**:
-   `& "C:\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe" scripts/memory.php export-md`
+   `& "C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe" scripts/memory.php export-md`
 3. **Update CHANGELOG.md**:
    Add entry under `CHANGELOG.md` for full version history.
 

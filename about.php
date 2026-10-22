@@ -1,8 +1,12 @@
 <?php
 require_once __DIR__ . "/config/database.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $result = $conn->query("SELECT * FROM company_profile ORDER BY id ASC LIMIT 1");
 $company = $result ? $result->fetch_assoc() : [];
+if ($company && function_exists('translate_entity_row')) {
+    $company = translate_entity_row('company_profile', $company);
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars(get_html_lang()) ?>">

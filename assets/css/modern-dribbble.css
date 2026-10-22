@@ -352,43 +352,324 @@
 }
 
 /* =========================================================
-   4. OEM PARTNER SILKY SMOOTH CONTINUOUS MARQUEE
+/* =========================================================
+   4. EXECUTIVE AUTOMOTIVE OEM SHOWCASE 2.0 (DRIBBLE/APPLE GRADE)
+   - Zero Overlap Architecture: Independent vertical isolation
+   - Continuous Linear Horizon Marquee with Dual Edge Fades
+   - Bento-Emblem Cards with Corporate Brand Identity & Micro-interactions
    ========================================================= */
-.oem-ticker-section {
-    background: #FFFFFF;
-    border-top: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.75rem 0;
+.npi-oem-showcase {
+    background: #FFFFFF !important;
+    border-top: 1px solid #E2E8F0 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding: 4.5rem 0 5rem 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    z-index: 2 !important;
+    clear: both !important;
+    overflow: hidden !important;
+}
+
+.npi-showcase-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    background: rgba(0, 90, 54, 0.07);
+    border: 1px solid rgba(0, 90, 54, 0.18);
+    color: #005A36;
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.85rem;
+}
+
+.npi-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #00A862;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(0, 168, 98, 0.7);
+    animation: npiPulse 2.2s infinite;
+}
+
+@keyframes npiPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 168, 98, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 7px rgba(0, 168, 98, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 168, 98, 0);
+    }
+}
+
+.npi-showcase-title {
+    font-size: clamp(1.75rem, 3.2vw, 2.35rem);
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.65rem;
+}
+
+.npi-showcase-subtitle {
+    font-size: clamp(0.92rem, 1.25vw, 1.05rem);
+    color: #64748B;
+    max-width: 680px;
+    line-height: 1.6;
+    margin-bottom: 2.75rem !important;
+}
+
+/* Dual Horizon Edge Fades for Seamless Marquee Infinite Look */
+.npi-marquee-wrapper {
+    position: relative;
+    width: 100%;
     overflow: hidden;
 }
 
-.oem-ticker-swiper .swiper-wrapper {
+.npi-horizon-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 120px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.npi-fade-left {
+    left: 0;
+    background: linear-gradient(90deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.npi-fade-right {
+    right: 0;
+    background: linear-gradient(270deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.npi-oem-swiper {
+    padding: 1.25rem 0 2rem 0 !important;
+}
+
+.npi-oem-swiper .swiper-wrapper {
     transition-timing-function: linear !important;
 }
 
-.oem-ticker-card {
+/* Executive Automotive Bento Emblem Card */
+.npi-brand-card {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.75rem 1.85rem;
-    font-weight: 800;
-    font-size: 0.96rem;
-    letter-spacing: 0.06em;
-    color: #475569;
-    transition: all 0.25s ease;
-    white-space: nowrap;
+    gap: 16px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 14px 22px;
+    min-width: 290px;
+    height: 86px;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+    position: relative;
+    overflow: hidden;
     user-select: none;
+    text-decoration: none;
+    cursor: default;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.oem-ticker-card:hover {
-    background: #e6f4ee;
-    border-color: #005A36;
-    color: #005A36;
-    box-shadow: 0 4px 14px rgba(0, 90, 54, 0.15);
-    transform: translateY(-2px);
+.npi-brand-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--brand-color, #005A36);
+    background: #FFFFFF;
+    box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12), 0 0 0 1px var(--brand-color, #005A36);
+}
+
+.npi-brand-emblem {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #F8FAFC;
+    border: 1px solid #EDF2F7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+    transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.npi-brand-card:hover .npi-brand-emblem {
+    transform: scale(1.08);
+    background: var(--brand-bg, #FFFFFF);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+.npi-brand-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.npi-brand-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+    overflow: hidden;
+}
+
+.npi-brand-name {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+    margin-bottom: 4px;
+}
+
+.npi-brand-role {
+    font-size: 0.74rem;
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.npi-role-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.npi-brand-accent-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.npi-brand-card:hover .npi-brand-accent-line {
+    opacity: 1;
+}
+
+/* Legacy Fallbacks for Backward Compatibility */
+.oem-ticker-section {
+    background: #FFFFFF !important;
+    border-top: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 4.5rem 0 5rem 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    clear: both !important;
+    overflow: hidden !important;
+}
+
+.oem-brand-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: #FFFFFF;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 20px;
+    min-width: 260px;
+    height: 76px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.oem-brand-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--brand-color, #005A36);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--brand-color, #005A36);
+}
+
+/* =========================================================
+   5. STRATEGIC OPERATIONAL STATS SHOWCASE (ABSOLUTE ZERO OVERLAP)
+   - Disconnected from hero & OEM with explicit padding
+   - 0 negative margins, static flow, robust z-index
+   ========================================================= */
+.npi-stats-showcase,
+.stats-section {
+    background: #F8FAFC !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding: 4.5rem 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    clear: both !important;
+    z-index: 1 !important;
+}
+
+.npi-stats-box,
+.stats-bar {
+    margin: 0 auto !important;
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05) !important;
+    padding: 2.25rem 2.5rem !important;
+}
+
+@media (max-width: 767.98px) {
+    .npi-oem-showcase,
+    .oem-ticker-section {
+        padding: 3.25rem 0 3.75rem 0 !important;
+    }
+
+    .npi-showcase-title {
+        font-size: 1.55rem;
+    }
+
+    .npi-brand-card {
+        min-width: 250px;
+        height: 76px;
+        padding: 10px 16px;
+        gap: 12px;
+    }
+
+    .npi-brand-emblem {
+        width: 48px;
+        height: 48px;
+    }
+
+    .npi-brand-name {
+        font-size: 0.95rem;
+    }
+
+    .npi-brand-role {
+        font-size: 0.68rem;
+    }
+
+    .npi-stats-showcase,
+    .stats-section {
+        padding: 3rem 0 !important;
+    }
+
+    .npi-stats-box,
+    .stats-bar {
+        padding: 1.5rem 1rem !important;
+        border-radius: 16px !important;
+    }
 }
 
 /* =========================================================

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config/database.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 /*
  * HOME PAGE PT NIHON PLAST INDONESIA
@@ -11,6 +12,9 @@ require_once __DIR__ . "/config/database.php";
 // 1. Company Profile
 $companyResult = $conn->query("SELECT * FROM company_profile ORDER BY id ASC LIMIT 1");
 $company = $companyResult ? $companyResult->fetch_assoc() : [];
+if ($company && function_exists('translate_entity_row')) {
+    $company = translate_entity_row('company_profile', $company);
+}
 
 // 2. Core Products (4 Main Pillars)
 $products = $conn->query("SELECT * FROM products ORDER BY id ASC LIMIT 4");
@@ -69,11 +73,14 @@ if (!function_exists('homeImagePath')) {
                     <?php foreach ($heroSlides as $idx => $slide): 
                         $slideBg = safe_image_url(resolve_image_path($slide['image'], 'uploads/gallery'), 'uploads/gallery/facility_injection_molding.jpg');
                         $extra = $slide['extra'] ?? [];
-                        $badges = $extra['badges'] ?? [];
                         $btnPrimaryText = $extra['btn_primary_text'] ?? ($slide['link_label'] ?? __('hero_btn_products', 'Jelajahi Produk Utama'));
                         $btnPrimaryLink = $extra['btn_primary_link'] ?? ($slide['link_url'] ?? '#products-home');
                         $btnSecText = $extra['btn_secondary_text'] ?? __('hero_btn_rfq', 'Permintaan B2B RFQ');
                         $btnSecLink = $extra['btn_secondary_link'] ?? 'contact.php';
+                        if (function_exists('current_lang') && current_lang() !== 'id') {
+                            $btnPrimaryText = __('hero_btn_products', 'Explore Products');
+                            $btnSecText = __('hero_btn_rfq', 'Request RFQ');
+                        }
                     ?>
                         <div class="swiper-slide hero-slide" style="background-image: url('<?= htmlspecialchars($slideBg, ENT_QUOTES, 'UTF-8') ?>');">
                             <div class="hero-slide-overlay"></div>
@@ -188,53 +195,93 @@ if (!function_exists('homeImagePath')) {
     <?php endif; ?>
 <?php endif; ?>
 
-<!-- 2. OEM TRUST & CREDIBILITY STRIP (IMMEDIATE SOCIAL PROOF & STATS) -->
+<!-- 2. EXECUTIVE OEM AUTOMOTIVE SHOWCASE (DRIBBLE/APPLE GRADE) -->
 <?php if (sec_active('oem_trust')): ?>
     <?php $oemList = sec_items('oem_trust'); ?>
-    <section class="oem-ticker-section py-4 bg-white border-bottom shadow-sm">
-        <div class="container mb-3 text-center">
-            <span class="badge bg-np-tint text-np-green border border-success-subtle px-3 py-2 fw-bold text-uppercase">
-                <i class="bi <?= htmlspecialchars(sec_val('oem_trust', 'icon', 'bi-award-fill')) ?> me-1"></i> 
+    <section class="npi-oem-showcase" id="oem-network" style="position: relative !important; clear: both !important; margin: 0 !important;">
+        <div class="container text-center mb-4">
+            <div class="npi-showcase-badge">
+                <span class="npi-pulse-dot"></span>
+                <i class="bi <?= htmlspecialchars(sec_val('oem_trust', 'icon', 'bi-shield-check')) ?> ms-1 me-1"></i> 
                 <?= htmlspecialchars(sec_val('oem_trust', 'badge_text', __('oem_trust_badge', 'TIER-1 TRUSTED SUPPLIER TO GLOBAL & DOMESTIC OEMS'))) ?>
-            </span>
-        </div>
-        <div class="swiper oem-ticker-swiper mb-4">
-            <div class="swiper-wrapper">
-                <?php 
-                $tickerItems = array_merge($oemList, $oemList, $oemList);
-                foreach ($tickerItems as $oem): 
-                ?>
-                    <div class="swiper-slide" style="width: auto;">
-                        <div class="oem-ticker-card">
-                            <i class="bi bi-patch-check-fill text-success me-2"></i>
-                            <?= htmlspecialchars($oem['title']) ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
             </div>
+            <h2 class="npi-showcase-title">
+                <?= htmlspecialchars(sec_val('oem_trust', 'title', __('oem_trust_title', 'Trusted Partner to Leading Vehicle Manufacturers'))) ?>
+            </h2>
+            <p class="npi-showcase-subtitle mx-auto">
+                <?= htmlspecialchars(sec_val('oem_trust', 'subtitle', __('oem_trust_subtitle', 'Direct supplier to automotive OEMs including Toyota, Honda, Nissan, Daihatsu, Mitsubishi, Suzuki, Subaru, Mazda, Isuzu, Hyundai'))) ?>
+            </p>
         </div>
 
-        <?php if (sec_active('stats')): ?>
-            <?php $statItems = sec_items('stats'); ?>
-            <?php if (!empty($statItems)): ?>
-                <div class="container">
-                    <div class="stats-bar border rounded-4 p-4 shadow-sm bg-light">
-                        <div class="row g-4 text-center">
-                            <?php 
-                            $colClass = count($statItems) <= 3 ? 'col-md-4' : 'col-6 col-md-3'; 
-                            foreach ($statItems as $st): 
-                            ?>
-                                <div class="<?= $colClass ?> stat-item">
-                                    <div class="stat-value text-np-green fw-bold fs-3"><?= htmlspecialchars($st['title']) ?></div>
-                                    <div class="stat-label small text-muted mt-1 fw-semibold"><?= htmlspecialchars($st['subtitle'] ?? '') ?></div>
+        <!-- Continuous Marquee with Dual Horizon Edge Fades -->
+        <div class="npi-marquee-wrapper">
+            <div class="npi-horizon-fade npi-fade-left"></div>
+            <div class="npi-horizon-fade npi-fade-right"></div>
+            <div class="swiper npi-oem-swiper oem-ticker-swiper">
+                <div class="swiper-wrapper">
+                    <?php 
+                    $tickerItems = array_merge($oemList, $oemList, $oemList);
+                    foreach ($tickerItems as $oem): 
+                        $extra = $oem['extra'] ?? (!empty($oem['extra_data']) ? json_decode($oem['extra_data'], true) : []);
+                        $brandColor = $extra['brand_color'] ?? '#005A36';
+                        $brandBg = $extra['brand_bg'] ?? 'rgba(0, 90, 54, 0.05)';
+                        $fontWeight = $extra['font_weight'] ?? '800';
+                        $fontStyle = $extra['font_style'] ?? 'normal';
+                        $letterSpacing = $extra['letter_spacing'] ?? '0.08em';
+                        $fontFamily = $extra['font_family'] ?? 'inherit';
+                        $logoImg = $oem['image'] ?? '';
+                        $hasLogo = !empty($logoImg) && file_exists(__DIR__ . '/' . $logoImg);
+                    ?>
+                        <div class="swiper-slide" style="width: auto;">
+                            <div class="npi-brand-card oem-brand-card" style="--brand-color: <?= htmlspecialchars($brandColor) ?>; --brand-bg: <?= htmlspecialchars($brandBg) ?>;">
+                                <div class="npi-brand-emblem oem-logo-wrap">
+                                    <?php if ($hasLogo): ?>
+                                        <img src="<?= htmlspecialchars($logoImg) ?>" alt="<?= htmlspecialchars($oem['title']) ?> Crest" class="npi-brand-logo oem-brand-logo" width="38" height="38" loading="lazy">
+                                    <?php else: ?>
+                                        <i class="bi bi-shield-check text-success fs-4"></i>
+                                    <?php endif; ?>
                                 </div>
-                            <?php endforeach; ?>
+                                <div class="npi-brand-info oem-meta">
+                                    <div class="npi-brand-name oem-brand-name" style="color: <?= htmlspecialchars($brandColor) ?>; font-weight: <?= htmlspecialchars($fontWeight) ?>; font-style: <?= htmlspecialchars($fontStyle) ?>; letter-spacing: <?= htmlspecialchars($letterSpacing) ?>; font-family: <?= htmlspecialchars($fontFamily) ?>;">
+                                        <?= htmlspecialchars($oem['title']) ?>
+                                    </div>
+                                    <div class="npi-brand-role oem-brand-tier">
+                                        <span class="npi-role-dot oem-tier-dot" style="background-color: <?= htmlspecialchars($brandColor) ?>;"></span>
+                                        <?= htmlspecialchars($oem['subtitle'] ?: 'OEM Tier-1 Partner') ?>
+                                    </div>
+                                </div>
+                                <div class="npi-brand-accent-line oem-brand-indicator" style="background-color: <?= htmlspecialchars($brandColor) ?>;"></div>
+                            </div>
                         </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
+<!-- 3. STRATEGIC OPERATIONAL STATS & CAPACITY BAR (ZERO OVERLAP ISOLATED SECTION) -->
+<?php if (sec_active('stats')): ?>
+    <?php $statItems = sec_items('stats'); ?>
+    <?php if (!empty($statItems)): ?>
+        <section class="npi-stats-showcase stats-section" id="operational-capacity" style="position: relative !important; clear: both !important; margin: 0 !important; z-index: 1 !important;">
+            <div class="container">
+                <div class="npi-stats-box stats-bar border" style="margin: 0 auto !important; position: static !important; transform: none !important; clear: both !important;">
+                    <div class="row g-4 text-center align-items-center">
+                        <?php 
+                        $colClass = count($statItems) <= 3 ? 'col-md-4' : 'col-6 col-md-3'; 
+                        foreach ($statItems as $st): 
+                        ?>
+                            <div class="<?= $colClass ?> stat-item">
+                                <div class="stat-value text-np-green fw-bold fs-3"><?= htmlspecialchars($st['title']) ?></div>
+                                <div class="stat-label small text-muted mt-1 fw-bold"><?= htmlspecialchars($st['subtitle'] ?? '') ?></div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
-            <?php endif; ?>
-        <?php endif; ?>
-    </section>
+            </div>
+        </section>
+    <?php endif; ?>
 <?php endif; ?>
 
 <!-- 3. PRODUCTS: 4 Core Pillars of Nihon Plast (THE MAIN ATTRACTION) -->
@@ -256,7 +303,9 @@ if (!function_exists('homeImagePath')) {
 
             <div class="row g-4">
                 <?php if ($products && $products->num_rows > 0): ?>
-                    <?php while ($product = $products->fetch_assoc()): ?>
+                    <?php while ($product = $products->fetch_assoc()): 
+                        if (function_exists('translate_entity_row')) $product = translate_entity_row('product', $product);
+                    ?>
                         <?php $productImage = safe_image_url($product["image"] ?? "", 'assets/img/placeholder.svg'); ?>
                         <div class="col-md-6 col-lg-3">
                             <article class="product-card-modern bg-white rounded-4 border shadow-sm overflow-hidden h-100 d-flex flex-column">
@@ -309,34 +358,21 @@ if (!function_exists('homeImagePath')) {
                 </p>
             </div>
 
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card border rounded-4 overflow-hidden h-100 shadow-sm">
-                        <img src="uploads/gallery/facility_cleanroom_lab.svg" class="home-card-image" alt="Engineering Lab" style="height: 220px; object-fit: cover;" loading="lazy">
-                        <div class="p-4">
-                            <h5 class="fw-bold text-np-green mb-2">Engineering & Mold R&D</h5>
-                            <p class="small text-muted mb-0">Dukungan tim rekayasa teknis untuk pembuatan dan perawatan mold presisi cetak resin plastik toleransi mikro.</p>
+                <?php 
+                $facilityCards = sec_items('facility_preview');
+                foreach ($facilityCards as $fCard): 
+                    $cardImg = safe_image_url($fCard['image'] ?? '', 'uploads/gallery/facility_injection_molding.jpg');
+                ?>
+                    <div class="col-md-4">
+                        <div class="card border rounded-4 overflow-hidden h-100 shadow-sm">
+                            <img src="<?= htmlspecialchars($cardImg) ?>" class="home-card-image" alt="<?= htmlspecialchars($fCard['title']) ?>" style="height: 220px; object-fit: cover;" loading="lazy">
+                            <div class="p-4">
+                                <h5 class="fw-bold text-np-green mb-2"><?= htmlspecialchars($fCard['title']) ?></h5>
+                                <p class="small text-muted mb-0"><?= htmlspecialchars($fCard['content']) ?></p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border rounded-4 overflow-hidden h-100 shadow-sm">
-                        <img src="uploads/gallery/facility_injection_molding.jpg" class="home-card-image" alt="Production Facility" style="height: 220px; object-fit: cover;" loading="lazy">
-                        <div class="p-4">
-                            <h5 class="fw-bold text-np-green mb-2">High-Tonnage Injection Line</h5>
-                            <p class="small text-muted mb-0">Area 22 mesin injeksi multi-tonase (150T–2.500T) mampu memproduksi komponen interior besar dan cover eksterior.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border rounded-4 overflow-hidden h-100 shadow-sm">
-                        <img src="uploads/gallery/facility_cleanroom_lab.svg" class="home-card-image" alt="Cleanroom Assembly" style="height: 220px; object-fit: cover;" loading="lazy">
-                        <div class="p-4">
-                            <h5 class="fw-bold text-np-green mb-2">Safety Module Cleanroom</h5>
-                            <p class="small text-muted mb-0">Area perakitan steril berstandar ISO Class 8 untuk modul airbag dan switch kendali setir kemudi mobil.</p>
-                        </div>
-                    </div>
-                </div>
+                <?php endforeach; ?>
 
                 <!-- High-Impact Industrial Capability Banner (No Heavy Video Stalls) -->
                 <div class="col-12 mt-4">
@@ -351,14 +387,14 @@ if (!function_exists('homeImagePath')) {
                                         <i class="bi bi-shield-check me-1"></i> IATF 16949 Certified
                                     </span>
                                 </div>
-                                <h3 class="text-white fw-bold mb-2">Pabrik Otomotif Terintegrasi di Kawasan Industri Cikampek</h3>
+                                <h3 class="text-white fw-bold mb-2"><?= htmlspecialchars(__('integrated_plant_title', 'Pabrik Otomotif Terintegrasi di Kawasan Industri Cikampek')) ?></h3>
                                 <p class="text-white-50 mb-0" style="max-width: 700px; line-height: 1.7;">
-                                    Didukung laboratorium inspeksi 3D CMM Mitutoyo, deployment chamber uji ledak airbag, Xenon Arc UV weatherometer, serta jalur painting robotic otomatis untuk menjamin standar kualitas Tier-1 OEM.
+                                    <?= htmlspecialchars(__('integrated_plant_desc', 'Didukung laboratorium inspeksi 3D CMM Mitutoyo, deployment chamber uji ledak airbag, Xenon Arc UV weatherometer, serta jalur painting robotic otomatis untuk menjamin standar kualitas Tier-1 OEM.')) ?>
                                 </p>
                             </div>
                             <div class="col-lg-4 text-lg-end">
                                 <a href="facility.php" class="btn btn-light rounded-pill px-4 py-3 fw-bold text-np-green shadow">
-                                    <i class="bi bi-gear-wide-connected me-1"></i> Matriks Mesin & Lab <i class="bi bi-arrow-right ms-1"></i>
+                                    <i class="bi bi-gear-wide-connected me-1"></i> <?= htmlspecialchars(__('matrix_machines_lab', 'Matriks Mesin & Lab')) ?> <i class="bi bi-arrow-right ms-1"></i>
                                 </a>
                             </div>
                         </div>
@@ -401,7 +437,9 @@ if (!function_exists('homeImagePath')) {
 
             <div class="row g-4">
                 <?php if ($certifications && $certifications->num_rows > 0): ?>
-                    <?php while ($cert = $certifications->fetch_assoc()): ?>
+                    <?php while ($cert = $certifications->fetch_assoc()): 
+                        if (function_exists('translate_entity_row')) $cert = translate_entity_row('certification', $cert);
+                    ?>
                         <?php $certImg = safe_image_url($cert['image'] ?? '', 'assets/img/placeholder.svg'); ?>
                         <div class="col-md-6 col-lg-4">
                             <div class="cert-card bg-white rounded-4 border p-4 shadow-sm h-100 d-flex flex-column <?= str_contains($cert['name'], 'IATF') ? 'featured-iatf border-success' : '' ?>">
@@ -471,13 +509,13 @@ if (!function_exists('homeImagePath')) {
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded-3 border h-100">
-                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-compass me-1"></i> Visi Korporat</h6>
+                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-compass me-1"></i> <?= htmlspecialchars(__('corporate_vision_title', 'Visi Korporat')) ?></h6>
                                 <p class="small text-muted mb-0"><?= htmlspecialchars($company["vision"] ?? "Menjadi mitra manufaktur otomotif One-of-a-Kind yang tak tergantikan.") ?></p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded-3 border h-100">
-                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-award me-1"></i> Nilai Inti</h6>
+                                <h6 class="fw-bold text-np-green mb-1"><i class="bi bi-award me-1"></i> <?= htmlspecialchars(__('core_values_title', 'Nilai Inti')) ?></h6>
                                 <p class="small text-muted mb-0"><?= htmlspecialchars($company["values_text"] ?? "Monozukuri (Craftsmanship), Safety First, Kaizen, and Harmony.") ?></p>
                             </div>
                         </div>
@@ -496,14 +534,14 @@ if (!function_exists('homeImagePath')) {
                         <div class="d-flex align-items-center gap-3 mb-3">
                             <span class="badge bg-np-green p-3 rounded-3 text-white"><i class="bi bi-geo-alt-fill fs-4"></i></span>
                             <div>
-                                <h5 class="fw-bold mb-0">Kantor & Fasilitas Pabrik</h5>
-                                <small class="text-muted">Kawasan Industri Indotaisei, Cikampek, Karawang</small>
+                                <h5 class="fw-bold mb-0"><?= htmlspecialchars(__('office_plant_title', 'Kantor & Fasilitas Pabrik')) ?></h5>
+                                <small class="text-muted"><?= htmlspecialchars(__('office_plant_sub', 'Kawasan Industri Indotaisei, Cikampek, Karawang')) ?></small>
                             </div>
                         </div>
                         <hr>
-                        <p class="mb-2"><strong>Alamat Pabrik:</strong><br><span class="text-muted small"><?= nl2br(htmlspecialchars($company["address"] ?? "Kawasan Industri Indotaisei Sektor 1A Blok P-1, Kalihurip, Cikampek, Karawang, Jawa Barat 41373")) ?></span></p>
-                        <p class="mb-2"><strong>Telepon:</strong><br><span class="text-muted small"><?= htmlspecialchars($company["phone"] ?? "+62 (264) 351-888") ?></span></p>
-                        <p class="mb-0"><strong>Email Resmi:</strong><br><span class="text-muted small"><?= htmlspecialchars($company["email"] ?? "corporate@n-plast.co.id") ?></span></p>
+                        <p class="mb-2"><strong><?= htmlspecialchars(__('office_plant_address', 'Alamat Pabrik:')) ?></strong><br><span class="text-muted small"><?= nl2br(htmlspecialchars($company["address"] ?? "Kawasan Industri Indotaisei Sektor 1A Blok P-1, Kalihurip, Cikampek, Karawang, Jawa Barat 41373")) ?></span></p>
+                        <p class="mb-2"><strong><?= htmlspecialchars(__('office_plant_phone', 'Telepon:')) ?></strong><br><span class="text-muted small"><?= htmlspecialchars($company["phone"] ?? "+62 (264) 351-888") ?></span></p>
+                        <p class="mb-0"><strong><?= htmlspecialchars(__('office_plant_email', 'Email Resmi:')) ?></strong><br><span class="text-muted small"><?= htmlspecialchars($company["email"] ?? "corporate@n-plast.co.id") ?></span></p>
                     </div>
                 </div>
             </div>
@@ -532,7 +570,9 @@ if (!function_exists('homeImagePath')) {
 
             <div class="row g-4">
                 <?php if ($news && $news->num_rows > 0): ?>
-                    <?php while ($article = $news->fetch_assoc()): ?>
+                    <?php while ($article = $news->fetch_assoc()): 
+                        if (function_exists('translate_entity_row')) $article = translate_entity_row('news', $article);
+                    ?>
                         <div class="col-md-4">
                             <article class="card border rounded-4 h-100 p-4 bg-white shadow-sm">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -659,19 +699,20 @@ if (!function_exists('homeImagePath')) {
         });
     }
 
-    // 2. Continuous Silky Linear OEM Marquee
-    const oemSwiperEl = document.querySelector('.oem-ticker-swiper');
+    // 2. Executive Continuous Silky Horizon OEM Marquee with Pause on Hover
+    const oemSwiperEl = document.querySelector('.npi-oem-swiper') || document.querySelector('.oem-ticker-swiper');
     if (oemSwiperEl && typeof Swiper !== 'undefined') {
-        new Swiper('.oem-ticker-swiper', {
+        new Swiper(oemSwiperEl, {
             slidesPerView: 'auto',
             spaceBetween: 24,
             loop: true,
-            speed: 5000,
+            speed: 6000,
             autoplay: {
                 delay: 0,
-                disableOnInteraction: false
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
             },
-            allowTouchMove: false
+            allowTouchMove: true
         });
     }
 

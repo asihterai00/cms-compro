@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/config/database.php";
 require_once __DIR__ . "/includes/content_helpers.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
 ?>
@@ -34,14 +35,16 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
 
         <div class="row g-4">
             <?php if ($news && $news->num_rows > 0): ?>
-                <?php while ($item = $news->fetch_assoc()): ?>
+                <?php while ($item = $news->fetch_assoc()): 
+                    if (function_exists('translate_entity_row')) $item = translate_entity_row('news', $item);
+                ?>
                     <?php $image = contentImageUrl($item["image"] ?? "", "uploads/news"); ?>
                     <div class="col-md-6 col-lg-4">
                         <article class="card h-100 content-click-card">
                             <?php if ($image !== ""): ?>
                                 <a class="content-image-link" href="news-detail.php?id=<?= (int)$item["id"] ?>">
                                     <img src="<?= htmlspecialchars($image) ?>" class="content-news-card-image" alt="<?= htmlspecialchars($item["title"] ?? "News") ?>" loading="lazy">
-                                    <span class="image-open-hint">Baca berita →</span>
+                                    <span class="image-open-hint"><?= htmlspecialchars(__('news_read_more', 'Baca berita →')) ?></span>
                                 </a>
                             <?php endif; ?>
                             <div class="card-body p-4 d-flex flex-column">
@@ -56,7 +59,7 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
                                 </p>
                                 <div class="pt-2 border-top">
                                     <a href="news-detail.php?id=<?= (int)$item["id"] ?>" class="content-more-link">
-                                        Baca selengkapnya →
+                                        <?= htmlspecialchars(__('news_read_more', 'Baca selengkapnya →')) ?>
                                     </a>
                                 </div>
                             </div>

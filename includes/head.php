@@ -18,10 +18,11 @@ $headAssetPrefix = (isset($is_admin) && $is_admin) || (strpos($_SERVER['SCRIPT_N
 <!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <!-- Vendor Stylesheets (100% Free & Open Source) -->
-<link rel="stylesheet" href="assets/vendor/swiper/swiper-bundle.min.css">
-<link rel="stylesheet" href="assets/vendor/sweetalert2/sweetalert2.min.css">
-<link rel="stylesheet" href="assets/vendor/aos/aos.css">
+<link rel="stylesheet" href="<?= $headAssetPrefix ?>assets/vendor/swiper/swiper-bundle.min.css">
+<link rel="stylesheet" href="<?= $headAssetPrefix ?>assets/vendor/sweetalert2/sweetalert2.min.css">
+<link rel="stylesheet" href="<?= $headAssetPrefix ?>assets/vendor/aos/aos.css">
 <!-- Main Corporate Stylesheet -->
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="<?= $headAssetPrefix ?>assets/css/style.css?v=<?= file_exists(__DIR__ . '/../assets/css/style.css') ? filemtime(__DIR__ . '/../assets/css/style.css') : time() ?>">
 <!-- Modern Dribbble Automotive Design System -->
-<link rel="stylesheet" href="assets/css/modern-dribbble.css">
+<link rel="stylesheet" href="<?= $headAssetPrefix ?>assets/css/modern-dribbble.css?v=<?= file_exists(__DIR__ . '/../assets/css/modern-dribbble.css') ? filemtime(__DIR__ . '/../assets/css/modern-dribbble.css') : time() ?>">
+

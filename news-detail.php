@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/config/database.php";
 require_once __DIR__ . "/includes/content_helpers.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 $id = (int) ($_GET["id"] ?? 0);
 $stmt = $conn->prepare("SELECT * FROM news WHERE id = ? LIMIT 1");
@@ -9,6 +10,9 @@ $stmt->execute();
 $article = $stmt->get_result()->fetch_assoc();
 if (!$article) {
     http_response_code(404);
+}
+if ($article && function_exists('translate_entity_row')) {
+    $article = translate_entity_row('news', $article);
 }
 $image = contentImageUrl($article["image"] ?? "", "uploads/news");
 ?>

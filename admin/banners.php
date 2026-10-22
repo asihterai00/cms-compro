@@ -109,30 +109,46 @@ $all = $conn->query("SELECT * FROM page_banners ORDER BY id ASC");
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
 
-<div class="mb-4">
-    <h1 class="h2 fw-bold">Page Banner Management</h1>
-    <p class="text-muted">Ganti gambar, judul, dan subtitle setiap halaman secara terpisah.</p>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="h3 fw-bold mb-1">
+            <i class="bi bi-image text-emerald me-2"></i>Banner Header Halaman Publik
+        </h1>
+        <p class="text-muted small mb-0">
+            Ganti banner jumbotron, judul utama, dan sub-judul setiap halaman publik secara dinamis.
+        </p>
+    </div>
 </div>
 
 <?php if ($success !== ""): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i><?= htmlspecialchars($success) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 <?php endif; ?>
 <?php if ($error !== ""): ?>
-    <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><?= htmlspecialchars($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 <?php endif; ?>
 
 <div class="row g-4">
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h5 class="mb-3">Pilih Halaman</h5>
-                <div class="list-group">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold mb-0 text-slate-900"><i class="bi bi-list-ul me-2 text-emerald"></i>Pilih Halaman Publik</h6>
+            </div>
+            <div class="card-body p-2">
+                <div class="list-group list-group-flush rounded-3">
                     <?php foreach ($pages as $pageKey => $data): ?>
+                        <?php $isAct = ($selected === $pageKey); ?>
                         <a
                             href="banners.php?page=<?= urlencode($pageKey) ?>"
-                            class="list-group-item list-group-item-action <?= $selected === $pageKey ? "active" : "" ?>"
+                            class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-2 px-3 rounded-2 mb-1 border-0 <?= $isAct ? "bg-emerald text-white fw-bold shadow-sm" : "text-slate-700" ?>"
                         >
-                            <?= htmlspecialchars($data[0]) ?>
+                            <span><?= htmlspecialchars($data[0]) ?></span>
+                            <i class="bi bi-chevron-right small opacity-75"></i>
                         </a>
                     <?php endforeach; ?>
                 </div>
@@ -142,43 +158,50 @@ $all = $conn->query("SELECT * FROM page_banners ORDER BY id ASC");
 
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-slate-900">
+                    <i class="bi bi-pencil-square text-emerald me-2"></i>Edit Banner: <?= htmlspecialchars($pages[$selected][0]) ?>
+                </h5>
+                <span class="badge bg-light text-slate-700 border font-monospace">key: <?= htmlspecialchars($selected) ?></span>
+            </div>
             <div class="card-body p-4">
-                <h4 class="mb-4">Edit Banner: <?= htmlspecialchars($pages[$selected][0]) ?></h4>
 
                 <form method="post" enctype="multipart/form-data">
                     <?= csrf_field() ?>
                     <input type="hidden" name="page_key" value="<?= htmlspecialchars($selected) ?>">
 
                     <div class="mb-3">
-                        <label class="form-label">Judul halaman</label>
+                        <label class="form-label">Judul Utama Halaman (Page Title)</label>
                         <input type="text" name="page_title" class="form-control"
                             value="<?= htmlspecialchars($current["page_title"] ?? $pages[$selected][1]) ?>" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Subtitle</label>
+                        <label class="form-label">Sub-judul / Deskripsi Banner (Subtitle)</label>
                         <textarea name="subtitle" class="form-control" rows="3"><?= htmlspecialchars($current["subtitle"] ?? $pages[$selected][2]) ?></textarea>
                     </div>
 
                     <?php if (!empty($current["image"])): ?>
                         <div class="mb-3">
-                            <label class="form-label d-block">Gambar saat ini</label>
+                            <label class="form-label d-block">Foto Banner Saat Ini</label>
                             <img src="../<?= htmlspecialchars(ltrim($current["image"], "/")) ?>"
-                                alt="Banner saat ini" class="img-fluid rounded"
-                                style="max-height:230px;max-width:100%;object-fit:cover;">
-                            <div class="form-text mt-1">
+                                alt="Banner saat ini" class="img-fluid rounded-3 border"
+                                style="max-height:220px;width:100%;object-fit:cover;">
+                            <div class="form-text mt-1 font-monospace small">
                                 Path: <?= htmlspecialchars($current["image"]) ?>
                             </div>
                         </div>
                     <?php endif; ?>
 
-                    <div class="mb-3">
-                        <label class="form-label">Pilih gambar banner</label>
+                    <div class="mb-4">
+                        <label class="form-label">Unggah Foto Banner Baru</label>
                         <input type="file" name="banner_image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
-                        <div class="form-text">JPG, PNG, WEBP; maksimal 5 MB. Jika tidak memilih file, gambar sebelumnya dipertahankan.</div>
+                        <div class="form-text">JPG, PNG, WEBP (maks. 5MB). Biarkan kosong bila tidak ingin mengganti gambar.</div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Simpan Banner</button>
+                    <button type="submit" class="btn btn-emerald px-4 fw-bold shadow-sm">
+                        <i class="bi bi-save me-1"></i> Simpan Perubahan Banner
+                    </button>
                 </form>
             </div>
         </div>
@@ -186,18 +209,31 @@ $all = $conn->query("SELECT * FROM page_banners ORDER BY id ASC");
 </div>
 
 <div class="card border-0 shadow-sm mt-4">
-    <div class="card-body">
-        <h5>Ringkasan Banner</h5>
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-slate-900">Ringkasan Seluruh Banner Halaman</h5>
+        <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-bold">9 Halaman Publik</span>
+    </div>
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead><tr><th>Halaman</th><th>Judul</th><th>Status Gambar</th><th></th></tr></thead>
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Halaman</th><th>Judul Halaman</th><th>Status Banner</th><th class="text-end pe-3">Aksi</th></tr></thead>
                 <tbody>
                 <?php while ($row = $all->fetch_assoc()): ?>
                     <tr>
-                        <td><?= htmlspecialchars($pages[$row["page_key"]][0] ?? $row["page_key"]) ?></td>
+                        <td class="fw-bold text-slate-900"><?= htmlspecialchars($pages[$row["page_key"]][0] ?? $row["page_key"]) ?></td>
                         <td><?= htmlspecialchars($row["page_title"]) ?></td>
-                        <td><?= !empty($row["image"]) ? "Sudah diatur" : "Belum ada gambar" ?></td>
-                        <td><a class="btn btn-sm btn-outline-primary" href="banners.php?page=<?= urlencode($row["page_key"]) ?>">Edit</a></td>
+                        <td>
+                            <?php if (!empty($row["image"])): ?>
+                                <span class="badge-active d-inline-flex align-items-center gap-1"><i class="bi bi-check-circle-fill"></i> Sudah Diatur</span>
+                            <?php else: ?>
+                                <span class="badge-inactive d-inline-flex align-items-center gap-1"><i class="bi bi-dash-circle"></i> Default Sistem</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a class="btn btn-sm btn-outline-primary" href="banners.php?page=<?= urlencode($row["page_key"]) ?>">
+                                <i class="bi bi-pencil"></i> Edit Banner
+                            </a>
+                        </td>
                     </tr>
                 <?php endwhile; ?>
                 </tbody>
@@ -207,6 +243,5 @@ $all = $conn->query("SELECT * FROM page_banners ORDER BY id ASC");
 </div>
 
 <?php include __DIR__ . "/includes/footer.php"; ?>
-</div>
 </body>
 </html>

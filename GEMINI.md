@@ -5,9 +5,9 @@ To ensure permanent long-term memory across all future agent sessions:
 1. **Always Consult Memory First**: Before proposing or executing architectural changes, check `PROJECT_MEMORY.md` and the MySQL `project_memory` table.
 2. **Always Record Discoveries and Changes**:
    - Every time a new bug, feature, configuration, or architectural discovery is found, record it into the MySQL database using:
-     `& "C:\Devaron\bin\php\php-8.3.30\php.exe" scripts/memory.php add --category=<cat> --title="<title>" --content="<content>"`
+     `& "C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe" scripts/memory.php add --category=<cat> --title="<title>" --content="<content>"`
    - Every time a code change is made, update `CHANGELOG.md` and re-export markdown memory if needed:
-     `& "C:\Devaron\bin\php\php-8.3.30\php.exe" scripts/memory.php export-md`
+     `& "C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe" scripts/memory.php export-md`
 3. Categories supported: `architecture`, `environment`, `database`, `findings`, `changelog`, `security`, `todo`, `notes`.
 
 ---
@@ -21,7 +21,7 @@ To ensure permanent long-term memory across all future agent sessions:
 
 ## ⚙️ ENVIRONMENT & RUNTIME CONFIGURATION
 - **Project Root**: `C:\Devaron\www\cms-compro`
-- **PHP CLI**: `C:\Devaron\bin\php\php-8.3.30\php.exe`
+- **PHP CLI**: `C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\php.exe`
   *(Always use this absolute path when running PHP CLI commands in PowerShell)*
 - **MySQL Database**:
   - Host: `192.168.1.6`
@@ -54,3 +54,14 @@ Located in `~/.gemini/config/mcp_config.json`:
   - Gallery items: `uploads/gallery/`
   - Product images: `uploads/products/`
   - Page banners: `uploads/pages/`
+
+---
+
+## ⚡ VIBE CODING & AGENT SKILLS INTEGRATION
+The following open-source agent skills are configured in `.agents/skills/` to optimize flow-state development:
+1. **`ponytail`**: Pragmatic minimalism & YAGNI. Prevents AI over-engineering; favors PHP 8.3/JS built-ins and existing codebase helpers over new bloat.
+2. **`caveman`**: Terse, high-speed output mode. Strips conversational filler and cuts token latency by up to 75% for pure vibe coding speed.
+3. **`code-review`**: Multi-lens reviewer (inspired by Spencer Marx OCR & Alibaba OCR) auditing Security (SQLi/XSS), Architecture, Simplicity, and PHP syntax.
+4. **`vibe-workflow`**: Addy Osmani's Spec-Driven & Atomic Slice workflow with Headroom/RTK context optimization.
+5. **`book-to-skill`**: Converts documentation, manuals, and PDFs into modular, on-demand Antigravity agent skills.
+

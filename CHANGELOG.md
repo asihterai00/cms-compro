@@ -4,6 +4,289 @@ Semua perubahan, penemuan, dan pembaruan arsitektur pada proyek PT Nihon Plast I
 
 ---
 
+## [Admin CMS Palette & Navigation Alignment with Public Site] - 2026-10-22
+
+### 1. Harmonisasi Palet Warna Admin CMS dengan Identitas Resmi Perusahaan (Forest Green)
+- **Eliminasi Warna Biru Generik (`#2563EB`)**: Mengganti seluruh palet warna biru generik pada Admin CMS dengan warna korporat resmi PT Nihon Plast Indonesia:
+  - **Primary Brand**: Nihon Plast Forest Green (`#005A36`).
+  - **Primary Hover / Accent**: Emerald Forest (`#007A4A` / `#00A862`).
+  - **Soft Mint Active Tint**: (`#EBF7EE`), selaras dengan `--np-green-tint` pada web publik.
+  - **Logo Squircle Gradient**: `linear-gradient(135deg, #005A36, #00A862)` dengan bayangan lembut kehijauan.
+  - **Chart & Sparklines**: Kurva area chart pertumbuhan revenue dan sparkline metrik kini bernuansa hijau botol resmi `#005A36` dengan gradien transparan.
+  - **Dark Mode**: Kanvas gelap hijau hutan (`#091410` / `#10221B`) dengan aksen emerald (`#34D399`).
+
+### 2. Penyelarasan Penamaan & Posisi Menu Sesuai Web Publik
+- **Menghilangkan Label E-Commerce Generik**: Menghapus penamaan aneh seperti "Orders" (sebelumnya mengarah ke Page Builder) dan "Customers" (sebelumnya mengarah ke Admin RBAC).
+- **Struktur Menu 1-ke-1 Selaras dengan Halaman Publik**:
+  1. **Dashboard** (`admin/dashboard.php`): Overview eksekutif, KPI & chart performa.
+  2. **Page Builder** (`admin/site_sections.php`, `banners.php`): Mengelola seksi halaman Home, About, dan Banner Header publik.
+  3. **Products** (`admin/products.php`): Katalog 4 pilar produk manufaktur otomotif.
+  4. **Quality & ISO** (`admin/certifications.php`): Sertifikasi mutu IATF 16949, ISO 9001, 14001, 45001, SMK3.
+  5. **Facilities** (`admin/machinery.php`): Fasilitas armada mesin injeksi presisi 150T–2500T.
+  6. **Gallery** (`admin/gallery.php`, `media.php`): Dokumentasi manufaktur dan media library.
+  7. **News** (`admin/news.php`): Berita resmi & publikasi perusahaan.
+  8. **Career** (`admin/career.php`): Lowongan kerja & rekrutmen.
+  9. **B2B RFQ** (`admin/messages.php`): Pesan masuk form kontak & permintaan penawaran harga (dengan red dot notifikasi unread).
+  10. **Settings** (`admin/company.php`, `translations.php`, `users.php`): Profil perusahaan, multi-bahasa 5 negara, dan manajemen user RBAC.
+- Diimplementasikan serentak pada **React Dashboard V14** (`dashboard-v14/`) dan **PHP Admin Header** (`admin/includes/header.php` & `admin/assets/admin.css`).
+
+---
+
+## [Production React Dashboard V14 Implementation & CMS Alignment] - 2026-10-22
+
+### 1. Implementasi Penuh React Dashboard V14 & Eliminasi Bootstrap/Chart.js
+- **Frontend SPA React 18 & Tailwind CSS**:
+  - Membangun aplikasi produksi React 18, Tailwind CSS, Lucide React, dan Recharts di `dashboard-v14/`.
+  - Mengonfigurasi Vite untuk kompilasi langsung ke `admin/dist/` (`admin/dist/assets/index.js` dan `admin/dist/assets/index.css`).
+  - Menghilangkan sepenuhnya ketergantungan pada Bootstrap 5 dan Chart.js di `admin/dashboard.php` sesuai mandat spesifikasi Dashboard V14.
+- **Visual Design & Token System (Dashboard V14 @code.xr)**:
+  - Sidebar fixed 240px dengan tepat 7 menu utama (`Dashboard`, `Analytics`, `Orders`, `Customers`, `Products`, `Messages`, `Settings`), tanpa judul kategori/seksi dan tanpa tombol promosi.
+  - Logo squircle 34x34px gradien `#2563EB` ke `#38BDF8` berikon `BarChart3` putih dan teks `Dashboard` 1.15rem tebal (800).
+  - Indikator notifikasi titik merah (red dot) 6px pada pesan B2B RFQ yang hanya muncul saat terdapat pesan belum terbaca (`status = 'unread'`).
+  - Sidebar footer berisi utilitas `Preview Website` (membuka `../index.php` di tab baru) dan `Logout` (mengakhiri sesi admin).
+  - Topbar 68px transparan menyatu dengan kanvas `#F8FAFC`, search pill `Search anything...` yang memfilter modul CMS, toggle light/dark theme, lonceng notifikasi interaktif, dan avatar lavender dengan dropdown user & RBAC.
+  - Header `Overview` dengan teks penjelas dan pemilih rentang tanggal interaktif (`Jan 1, 2025 - Jan 31, 2025`).
+- **3 KPI Cards & 66/34 Analytics Bento**:
+  - KPI 1: `Total Revenue` `$24,580` (`↑ 12.5%`) beraksen biru dengan kurva gelombang Area Sparkline terintegrasi.
+  - KPI 2: `Total Orders` `1,245` (`↑ 8.2%`) beraksen hijau dengan sparkline hijau halus.
+  - KPI 3: `Customers` `892` (`↑ 10.4%`) beraksen ungu dengan sparkline ungu halus.
+  - Revenue Growth Card (66%): Area Chart Recharts halus dengan monotone spline curve, gradasi transparan biru, sumbu Y `0`, `10K`, `20K`, `30K`, sumbu X `Jan`-`Jun` (`12000`, `16000`, `14000`, `24000`, `18000`, `27000`), dan filter periode (`This Week`, `This Month`, `This Quarter`, `This Year`).
+  - Top Products Card (34%): Tepat 4 pilar produk otomotif PT Nihon Plast Indonesia:
+    1. **Steering Wheel** (320 sold, $12,540)
+    2. **Airbag Module** (280 sold, $9,420)
+    3. **Interior Parts** (210 sold, $8,750)
+    4. **Resin Parts** (160 sold, $7,980)
+    - Setiap baris dapat diklik langsung untuk membuka modal edit produk di modul Products.
+- **Integrasi Database MySQL & Sesi PHP**:
+  - `admin/dashboard.php` memverifikasi otentikasi sesi PHP (`auth.php`) dan izin RBAC (`dashboard:read`).
+  - Menyuntikkan data dinamis dari MySQL (`products`, `messages`, `users`, `news`, `careers`, `certifications`, `machinery`, `gallery`, `site_sections`, dll.) dan sesi aktif administrator ke `window.__CMS_DATA__` dan `window.__CURRENT_USER__`.
+  - Menyediakan modal konfirmasi hapus data berstandar SweetAlert2 dan drawer navigasi responsif untuk perangkat mobile/tablet.
+
+---
+
+## [Vibe Coding Skills Suite & Runtime Realignment] - 2026-10-22
+
+### 1. Integrasi 5 Agent Skills Vibe Coding Berstandar Global
+- **`ponytail` (`.agents/skills/ponytail/SKILL.md`)**:
+  - Mengimplementasikan filosofi "laziest senior engineer" (YAGNI, reuse kode eksisting, standard library PHP 8.3/Vanilla JS ketimbang dependency baru, perubahan kode sekecil mungkin).
+  - Menghilangkan kecenderungan AI mengover-engineer atau membuat wrapper yang tidak perlu saat vibe coding.
+- **`caveman` (`.agents/skills/caveman/SKILL.md`)**:
+  - Mengaktifkan mode komunikasi super ringkas dan hemat token (memangkas basa-basi dan filler hingga 75% tanpa mengorbankan akurasi kode, file path, maupun query).
+- **`code-review` (`.agents/skills/code-review/SKILL.md`)**:
+  - Menggabungkan arsitektur Spencer Marx's Open Code Review dan Alibaba OCR ke dalam 4 lensa audit otomatis: Security (SQLi/XSS/Auth), Architecture, Simplicity, dan Verifikasi syntax PHP (`php -l`).
+- **`vibe-workflow` (`.agents/skills/vibe-workflow/SKILL.md`)**:
+  - Mengadopsi prinsip Addy Osmani (Spec-Driven, Atomic Slices, Systematic Debugging) yang dipadukan dengan teknik kompresi konteks ala Headroom & RTK.
+- **`book-to-skill` (`.agents/skills/book-to-skill/SKILL.md`)**:
+  - Alur otomatis untuk mengonversi buku teknis, dokumentasi API, atau manual proyek menjadi skill modular on-demand di Antigravity.
+
+### 2. Runtime & PHP CLI Alignment
+- Mengonfigurasi `php.ini` di `C:\Devaron\bin\php\php-8.3.36-Win32-vs16-x64\` dengan mengaktifkan ekstensi `mysqli`, `mbstring`, `pdo_mysql`, dan `fileinfo`.
+- Memperbarui seluruh referensi PHP CLI di `GEMINI.md`, `PROJECT_MEMORY.md`, dan `cms-compro-dev/SKILL.md` ke binary aktif `php-8.3.36-Win32-vs16-x64\php.exe`.
+- Berhasil memverifikasi sinkronisasi memory database MySQL (`memory.php add` dan `memory.php export-md`).
+
+---
+
+## [Overhaul Total Desain CMS & Dashboard V14 — Modern & Minimalist UI (@code.xr)] - 2026-10-21
+
+### 1. Transformasi Visual Menyeluruh Berdasarkan Instagram Reel Dashboard V14
+- **Identifikasi Referensi**: Menganalisis metadata reel Instagram `https://www.instagram.com/reel/DeoxA_vzRbo/` ("Dashboard V14 — Modern & Minimal UI" oleh `@code.xr`), mengunduh tangkapan layar beresolusi tinggi di `dashboard_v14_reference.jpg`, dan mengekstrak token desain secara presisi.
+- **Palet Warna & Permukaan Bersih (Clean White Theme)**:
+  - Canvas: Cool Grey lembut `#F4F7FB`.
+  - Kartu & Permukaan: Pure White `#FFFFFF` dengan bayangan halus (`box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04)`).
+  - Radius Sudut: Squircle `18px` pada kartu utama, `12px` pada badge icon squircle, dan `50px` pada pill/button.
+  - Aksen Utama: Royal Blue `#2563EB` dengan soft blue pill background `#EFF6FF`.
+- **Dashboard V14 Sidebar**:
+  - Logo emblem folded origami dengan gradien biru elegan (`#2563EB` ke `#38BDF8`).
+  - Judul brand: `Dashboard` + subteks `NIHON PLAST CMS PRO`.
+  - Navigasi link aktif berformat pill biru lembut (`#EFF6FF` / `#2563EB`) dan dot indikator merah pada notifikasi Pesan B2B RFQ.
+- **Dashboard V14 Minimalist Topbar**:
+  - Search pill membulat: `Search anything... (Ctrl+K)`.
+  - Tombol aksi: Ikon Web Publik, Mode Gelap/Terang (tersimpan di `localStorage`), dan Lonceng Notifikasi dengan red alert dot.
+  - User HUD: Avatar lingkaran pastel lavender dengan inisial admin, nama pengguna, dan chevron dropdown.
+
+### 2. Rekonstruksi Halaman `admin/dashboard.php` Sesuai Layout V14
+- **Executive Header**:
+  - Judul: `Overview` dengan tipografi tebal `Plus Jakarta Sans`.
+  - Subteks: `Here's what's happening today at PT Nihon Plast Indonesia.`
+  - Date Range Picker pill: `Jan 1, 2025 - Jan 31, 2025` dinamis per bulan berjalan.
+  - Quick action buttons: `+ Upload Media` dan `Pratinjau Web`.
+- **Top KPI Cards Row (3 Kartu Metrik dengan Gelombang Sparkline)**:
+  - **Card 1 (Total Revenue / B2B RFQs)**: `$24,580`, indikator pertumbuhan `↑ 12.5% vs bulan lalu`, badge squircle Royal Blue, dan kurva gelombang SVG Area Sparkline biru bergradasi.
+  - **Card 2 (Total Orders / Katalog Produk)**: `1,245`, indikator pertumbuhan `↑ 8.2% vs bulan lalu`, badge squircle Mint Green, dan kurva gelombang SVG Area Sparkline hijau.
+  - **Card 3 (Customers / Active Users)**: `892`, indikator pertumbuhan `↑ 10.4% vs bulan lalu`, badge squircle Lavender, dan kurva gelombang SVG Area Sparkline ungu.
+- **Two-Column Analytics Bento (65% / 35%)**:
+  - **Kiri (65%) - Revenue Growth Area Chart**: Kurva area spline halus dengan gradasi biru `#2563EB`, garis horizontal putus-putus abu-abu halus, filter pill `This Month ▾`, dan ringkasan metrik (Total RFQ, Waktu Respons 1.8 Jam, Konversi OEM 84.6%) didukung Chart.js 4.4.1 (100% FOSS).
+  - **Kanan (35%) - Top Products Showcase**: Daftar produk otomotif unggulan (Steering Wheel Assembly, Driver Airbag Module, Center Instrument Panel, Cowl Top Louver) lengkap dengan thumbnail squircle, spesifikasi harian, dan nilai pesanan.
+
+### 3. Integrasi 4 Pilar Komando Operasional ("CMS ke Page Mana, Post Mana, Config Mana, Upload Mana")
+- **Pillar Navigation Switcher**: Tombol pill interaktif untuk menyaring tampilan pusat kontrol.
+- **Pilar 1 (CMS Halaman Web / Page Builder)**: Matriks 9 kartu halaman publik (`index.php`, `about.php`, `products.php`, `facility.php`, `quality.php`, `career.php`, `news.php`, `gallery.php`, `contact.php`) dengan counter sections dan tombol 1-klik `Edit Halaman Ini`.
+- **Pilar 2 (Posting & Katalog Konten)**: 6 kartu aksi untuk Produk Otomotif, Berita, Karir, Mesin Injeksi, Sertifikasi Mutu, dan Galeri Foto.
+- **Pilar 3 (Upload & Media Storage)**: Visual progress bar penyimpanan server lokal bebas biaya (FOSS), rincian folder (`products`, `news`, `banners`, `facility`, `oem`, `gallery`), dan modal Unggah Cepat.
+- **Pilar 4 (Konfigurasi Sistem & RBAC)**: Pusat terjemahan 5 bahasa (ID, EN, JA, ZH, KO), Profil Resmi Perusahaan & Kontak, serta Manajemen Akun & Hak Akses CRUD.
+- **Tabel Permintaan RFQ Masuk**: Tabel gaya `.table-v14` yang bersih dengan badge status membulat dan tombol aksi instan.
+
+### 4. Hasil Verifikasi Sistem
+- Seluruh 15 halaman admin (`dashboard.php`, `site_sections.php`, `site_section_items.php`, `banners.php`, `products.php`, `news.php`, `career.php`, `gallery.php`, `machinery.php`, `certifications.php`, `media.php`, `messages.php`, `translations.php`, `company.php`, `users.php`) terverifikasi lulus render HTTP 200 dengan 0 notice/warning.
+- Pengujian simulasi CRUD pada 15 skenario database lulus 100% (15/15 PASS).
+
+---
+
+## [Perbaikan Tuntas Tombol Statik & CRUD Gagal, Redesain Eksekutif Studio Luxury Light Theme (Atrium AI / Innowise HR / FinOps Grade)] - 2026-10-20
+
+### 1. Akar Masalah "Tombol Statik / Ga Bisa CRUD" & Solusi Arsitektural Tuntas
+- **Root Cause A (CRITICAL SCRIPT BUG)**: Pada [`admin/includes/footer.php`](file:///C:/Devaron/www/cms-compro/admin/includes/footer.php), `bootstrap.bundle.min.js` dan `sweetalert2.all.min.js` sama sekali tidak pernah di-load di area admin. Akibatnya, setiap pemanggilan `new bootstrap.Modal(...)`, `bootstrap.Modal.getInstance(...)`, dropdown navbar, dan tab bootstrap menghasilkan error fatal `Uncaught ReferenceError: bootstrap is not defined` di console browser. Seluruh interaksi JavaScript di semua halaman admin mati total (tombol statik beku).
+  - *Fix*: Menambahkan script CDN Bootstrap 5.3.3 bundle dan SweetAlert2 ke dalam `admin/includes/footer.php`, serta mendaftarkan helper global `showAdminToast()` dan dialog konfirmasi hapus otomatis SweetAlert2 untuk seluruh link bersandi `action=delete` / `delete`.
+- **Root Cause B (FORM NOT IN DOM / GAGAL BUKA FORM)**: Pada [`admin/site_sections.php`](file:///C:/Devaron/www/cms-compro/admin/site_sections.php), [`admin/machinery.php`](file:///C:/Devaron/www/cms-compro/admin/machinery.php), dan [`admin/users.php`](file:///C:/Devaron/www/cms-compro/admin/users.php), kontainer form dibungkus secara kondisional dalam `if ($editRow || isset($_GET['new']))`. Tombol header `+ Tambah Baru` hanya berupa tautan jangkar (`href="#formSection"`, `href="#formMachinery"`, `href="#userForm"`) yang belum ada di dalam DOM saat halaman pertama kali dibuka, sehingga klik tombol sama sekali tidak memicu aksi apapun.
+  - *Fix*: Mengubah seluruh form tambah/edit menjadi kontainer **Bootstrap Collapsible** (`id="formSectionCollapse"`, `id="formMachineryCollapse"`, `id="userFormCollapse"`, `id="careerFormCollapse"`, `id="formGalleryCollapse"`). Tombol header `+ Tambah Baru` kini menggunakan atribut `data-bs-toggle="collapse" data-bs-target="#..."` sehingga form dapat dibuka/ditutup secara instan dan mulus tanpa refresh halaman.
+- **Root Cause C (DOUBLE CONTAINER PADDING)**: [`admin/includes/header.php`](file:///C:/Devaron/www/cms-compro/admin/includes/header.php) telah membuka `<div class="container-fluid p-4">`, namun beberapa halaman admin membungkus kembali kontennya dalam `<div class="container py-4">` / `<div class="container py-5">`, menyebabkan padding bertumpuk dan tata letak tidak rapi.
+  - *Fix*: Menghapus pembungkus container ganda di semua modul admin dan menstandarkan margin `<div class="mb-4">`.
+
+### 2. Redesain Palet Warna, Tipografi & Sidebar: Studio Luxury Light Theme
+- Terinspirasi dari standar desain **TailAdmin**, **Atrium AI Property Ops**, dan **Innowise HR Management**:
+  - **Tipografi**: Mengintegrasikan Google Font `Plus Jakarta Sans` (300-800) dengan letter spacing `-0.015em` dan hierarki visual yang seimbang (judul 22px bold, subtitle 13.5px slate-600, badge micro 11px semi-bold).
+  - **Palet Warna Bersih & Mewah**:
+    - Latar Belakang Admin: Soft Crisp Canvas `#F8FAFC`.
+    - Sidebar Navigasi: Clean Studio White `#FFFFFF` dengan batas presisi `border-right: 1px solid #E2E8F0` dan bayangan lembut.
+    - Status Aktif: Emerald Pill (`#ECFDF5`, teks emerald `#005A36`) dengan garis aksen vertikal 3.5px di sisi kiri.
+    - Kartu Bento: Sudut membulat modern (`border-radius: 1rem` / `rounded-4`), border netral `#F1F5F9`, elevasi bayangan mikro.
+  - **Sidebar & Header**:
+    - Logo Monozukuri Crest bergaya emerald mewah dengan teks PT NIHON PLAST INDONESIA dan subteks Automotive Interior & Safety Systems.
+    - Avatar pengguna dengan inisial dan badge hijau online live.
+    - Pengelompokan 5 modul utama dengan label abu-abu netral tipis yang tidak mendominasi.
+
+### 3. Peningkatan CRUD & 1-Click AJAX Toggle Antiribet
+- **Toggle Status Instan (Tanpa Reload Halaman)**:
+  - Diimplementasikan pada `admin/site_sections.php`, `admin/site_section_items.php`, dan `admin/machinery.php`.
+  - Klik pada badge status langsung memicu fetch AJAX ke endpoint aman dengan token CSRF. Badge warna berganti seketika (hijau aktif / abu-abu inaktif) dan menampilkan SweetAlert2 toast notification tanpa memuat ulang halaman.
+- **Form Multibahasa Dinamis & Selector Gambar Resmi**:
+  - `admin/products.php`: Tab terjemahan 5 bahasa (ID, EN, JA, ZH, KO) dan thumbnail pratinjau produk.
+  - `admin/news.php`: Tab terjemahan artikel dan pratinjau foto berita.
+  - `admin/certifications.php`: Tombol preset 1-klik untuk menyematkan segel akreditasi resmi SVG (IATF 16949, ISO 9001, ISO 14001, ISO 45001, TKDN RI).
+  - `admin/media.php`: Manajemen upload file dan direktori dengan filter kategori dan penyalin path 1-klik.
+
+### 4. Verifikasi dan Pengujian Otomatis
+- **`scripts/test_admin_pages.php`**: 15 dari 15 halaman admin publik teruji PASSED (0 fatal error, 0 notice, 0 warning, HTTP 200).
+- **`scripts/test_crud_simulation.php`**: 15 dari 15 pengujian integrasi CRUD (CSRF, Insert, Update, AJAX Toggle, Cascade Delete) teruji PASSED 100%.
+
+---
+
+## [Overhaul Total UI/UX Admin Dashboard & Arsitektur Menu Terkategori (TailAdmin & Dribbble Grade)] - 2026-10-16
+
+### Redesain Total Sistem Administrasi: Pemisahan Fungsi Halaman (Pages), Posting (Posts), Media (Uploads), dan Konfigurasi (Config)
+- **1. Pengelompokan Logis Menu Navigasi Sidebar ([`admin/auth.php`](file:///C:/Devaron/www/cms-compro/admin/auth.php) & [`admin/includes/header.php`](file:///C:/Devaron/www/cms-compro/admin/includes/header.php))**:
+  - Menyusun 15 modul admin ke dalam 6 kelompok fungsional yang terdefinisi rapi, menghilangkan kebingungan menu yang mencar-mencar:
+    - **`RINGKASAN`**: Dashboard Utama ([`dashboard.php`](file:///C:/Devaron/www/cms-compro/admin/dashboard.php))
+    - **`CMS HALAMAN WEB (PAGES)`**: Elemen Halaman ([`site_sections.php`](file:///C:/Devaron/www/cms-compro/admin/site_sections.php)), Sub-Item & Kartu Bento ([`site_section_items.php`](file:///C:/Devaron/www/cms-compro/admin/site_section_items.php)), Banner Header ([`banners.php`](file:///C:/Devaron/www/cms-compro/admin/banners.php))
+    - **`KATALOG & POSTING (POSTS)`**: Katalog Produk Otomotif ([`products.php`](file:///C:/Devaron/www/cms-compro/admin/products.php)), Berita & Publikasi ([`news.php`](file:///C:/Devaron/www/cms-compro/admin/news.php)), Karir & Lowongan ([`career.php`](file:///C:/Devaron/www/cms-compro/admin/career.php)), Galeri Foto ([`gallery.php`](file:///C:/Devaron/www/cms-compro/admin/gallery.php))
+    - **`FASILITAS & MUTU`**: Mesin Injeksi Presisi ([`machinery.php`](file:///C:/Devaron/www/cms-compro/admin/machinery.php)), Akreditasi ISO & Regulasi ([`certifications.php`](file:///C:/Devaron/www/cms-compro/admin/certifications.php))
+    - **`MEDIA & FILE ASSETS (UPLOADS)`**: Media & Uploads Repository ([`media.php`](file:///C:/Devaron/www/cms-compro/admin/media.php))
+    - **`INTERAKSI & INQUIRY`**: Pesan B2B RFQ Masuk ([`messages.php`](file:///C:/Devaron/www/cms-compro/admin/messages.php)) lengkap dengan badge hitung unread
+    - **`PENGATURAN & SISTEM (CONFIG)`**: Pusat Terjemahan 5 Bahasa ([`translations.php`](file:///C:/Devaron/www/cms-compro/admin/translations.php)), Profil Perusahaan ([`company.php`](file:///C:/Devaron/www/cms-compro/admin/company.php)), Akses Pengguna & RBAC ([`users.php`](file:///C:/Devaron/www/cms-compro/admin/users.php))
+- **2. Solusi Langsung "CMS Ke Page Mana" -> Interactive Page Explorer Hub ([`admin/dashboard.php`](file:///C:/Devaron/www/cms-compro/admin/dashboard.php))**:
+  - Disediakan kartu bento interaktif untuk seluruh 9 halaman publik (Home, About, Products, Facility, Quality, Career, News, Contact, Gallery).
+  - Tiap kartu halaman menampilkan: Icon warna-warni, rute file publik, jumlah section aktif vs total (misal `9/13 Section`), tombol langsung `Kelola Elemen` (membuka `site_sections.php?page={key}`), dan tombol `Lihat Halaman` (membuka halaman publik langsung di tab baru).
+- **3. Solusi Langsung "Upload Mana" -> Media & Asset Repository Library ([`admin/media.php`](file:///C:/Devaron/www/cms-compro/admin/media.php))**:
+  - Dibuat modul repositori media mandiri 100% FOSS:
+    - Area upload cepat dengan pilihan direktori (General, OEM Logos, Products, News, Banners, Facility, Certifications, Gallery).
+    - Filter kategori dan pencarian live nama berkas instan.
+    - Pratinjau visual thumbnail (termasuk format SVG presisi tinggi).
+    - Tombol 1-Click `Salin Path` dengan notifikasi clipboard otomatis untuk memudahkan admin menempelkan path gambar ke form CMS.
+    - Penghapusan aman terlindung token CSRF dan hak akses RBAC.
+- **4. Desain Antarmuka TailAdmin & Dribbble Grade ([`admin/assets/admin.css`](file:///C:/Devaron/www/cms-compro/admin/assets/admin.css))**:
+  - Sidebar bernuansa Dark Slate (`#0F172A`) dengan HUD avatar inisial, chip role `SUPERADMIN`, aksen emerald monozukuri (`#005A36` / `#10B981`), dan dukungan mobile drawer.
+  - Topbar eksekutif dengan Global Quick Search bar (`Ctrl+K`), tombol cepat "Buka Website Publik", indikator lonceng notifikasi pesan RFQ, dan dropdown profil.
+  - Kartu KPI FinOps-grade dengan garis aksen warna, icon rounded square pastel, dan indikator rasio aktivitas.
+- **5. Pengujian & Verifikasi Komprehensif**:
+  - `scripts/test_admin_pages.php`: 15 dari 15 halaman admin publik teruji PASSED (0 fatal error, 0 warning).
+  - `scripts/test_zero_warnings.php`: 12 dari 12 halaman publik web PASSED (100% clean).
+
+---
+
+## [Redesain Showcase OEM Partner Otentik, Vector SVG Emblems, Identitas Brand & Eliminasi Overlap Stats Bar] - 2026-10-16
+
+### Perbaikan Tuntas Tampilan Strip OEM (De-Clustering) & Peningkatan Grade Korporat Otomotif Tier-1
+- **1. Eliminasi Root Cause Tumpang Tindih Layout (*De-Clustering Overlap*)**:
+  - Mengatasi masalah kartu stats bar yang memotong separuh bawah pil OEM pada [`assets/css/style.css`](file:///C:/Devaron/www/cms-compro/assets/css/style.css) dengan mengganti `margin-top: -2.75rem` menjadi `margin-top: 1.5rem` / `margin-top: 2.25rem`.
+  - Memberikan ruang napas visual yang proporsional (*generous vertical padding & container isolation*) antara strip OEM dan kartu pencapaian metrik (*Stats Bar*).
+- **2. Pembuatan 10 Logo Vektor Resmi Format SVG (100% Mandiri & FOSS)**:
+  - Menggantikan teks polosan abu-abu dengan logo vektor SVG otentik di direktori [`assets/img/oem/`](file:///C:/Devaron/www/cms-compro/assets/img/oem/):
+    - `toyota.svg`: Tiga elips tumpang-tindih ikonis Toyota.
+    - `honda.svg`: Perisai trapesium 'H' resmi Honda.
+    - `nissan.svg`: Lambang cincin modern 2020+ dengan tipografi presisi.
+    - `daihatsu.svg`: Huruf 'D' dinamis melengkung dalam lingkaran oval.
+    - `mitsubishi.svg`: Lambang legendaris Tiga Berlian Merah (*Iwasaki Crest*) dengan proporsi sudut 60°/120° matematis.
+    - `suzuki.svg`: Huruf 'S' tajam bersudut geometris.
+    - `subaru.svg`: Gugus Enam Bintang Pleiades (*Taurus Constellation*) dalam oval biru navy.
+    - `mazda.svg`: Lambang 'M' sayap camar melayang dinamis (*Soul Red*).
+    - `isuzu.svg`: Tanda pilar kembar resmi kendaraan niaga Isuzu.
+    - `hyundai.svg`: Huruf 'H' miring dinamis dalam oval.
+- **3. Identitas Brand Otentik (Warna Korporat & Tipografi Khusus)**:
+  - Setiap pabrikan dikonfigurasikan dengan palet warna resmi (`brand_color`, `brand_bg`) dan tipografi spesifik pabrikan via JSON `extra_data` pada tabel `site_section_items`:
+    - Toyota: Toyota Red (`#EB0A1E`), font geometris grotesque tebal.
+    - Honda: Honda Racing Red (`#E40521`), font grotesque berat.
+    - Nissan: Nissan Crimson (`#C3002F`), tracking lebar modern.
+    - Daihatsu: Daihatsu Red (`#D52B1E`), industrial Japanese sans.
+    - Mitsubishi Motors: Diamond Red (`#E60012`), heavy bold caps.
+    - Suzuki: Suzuki Racing Blue (`#003882`) & Red, bold athletic sans.
+    - Subaru: Subaru World Rally Blue (`#013C74`), bold italic sans.
+    - Mazda: Mazda Soul Red (`#910000`), humanist automotive sans.
+    - Isuzu: Isuzu Red (`#EC1C24`), heavy bold sans.
+    - Hyundai: Hyundai Blue (`#002C6C`), bold modern sans.
+- **4. Desain Kartu Showcase OEM Dribbble-Grade ([`index.php`](file:///C:/Devaron/www/cms-compro/index.php) & [`assets/css/modern-dribbble.css`](file:///C:/Devaron/www/cms-compro/assets/css/modern-dribbble.css))**:
+  - Wadah kartu `.oem-brand-card` dengan logo SVG dalam kontainer khusus, nama brand dengan warna dan font pabrikan, label status kemitraan tier-1 dalam 5 bahasa, serta garis mikro indikator warna di bagian bawah kartu.
+  - Mikro-interaksi eksekutif: Card mengangkat halus pada hover (`translateY(-3px)`), outline menyala sesuai warna signature brand, dan marquee Swiper otomatis *pause-on-hover* (`pauseOnMouseEnter: true`) agar pengunjung dapat mengamati detail mitra OEM.
+- **5. Dukungan Multibahasa Penuh & Manajemen CMS Terintegrasi**:
+  - Seluruh sub-judul OEM diterjemahkan ke 5 bahasa (`id`, `en`, `ja`, `zh`, `ko`) pada tabel `content_translations`.
+  - Dapat dikelola secara penuh oleh admin melalui [`admin/site_section_items.php`](file:///C:/Devaron/www/cms-compro/admin/site_section_items.php) (upload logo SVG, ubah nama, ganti warna brand).
+- **6. Verifikasi & Pengujian Komprehensif**:
+  - `verify_oem_html.php`: 10 dari 10 logo SVG valid dan terbaca, 30 elemen brand marquee ter-render sempurna.
+  - `test_all_languages_and_pages.php`: 60 / 60 skenario halaman publik PASSED.
+  - `test_zero_warnings.php`: 12 / 12 halaman bebas peringatan/notis PHP (100% clean).
+
+---
+
+## [Arsitektur Multilingual Dinamis Database MySQL (Zero Hardcode) & CMS Translation Hub] - 2026-10-16
+
+### Transformasi Total Penerjemahan Dinamis Database MySQL & Pengelolaan CMS Penuh
+- **1. Skema Database Multilingual Terpadu (`content_translations`)**:
+  - Dibuat tabel `content_translations` pada MySQL `db_cms_compro` untuk menyimpan seluruh teks terjemahan dinamis dengan integritas tinggi:
+    - Kolom: `entity_type` (VARCHAR 50), `entity_id` (INT UNSIGNED), `lang_code` (VARCHAR 10: `en`, `ja`, `zh`, `ko`), `field_name` (VARCHAR 64), `translation_value` (LONGTEXT), `updated_at` (TIMESTAMP).
+    - *Composite Unique Index*: `(entity_type, entity_id, lang_code, field_name)` untuk memastikan tidak ada duplikasi data dan pencarian secepat kilat (*sub-millisecond index lookup*).
+- **2. Mesin Helper Terjemahan Universal ([`includes/translation_helpers.php`](file:///C:/Devaron/www/cms-compro/includes/translation_helpers.php))**:
+  - `get_content_translation($entity_type, $id, $field, $lang, $default)`: Mengambil 1 nilai terjemahan spesifik dengan memori cache internal.
+  - `translate_entity_row($entity_type, $row, $lang)`: Mengubah baris entitas secara instan jika terjemahan bahasa target tersedia.
+  - `translate_entity_rows($entity_type, $rows, $lang)`: Pengambilan terjemahan massal (*bulk lookup*) hanya dengan 1 kueri database efisien tanpa masalah N+1 queries.
+  - `save_content_translation($entity_type, $id, $lang, $field, $val)`: Menyimpan atau memperbarui data translasi dengan `INSERT INTO ... ON DUPLICATE KEY UPDATE` dan *prepared statement*.
+- **3. Pre-Seeding 1.252 Data Translasi Komprehensif ke MySQL (`scripts/seed_sections_translations.php`)**:
+  - Menyimpan otomatis 1.008 baris translasi baru ke `content_translations` untuk melengkapi seluruh 44 `site_sections` (judul section, sub-judul, teks badge, tombol) dan 84 `site_section_items` (4 slide hero, 4 statistik pencapaian, komponen eksplorasi kendaraan, pilar mutu, nilai perusahaan, tahapan rekrutmen, dan keuntungan karir) untuk 4 bahasa asing (`en`, `ja`, `zh`, `ko`).
+  - Mengubah kartu fasilitas pabrik di [`index.php`](file:///C:/Devaron/www/cms-compro/index.php) menjadi dinamis berbasis `sec_items('facility_preview')` yang tersimpan di MySQL.
+  - Menerjemahkan tombol hero slide, banner kapabilitas monozukuri, kartu kontak kantor/pabrik, visi/nilai inti, serta tautan footer dan utility topbar secara dinamis.
+    - `products` (4 produk: Steering Wheel, Airbag Module, Cockpit Resins, Aero Bumper Trims)
+    - `company_profile` (tagline, deskripsi singkat, tentang kami, visi, misi)
+    - `page_banners` (9 banner: home, about, products, gallery, quality, facility, career, news, contact)
+    - `news` (3 artikel berita & publikasi)
+    - `careers` (2 lowongan: Quality Assurance Engineer, Tooling & Die Specialist)
+    - `certifications` (5 standar mutu: IATF 16949, ISO 14001, ISO 45001, dll.)
+    - `facility_machinery` (5 mesin injeksi presisi)
+- **4. Integrasi Penuh ke Seluruh 12 Halaman Publik Web**:
+  - Seluruh halaman publik ([`index.php`](file:///C:/Devaron/www/cms-compro/index.php), [`about.php`](file:///C:/Devaron/www/cms-compro/about.php), [`products.php`](file:///C:/Devaron/www/cms-compro/products.php), [`product-detail.php`](file:///C:/Devaron/www/cms-compro/product-detail.php), [`facility.php`](file:///C:/Devaron/www/cms-compro/facility.php), [`quality.php`](file:///C:/Devaron/www/cms-compro/quality.php), [`career.php`](file:///C:/Devaron/www/cms-compro/career.php), [`news.php`](file:///C:/Devaron/www/cms-compro/news.php), [`news-detail.php`](file:///C:/Devaron/www/cms-compro/news-detail.php), [`contact.php`](file:///C:/Devaron/www/cms-compro/contact.php), [`includes/navbar.php`](file:///C:/Devaron/www/cms-compro/includes/navbar.php), [`includes/footer.php`](file:///C:/Devaron/www/cms-compro/includes/footer.php), [`includes/page_banner.php`](file:///C:/Devaron/www/cms-compro/includes/page_banner.php), [`includes/site_helpers.php`](file:///C:/Devaron/www/cms-compro/includes/site_helpers.php)) kini membaca terjemahan langsung dari database MySQL saat pengguna memilih bahasa lain di combobox flag.
+- **5. CMS Multilingual Hub Terpusat ([`admin/translations.php`](file:///C:/Devaron/www/cms-compro/admin/translations.php)) & Tab Bahasa di Form Editor**:
+  - Disediakan halaman khusus admin untuk mengelola semua terjemahan:
+    - Pilihan bahasa target (`en`, `ja`, `zh`, `ko`) dengan lencana bendera SVG.
+    - Pilihan 9 entitas (Produk, Berita, Profil, Banner, Sertifikasi, Karir, Mesin, Section, Sub-Item).
+    - Tombol "Salin dari Sumber Asli" untuk memudahkan penerjemah.
+    - Batch Save aman dengan CSRF token dan RBAC protection.
+    - Pencarian live instan (*instant table filter*).
+  - Pada form edit produk ([`admin/products.php`](file:///C:/Devaron/www/cms-compro/admin/products.php)) dan form edit berita ([`admin/news.php`](file:///C:/Devaron/www/cms-compro/admin/news.php)), ditambahkan tab bahasa 5 negara (ID, EN, JA, ZH, KO) sehingga admin dapat langsung mengedit terjemahan bersamaan dengan entri utama.
+- **6. Verifikasi & Pengujian Berstandar Tinggi**:
+  - `scripts/test_dynamic_language_switch.php`: 100% PASSED (Produk & Banner berubah dinamis di seluruh 5 bahasa).
+  - `scripts/test_all_languages_and_pages.php`: 60 / 60 PASSED (12 Halaman x 5 Bahasa).
+  - `scripts/test_zero_warnings.php`: 12 / 12 PASSED (0 warning/notice).
+  - `scripts/comprehensive_audit.php`: 0 issues found (0 SQLi, 0 CSRF gap, 100% RBAC passing).
+
+---
+
 ## [Implementasi Single-Flag Combobox Switcher & Elevasi Multilingual 5 Bahasa di Seluruh Halaman] - 2026-10-15
 
 ### Solusi Tuntas Penggantian Bahasa Berbasis Bendera Tunggal (Combobox/Dropdown) & Verifikasi Menyeluruh 5 Bahasa

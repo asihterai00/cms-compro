@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config/database.php";
+require_once __DIR__ . "/includes/translation_helpers.php";
 
 // Fetch dynamic machinery matrix from database
 $machineryQuery = $conn->query("SELECT * FROM facility_machinery WHERE is_active = 1 ORDER BY sort_order ASC, id ASC");
@@ -8,6 +9,9 @@ if ($machineryQuery) {
     while ($m = $machineryQuery->fetch_assoc()) {
         $machineryRows[] = $m;
     }
+}
+if (function_exists('translate_entity_rows')) {
+    $machineryRows = translate_entity_rows('facility_machinery', $machineryRows);
 }
 ?>
 <!DOCTYPE html>

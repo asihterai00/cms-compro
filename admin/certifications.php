@@ -115,26 +115,44 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
 
 <?php include __DIR__ . "/includes/header.php"; ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="h3 fw-bold mb-1">Sertifikasi & Kepatuhan Regulasi</h2>
-        <p class="text-muted mb-0">Kelola sertifikat standar otomotif (IATF 16949), mutu (ISO 9001), lingkungan (ISO 14001), keselamatan kerja (ISO 45001 / SMK3 PP 50/2012), dan SNI Kemenperin.</p>
+<div class="mb-4">
+    <!-- Executive Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-emerald-subtle text-emerald px-2 py-1 fs-xs fw-bold rounded-pill">
+                    <i class="bi bi-patch-check me-1"></i> STANDARDS & ACCREDITATIONS
+                </span>
+                <span class="badge bg-light text-muted border px-2 py-1 fs-xs">
+                    Total <?= $certList ? $certList->num_rows : 0 ?> Sertifikat
+                </span>
+            </div>
+            <h1 class="h3 fw-bold mb-1 text-dark tracking-tight">Sertifikasi & Kepatuhan Regulasi</h1>
+            <p class="text-muted small mb-0">Kelola sertifikat standar otomotif (IATF 16949), mutu (ISO 9001), lingkungan (ISO 14001), keselamatan kerja (ISO 45001 / SMK3 PP 50/2012), dan SNI Kemenperin.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="site_sections.php?page=quality" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="bi bi-layout-text-window-reverse me-1"></i> Elemen Halaman Mutu
+            </a>
+            <a href="../quality.php" target="_blank" class="btn btn-outline-emerald btn-sm rounded-pill px-3">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Lihat Halaman Mutu
+            </a>
+        </div>
     </div>
-</div>
 
-<?php if ($message): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i><?= htmlspecialchars($message) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
+    <?php if ($message): ?>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2 text-success"></i><?= htmlspecialchars($message) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
 
-<?php if ($error): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i><?= htmlspecialchars($error) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
+    <?php if ($error): ?>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i><?= htmlspecialchars($error) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
 
 <div class="row g-4">
     <!-- Form Tambah / Edit -->
@@ -262,12 +280,12 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
                     }
                     </script>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary flex-grow-1">
-                            <?= $editItem ? "Simpan Perubahan" : "Tambah Sertifikasi" ?>
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-emerald flex-grow-1 rounded-pill shadow-sm">
+                            <i class="bi bi-save me-1"></i> <?= $editItem ? "Simpan Perubahan" : "Tambah Sertifikasi" ?>
                         </button>
                         <?php if ($editItem): ?>
-                            <a href="certifications.php" class="btn btn-outline-secondary">Batal</a>
+                            <a href="certifications.php" class="btn btn-light border rounded-pill px-3">Batal</a>
                         <?php endif; ?>
                     </div>
                 </form>
@@ -277,39 +295,42 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
 
     <!-- Tabel Daftar Sertifikasi -->
     <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-3">
-            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">Daftar Sertifikat Terdaftar (<?= $certList ? $certList->num_rows : 0 ?>)</h5>
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark">Daftar Sertifikat Terdaftar</h5>
+                <span class="text-muted small">Total: <strong><?= $certList ? $certList->num_rows : 0 ?></strong></span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 50px;">Urut</th>
+                                <th class="ps-4" style="width: 60px;">Urut</th>
                                 <th>Sertifikasi & Kategori</th>
                                 <th>No. Sertifikat & Penerbit</th>
                                 <th>Masa Berlaku</th>
                                 <th>Status</th>
-                                <th style="width: 120px;" class="text-end">Aksi</th>
+                                <th style="width: 120px;" class="text-end pe-4">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if ($certList && $certList->num_rows > 0): ?>
                                 <?php while ($row = $certList->fetch_assoc()): ?>
                                     <tr>
-                                        <td class="text-muted fw-bold"><?= (int)$row['sort_order'] ?></td>
+                                        <td class="ps-4 text-muted fw-bold"><?= (int)$row['sort_order'] ?></td>
                                         <td>
-                                            <div class="d-flex align-items-center gap-2">
+                                            <div class="d-flex align-items-center gap-3">
                                                 <?php if (!empty($row['image'])): ?>
                                                     <?php $bPath = (str_starts_with($row['image'], 'uploads/') ? '../' : '../uploads/certifications/') . $row['image']; ?>
-                                                    <img src="<?= htmlspecialchars($bPath) ?>" style="width: 38px; height: 38px; object-fit: contain; flex-shrink: 0;" alt="Badge">
+                                                    <div class="p-1 bg-light rounded-3 border" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                                                        <img src="<?= htmlspecialchars($bPath) ?>" style="max-width: 36px; max-height: 36px; object-fit: contain;" alt="Badge">
+                                                    </div>
                                                 <?php else: ?>
-                                                    <div class="p-2 bg-light rounded text-muted" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-award"></i></div>
+                                                    <div class="p-2 bg-light rounded-3 border text-muted" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-award fs-5"></i></div>
                                                 <?php endif; ?>
                                                 <div>
                                                     <div class="fw-bold text-dark"><?= htmlspecialchars($row['name']) ?></div>
-                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small"><?= htmlspecialchars($row['category']) ?></span>
+                                                    <span class="badge bg-light text-muted border fs-xs"><?= htmlspecialchars($row['category']) ?></span>
                                                 </div>
                                             </div>
                                             <?php if (!empty($row['description'])): ?>
@@ -319,38 +340,40 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <div class="small fw-semibold"><?= htmlspecialchars($row['certificate_number'] ?: '-') ?></div>
+                                            <div class="small fw-semibold text-dark"><?= htmlspecialchars($row['certificate_number'] ?: '-') ?></div>
                                             <div class="small text-muted"><?= htmlspecialchars($row['issued_by'] ?: '-') ?></div>
                                         </td>
                                         <td>
                                             <?php if ($row['valid_until']): ?>
-                                                <div class="small"><i class="bi bi-calendar-event me-1"></i><?= date('d M Y', strtotime($row['valid_until'])) ?></div>
+                                                <div class="small text-muted"><i class="bi bi-calendar-event me-1 text-primary"></i><?= date('d M Y', strtotime($row['valid_until'])) ?></div>
                                             <?php else: ?>
                                                 <span class="text-muted small">-</span>
                                             <?php endif; ?>
                                         </td>
                                         <td>
                                             <?php if ($row['status'] === 'active'): ?>
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle">Aktif</span>
+                                                <span class="badge bg-emerald-subtle text-emerald rounded-pill px-3 py-1 fs-xs fw-bold border">Aktif</span>
                                             <?php else: ?>
-                                                <span class="badge bg-secondary">Arsip</span>
+                                                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1 fs-xs fw-bold border">Arsip</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="text-end">
-                                            <a href="certifications.php?edit=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <?php if (has_permission('certifications', 'delete')): ?>
-                                                <a href="<?= csrf_url('certifications.php?delete=' . (int)$row['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus sertifikasi ini?')" title="Hapus">
-                                                    <i class="bi bi-trash"></i>
+                                        <td class="text-end pe-4">
+                                            <div class="d-inline-flex gap-1">
+                                                <a href="certifications.php?edit=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-primary rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 32px; text-align: center;" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
                                                 </a>
-                                            <?php endif; ?>
+                                                <?php if (has_permission('certifications', 'delete')): ?>
+                                                    <a href="<?= csrf_url('certifications.php?delete=' . (int)$row['id']) ?>" class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 32px; text-align: center;" onclick="return confirm('Hapus sertifikasi ini?')" title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">Belum ada data sertifikasi.</td>
+                                    <td colspan="6" class="text-center py-5 text-muted">Belum ada data sertifikasi.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -359,6 +382,7 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <?php include __DIR__ . "/includes/footer.php"; ?>

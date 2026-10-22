@@ -46,7 +46,7 @@ $banner = $bannerDefaults[$bannerKey] ?? $bannerDefaults["about"];
 
 if (isset($conn)) {
     $bannerStmt = $conn->prepare(
-        "SELECT page_title, subtitle, image
+        "SELECT id, page_title, subtitle, image
          FROM page_banners
          WHERE page_key = ?
          LIMIT 1"
@@ -59,6 +59,9 @@ if (isset($conn)) {
             $bannerData = $bannerResult->fetch_assoc();
 
             if ($bannerData) {
+                if (function_exists('translate_entity_row')) {
+                    $bannerData = translate_entity_row('page_banner', $bannerData);
+                }
                 if (!empty($bannerData["page_title"])) {
                     $banner["title"] = $bannerData["page_title"];
                 }

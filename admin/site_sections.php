@@ -7,19 +7,41 @@ require_permission('site_sections', 'read');
 $success = "";
 $error = "";
 
-// 1. Handle Quick 1-Click Toggle Active / Inactive
+// 1. Handle Quick 1-Click Toggle Active / Inactive (supports AJAX & Synchronous)
 if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])) {
     require_csrf();
+    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || (isset($_GET['ajax']) && $_GET['ajax'] == 1);
+    
     if (!has_permission('site_sections', 'update')) {
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Anda tidak memiliki izin untuk mengubah status elemen.']);
+            exit;
+        }
         $_SESSION['flash_error'] = "Anda tidak memiliki izin untuk mengubah status elemen.";
     } else {
         $id = (int)$_GET['id'];
         $stmt = $conn->prepare("UPDATE site_sections SET is_active = IF(is_active = 1, 0, 1) WHERE id = ?");
         $stmt->bind_param("i", $id);
-        if ($stmt->execute()) {
-            $_SESSION['flash_success'] = "Status elemen berhasil diperbarui.";
-        }
+        $stmt->execute();
         $stmt->close();
+
+        // Fetch updated status
+        $res = $conn->query("SELECT is_active, section_name FROM site_sections WHERE id = " . $id)->fetch_assoc();
+        $newStatus = (int)($res['is_active'] ?? 0);
+        $secName = $res['section_name'] ?? 'Elemen';
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'id' => $id,
+                'is_active' => $newStatus,
+                'message' => 'Status "' . $secName . '" diubah menjadi ' . ($newStatus ? 'AKTIF' : 'NONAKTIF')
+            ]);
+            exit;
+        }
+        $_SESSION['flash_success'] = "Status elemen berhasil diperbarui.";
     }
     $retPage = isset($_GET['page']) ? '?page=' . urlencode($_GET['page']) : '';
     header("Location: site_sections.php" . $retPage);
@@ -281,12 +303,12 @@ $pageLabels = [
 <body>
 <?php include __DIR__ . "/includes/header.php"; ?>
 
-<div class="container py-4">
+<div class="mb-4">
     <!-- Header Page -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h1 class="h3 fw-bold mb-1">
-                <i class="bi bi-layout-text-window-reverse text-success me-2"></i>100% Dynamic CMS Elements & Sections
+                <i class="bi bi-layout-text-window-reverse text-emerald me-2"></i>100% Dynamic CMS Elements & Sections
             </h1>
             <p class="text-muted small mb-0">
                 Semua halaman dan tiap elemen bisa diubah secara dinamis dari database dengan switch <strong>Active / Not Active</strong> seketika.
@@ -297,10 +319,15 @@ $pageLabels = [
                 <span class="badge bg-success rounded-pill"><?= $activeCount ?></span> Aktif
                 <span class="badge bg-secondary rounded-pill"><?= $inactiveCount ?></span> Nonaktif
             </span>
-            <?php if (!$editRow && has_permission('site_sections', 'create')): ?>
-                <a href="#formSection" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                    <i class="bi bi-plus-circle"></i> Tambah Elemen Baru
-                </a>
+            <?php if (has_permission('site_sections', 'create')): ?>
+                <button class="btn btn-emerald btn-sm d-flex align-items-center gap-2 shadow-sm px-3 py-2 fw-bold" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#formSectionCollapse" 
+                        aria-expanded="<?= ($editRow || isset($_GET['new'])) ? 'true' : 'false' ?>"
+                        aria-controls="formSectionCollapse">
+                    <i class="bi bi-plus-circle-fill"></i> Tambah Elemen Baru
+                </button>
             <?php endif; ?>
         </div>
     </div>
@@ -368,17 +395,23 @@ $pageLabels = [
         </div>
     <?php endif; ?>
 
-    <!-- EDIT / CREATE FORM -->
-    <?php if ($editRow || isset($_GET['new'])): ?>
-        <div class="card border-0 shadow-sm mb-4" id="formSection">
+    <!-- EDIT / CREATE FORM COLLAPSIBLE CONTAINER -->
+    <div class="collapse <?= ($editRow || isset($_GET['new'])) ? 'show' : '' ?> mb-4" id="formSectionCollapse">
+        <div class="card border-0 shadow-sm" id="formSection">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="bi bi-pencil-square text-primary me-2"></i>
+                <h5 class="fw-bold mb-0 text-slate-900">
+                    <i class="bi <?= $editRow ? 'bi-pencil-square text-primary' : 'bi-plus-circle text-emerald' ?> me-2"></i>
                     <?= $editRow ? 'Edit Elemen: ' . htmlspecialchars($editRow['section_name']) : 'Tambah Elemen Dynamic Baru' ?>
                 </h5>
-                <a href="site_sections.php<?= $filterPage !== 'all' ? '?page=' . urlencode($filterPage) : '' ?>" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-x-circle me-1"></i> Batal
-                </a>
+                <?php if ($editRow): ?>
+                    <a href="site_sections.php<?= $filterPage !== 'all' ? '?page=' . urlencode($filterPage) : '' ?>" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Batal Edit
+                    </a>
+                <?php else: ?>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#formSectionCollapse">
+                        <i class="bi bi-x-circle me-1"></i> Tutup Form
+                    </button>
+                <?php endif; ?>
             </div>
             <div class="card-body p-4">
                 <form method="post" enctype="multipart/form-data">
@@ -503,8 +536,8 @@ $pageLabels = [
                         </div>
 
                         <div class="col-12 mt-4 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-save me-1"></i> Simpan Perubahan Elemen
+                            <button type="submit" class="btn btn-emerald px-4 fw-bold">
+                                <i class="bi bi-save me-1"></i> Simpan Elemen
                             </button>
                             <a href="site_sections.php<?= $filterPage !== 'all' ? '?page=' . urlencode($filterPage) : '' ?>" class="btn btn-secondary px-4">Batal</a>
                         </div>
@@ -512,7 +545,7 @@ $pageLabels = [
                 </form>
             </div>
         </div>
-    <?php endif; ?>
+    </div>
 
     <!-- SECTIONS TABLE & STATUS MANAGEMENT -->
     <div class="card border-0 shadow-sm">
@@ -589,20 +622,18 @@ $pageLabels = [
                                         <!-- 1-Click Quick Toggle -->
                                         <?php if (has_permission('site_sections', 'update')): ?>
                                             <a href="<?= csrf_url('site_sections.php?action=toggle&id=' . (int)$s['id'] . '&page=' . urlencode($filterPage)) ?>" 
-                                               class="text-decoration-none d-inline-block" 
+                                               class="btn-toggle-status text-decoration-none d-inline-block" 
+                                               data-id="<?= (int)$s['id'] ?>" 
+                                               data-csrf="<?= csrf_token() ?>"
                                                title="Klik untuk mengubah status aktif/nonaktif">
-                                                <?php if ($s['is_active']): ?>
-                                                    <span class="badge-active d-inline-flex align-items-center gap-1">
-                                                        <i class="bi bi-check-circle-fill"></i> ACTIVE
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span class="badge-inactive d-inline-flex align-items-center gap-1">
-                                                        <i class="bi bi-eye-slash-fill"></i> NOT ACTIVE
-                                                    </span>
-                                                <?php endif; ?>
+                                                <span id="status-badge-<?= (int)$s['id'] ?>" class="<?= $s['is_active'] ? 'badge-active' : 'badge-inactive' ?> d-inline-flex align-items-center gap-1">
+                                                    <i class="bi <?= $s['is_active'] ? 'bi-check-circle-fill' : 'bi-eye-slash-fill' ?>"></i> 
+                                                    <?= $s['is_active'] ? 'ACTIVE' : 'NOT ACTIVE' ?>
+                                                </span>
                                             </a>
                                         <?php else: ?>
                                             <span class="<?= $s['is_active'] ? 'badge-active' : 'badge-inactive' ?> d-inline-flex align-items-center gap-1">
+                                                <i class="bi <?= $s['is_active'] ? 'bi-check-circle-fill' : 'bi-eye-slash-fill' ?>"></i>
                                                 <?= $s['is_active'] ? 'ACTIVE' : 'NOT ACTIVE' ?>
                                             </span>
                                         <?php endif; ?>
@@ -612,18 +643,21 @@ $pageLabels = [
                                             <!-- Quick Toggle Button -->
                                             <?php if (has_permission('site_sections', 'update')): ?>
                                                 <a href="<?= csrf_url('site_sections.php?action=toggle&id=' . (int)$s['id'] . '&page=' . urlencode($filterPage)) ?>" 
-                                                   class="btn <?= $s['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" 
+                                                   id="toggle-btn-<?= (int)$s['id'] ?>"
+                                                   class="btn btn-toggle-status <?= $s['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" 
+                                                   data-id="<?= (int)$s['id'] ?>" 
+                                                   data-csrf="<?= csrf_token() ?>"
                                                    title="<?= $s['is_active'] ? 'Nonaktifkan elemen ini' : 'Aktifkan elemen ini' ?>">
                                                     <i class="bi <?= $s['is_active'] ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
                                                 </a>
                                             <?php endif; ?>
                                             <!-- Edit Button -->
-                                            <a href="site_sections.php?edit=<?= (int)$s['id'] ?>&page=<?= urlencode($filterPage) ?>#formSection" class="btn btn-outline-primary" title="Edit konten elemen ini">
+                                            <a href="site_sections.php?edit=<?= (int)$s['id'] ?>&page=<?= urlencode($filterPage) ?>#formSectionCollapse" class="btn btn-outline-primary" title="Edit konten elemen ini">
                                                 <i class="bi bi-pencil"></i> Edit
                                             </a>
                                             <!-- Delete Button -->
                                             <?php if (has_permission('site_sections', 'delete')): ?>
-                                                <a href="<?= csrf_url('site_sections.php?action=delete&id=' . (int)$s['id'] . '&page=' . urlencode($filterPage)) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus elemen <?= htmlspecialchars($s['section_name']) ?>?')">
+                                                <a href="<?= csrf_url('site_sections.php?action=delete&id=' . (int)$s['id'] . '&page=' . urlencode($filterPage)) ?>" class="btn btn-outline-danger" title="Hapus elemen ini">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
                                             <?php endif; ?>
@@ -816,6 +850,61 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // 1-Click Seamless AJAX Toggle for Active / Not Active
+    document.querySelectorAll('.btn-toggle-status').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const csrf = this.getAttribute('data-csrf');
+            if (!id || !csrf) return;
+
+            const url = 'site_sections.php?action=toggle&id=' + id + '&ajax=1&csrf_token=' + encodeURIComponent(csrf);
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        if (typeof showAdminToast === 'function') {
+                            showAdminToast(data.message, 'success');
+                        }
+                        // Update badge instantly
+                        const badgeEl = document.getElementById('status-badge-' + id);
+                        if (badgeEl) {
+                            if (data.is_active == 1) {
+                                badgeEl.className = 'badge-active d-inline-flex align-items-center gap-1';
+                                badgeEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> ACTIVE';
+                            } else {
+                                badgeEl.className = 'badge-inactive d-inline-flex align-items-center gap-1';
+                                badgeEl.innerHTML = '<i class="bi bi-eye-slash-fill"></i> NOT ACTIVE';
+                            }
+                        }
+                        // Update button icon instantly
+                        const toggleBtn = document.getElementById('toggle-btn-' + id);
+                        if (toggleBtn) {
+                            if (data.is_active == 1) {
+                                toggleBtn.className = 'btn btn-toggle-status btn-outline-warning';
+                                toggleBtn.title = 'Nonaktifkan elemen ini';
+                                toggleBtn.innerHTML = '<i class="bi bi-toggle-on"></i>';
+                            } else {
+                                toggleBtn.className = 'btn btn-toggle-status btn-outline-success';
+                                toggleBtn.title = 'Aktifkan elemen ini';
+                                toggleBtn.innerHTML = '<i class="bi bi-toggle-off"></i>';
+                            }
+                        }
+                    } else {
+                        if (typeof showAdminToast === 'function') {
+                            showAdminToast(data.message || 'Gagal mengubah status', 'error');
+                        } else {
+                            alert(data.message || 'Gagal mengubah status');
+                        }
+                    }
+                })
+                .catch(err => {
+                    // Fallback to regular full page reload
+                    window.location.href = this.getAttribute('href');
+                });
+        });
+    });
 });
 </script>
 

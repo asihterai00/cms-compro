@@ -1,223 +1,260 @@
 <?php
-require_once __DIR__ . "/auth.php";
-require_once __DIR__ . "/../config/database.php";
+/**
+ * CMS Company Profile — PT Nihon Plast Indonesia
+ * Executive Dashboard V14 — Modern & Minimal UI
+ * Inspired by Dashboard V14 (@code.xr)
+ * Built with React, Tailwind CSS, Lucide React, Recharts, Plus Jakarta Sans
+ * 100% Free & Open Source | Zero Paid External APIs
+ */
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../config/database.php';
 
 require_permission('dashboard', 'read');
 
-$productCount = $conn->query("SELECT COUNT(*) AS total FROM products")->fetch_assoc()["total"] ?? 0;
-$newsCount = $conn->query("SELECT COUNT(*) AS total FROM news")->fetch_assoc()["total"] ?? 0;
-$careerCount = $conn->query("SELECT COUNT(*) AS total FROM careers")->fetch_assoc()["total"] ?? 0;
-$galleryCount = $conn->query("SELECT COUNT(*) AS total FROM gallery")->fetch_assoc()["total"] ?? 0;
-$messageCount = $conn->query("SELECT COUNT(*) AS total FROM messages WHERE status = 'unread'")->fetch_assoc()["total"] ?? 0;
-$certCount = $conn->query("SELECT COUNT(*) AS total FROM certifications WHERE status = 'active'")->fetch_assoc()["total"] ?? 0;
-$secActiveCount = $conn->query("SELECT COUNT(*) AS total FROM site_sections WHERE is_active = 1")->fetch_assoc()["total"] ?? 0;
-$secTotalCount = $conn->query("SELECT COUNT(*) AS total FROM site_sections")->fetch_assoc()["total"] ?? 0;
-$userCount = $conn->query("SELECT COUNT(*) AS total FROM users WHERE status = 'active'")->fetch_assoc()["total"] ?? 0;
+// Prepare Current User for React app
+$currentUser = [
+    'id'        => (int)($_SESSION['admin_id'] ?? 1),
+    'username'  => $_SESSION['admin_username'] ?? 'administrator',
+    'full_name' => $_SESSION['admin_full_name'] ?? 'Administrator',
+    'email'     => $_SESSION['admin_email'] ?? 'admin@nihonplast.co.id',
+    'role'      => $_SESSION['admin_role'] ?? 'superadmin',
+    'status'    => 'active'
+];
+
+// Helper to safely fetch table records from MySQL
+function fetchTableRows($conn, $query, $transform = null) {
+    $rows = [];
+    $res = $conn->query($query);
+    if ($res && $res->num_rows > 0) {
+        while ($row = $res->fetch_assoc()) {
+            $rows[] = $transform ? $transform($row) : $row;
+        }
+    }
+    return $rows;
+}
+
+// 1. Products (4 automotive product pillars fallback if DB empty)
+$dbProducts = fetchTableRows($conn, "SELECT id, name, description, image FROM products ORDER BY id ASC", function($r) {
+    return [
+        'id'          => (int)$r['id'],
+        'name'        => (string)$r['name'],
+        'description' => (string)($r['description'] ?? ''),
+        'image'       => (string)($r['image'] ?? '')
+    ];
+});
+
+if (empty($dbProducts)) {
+    $dbProducts = [
+        ['id' => 1, 'name' => 'Steering Wheel', 'description' => 'Driver interface components for automotive OEM programs.', 'image' => ''],
+        ['id' => 2, 'name' => 'Airbag Module', 'description' => 'Occupant safety module assemblies for vehicle platforms.', 'image' => ''],
+        ['id' => 3, 'name' => 'Interior Parts', 'description' => 'Precision interior trim and functional cabin components.', 'image' => ''],
+        ['id' => 4, 'name' => 'Resin Parts', 'description' => 'Injection-molded resin components for automotive applications.', 'image' => '']
+    ];
+}
+
+// 2. Messages (B2B RFQ Inbox)
+$dbMessages = fetchTableRows($conn, "SELECT id, name, email, message, status, created_at FROM messages ORDER BY id DESC LIMIT 50", function($r) {
+    return [
+        'id'         => (int)$r['id'],
+        'name'       => (string)$r['name'],
+        'email'      => (string)$r['email'],
+        'message'    => (string)$r['message'],
+        'status'     => (string)$r['status'],
+        'created_at' => (string)$r['created_at']
+    ];
+});
+
+// 3. Users & RBAC
+$dbUsers = fetchTableRows($conn, "SELECT id, username, full_name, email, role, status FROM users ORDER BY id ASC", function($r) {
+    return [
+        'id'        => (int)$r['id'],
+        'username'  => (string)$r['username'],
+        'full_name' => (string)$r['full_name'],
+        'email'     => (string)$r['email'],
+        'role'      => (string)$r['role'],
+        'status'    => (string)$r['status']
+    ];
+});
+
+// 4. News
+$dbNews = fetchTableRows($conn, "SELECT id, title, content, image, published_at FROM news ORDER BY id DESC LIMIT 20", function($r) {
+    return [
+        'id'           => (int)$r['id'],
+        'title'        => (string)$r['title'],
+        'content'      => (string)($r['content'] ?? ''),
+        'image'        => (string)($r['image'] ?? ''),
+        'published_at' => (string)($r['published_at'] ?? date('Y-m-d'))
+    ];
+});
+
+// 5. Careers
+$dbCareers = fetchTableRows($conn, "SELECT id, position, department, location, description FROM careers ORDER BY id ASC", function($r) {
+    return [
+        'id'          => (int)$r['id'],
+        'position'    => (string)$r['position'],
+        'department'  => (string)$r['department'],
+        'location'    => (string)($r['location'] ?? 'Karawang, West Java'),
+        'description' => (string)($r['description'] ?? '')
+    ];
+});
+
+// 6. Certifications
+$dbCerts = fetchTableRows($conn, "SELECT id, name, category, certificate_number, issued_by, valid_until, status FROM certifications ORDER BY id ASC", function($r) {
+    return [
+        'id'                 => (int)$r['id'],
+        'name'               => (string)$r['name'],
+        'category'           => (string)($r['category'] ?? 'Automotive & Quality'),
+        'certificate_number' => (string)($r['certificate_number'] ?? ''),
+        'issued_by'          => (string)($r['issued_by'] ?? ''),
+        'valid_until'        => (string)($r['valid_until'] ?? '2026-12-31'),
+        'status'             => (string)($r['status'] ?? 'active')
+    ];
+});
+
+// 7. Machinery (150T - 2500T)
+$dbMachinery = fetchTableRows($conn, "SELECT id, category, model_brand, tonnage, application, automation, is_active FROM facility_machinery ORDER BY id ASC", function($r) {
+    return [
+        'id'          => (int)$r['id'],
+        'category'    => (string)$r['category'],
+        'model_brand' => (string)$r['model_brand'],
+        'tonnage'     => (string)$r['tonnage'],
+        'application' => (string)($r['application'] ?? ''),
+        'automation'  => (string)($r['automation'] ?? ''),
+        'is_active'   => (bool)$r['is_active']
+    ];
+});
+
+// 8. Gallery
+$dbGallery = fetchTableRows($conn, "SELECT id, title, image FROM gallery ORDER BY id ASC", function($r) {
+    return [
+        'id'    => (int)$r['id'],
+        'title' => (string)$r['title'],
+        'image' => (string)($r['image'] ?? '')
+    ];
+});
+
+// 9. Site Sections
+$dbSections = fetchTableRows($conn, "SELECT id, page, section_key, title, content, is_active FROM site_sections ORDER BY id ASC", function($r) {
+    return [
+        'id'          => (int)$r['id'],
+        'page'        => (string)$r['page'],
+        'section_key' => (string)$r['section_key'],
+        'title'       => (string)($r['title'] ?? ''),
+        'content'     => (string)($r['content'] ?? ''),
+        'is_active'   => (bool)$r['is_active']
+    ];
+});
+
+// 10. Site Section Items
+$dbSectionItems = fetchTableRows($conn, "SELECT id, section_key, item_key, title, content FROM site_section_items ORDER BY id ASC", function($r) {
+    return [
+        'id'          => (int)$r['id'],
+        'section_key' => (string)$r['section_key'],
+        'item_key'    => (string)$r['item_key'],
+        'title'       => (string)($r['title'] ?? ''),
+        'content'     => (string)($r['content'] ?? '')
+    ];
+});
+
+// 11. Banners
+$dbBanners = fetchTableRows($conn, "SELECT id, page_key, page_title, subtitle, image FROM banners ORDER BY id ASC", function($r) {
+    return [
+        'id'         => (int)$r['id'],
+        'page_key'   => (string)$r['page_key'],
+        'page_title' => (string)($r['page_title'] ?? ''),
+        'subtitle'   => (string)($r['subtitle'] ?? ''),
+        'image'      => (string)($r['image'] ?? '')
+    ];
+});
+
+// 12. Company Profile
+$dbCompany = fetchTableRows($conn, "SELECT id, name, description, email FROM company ORDER BY id ASC", function($r) {
+    return [
+        'id'          => (int)$r['id'],
+        'name'        => (string)$r['name'],
+        'description' => (string)($r['description'] ?? ''),
+        'email'       => (string)($r['email'] ?? '')
+    ];
+});
+
+// 13. Translations
+$dbTranslations = fetchTableRows($conn, "SELECT id, entity_type, entity_id, lang_code, field_name, translation_value FROM translations ORDER BY id ASC LIMIT 100", function($r) {
+    return [
+        'id'                => (int)$r['id'],
+        'entity_type'       => (string)$r['entity_type'],
+        'entity_id'         => (int)$r['entity_id'],
+        'lang_code'         => (string)$r['lang_code'],
+        'field_name'        => (string)$r['field_name'],
+        'translation_value' => (string)$r['translation_value']
+    ];
+});
+
+// 14. Media
+$dbMedia = fetchTableRows($conn, "SELECT id, name, path, category FROM media ORDER BY id DESC LIMIT 50", function($r) {
+    return [
+        'id'       => (int)$r['id'],
+        'name'     => (string)$r['name'],
+        'path'     => (string)$r['path'],
+        'category' => (string)($r['category'] ?? 'general')
+    ];
+});
+
+// Bundle CMS initial data for React
+$cmsData = [];
+if (!empty($dbProducts))     $cmsData['products']           = $dbProducts;
+if (!empty($dbMessages))     $cmsData['messages']           = $dbMessages;
+if (!empty($dbUsers))        $cmsData['users']              = $dbUsers;
+if (!empty($dbNews))         $cmsData['news']               = $dbNews;
+if (!empty($dbCareers))      $cmsData['careers']            = $dbCareers;
+if (!empty($dbCerts))        $cmsData['certifications']     = $dbCerts;
+if (!empty($dbMachinery))    $cmsData['facility_machinery'] = $dbMachinery;
+if (!empty($dbGallery))      $cmsData['gallery']            = $dbGallery;
+if (!empty($dbSections))     $cmsData['site_sections']      = $dbSections;
+if (!empty($dbSectionItems)) $cmsData['site_section_items'] = $dbSectionItems;
+if (!empty($dbBanners))      $cmsData['banners']            = $dbBanners;
+if (!empty($dbCompany))      $cmsData['company']            = $dbCompany;
+if (!empty($dbTranslations)) $cmsData['translations']       = $dbTranslations;
+if (!empty($dbMedia))        $cmsData['media']              = $dbMedia;
+
+$cssVersion = file_exists(__DIR__ . '/dist/assets/index.css') ? filemtime(__DIR__ . '/dist/assets/index.css') : time();
+$jsVersion  = file_exists(__DIR__ . '/dist/assets/index.js')  ? filemtime(__DIR__ . '/dist/assets/index.js')  : time();
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <?php include __DIR__ . "/../includes/head.php"; ?>
-    <link rel="stylesheet" href="assets/admin.css">
-    <title>NPI CMS - Dashboard | PT Nihon Plast Indonesia</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F8FAFC">
+    <meta name="description" content="Company profile CMS for PT Nihon Plast Indonesia">
+    <title>CMS Company Profile — PT Nihon Plast Indonesia | Dashboard V14</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans (300, 400, 500, 600, 700, 800) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Dashboard V14 Production Stylesheet (React + Tailwind CSS) -->
+    <link rel="stylesheet" href="dist/assets/index.css?v=<?= $cssVersion ?>">
 </head>
 <body>
+    <!-- React Root Mount Container -->
+    <div id="root"></div>
 
-<?php include __DIR__ . "/includes/header.php"; ?>
+    <!-- Pass Session User & Database Fixtures to React SPA -->
+    <script>
+        window.__CMS_DATA__ = <?= json_encode($cmsData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+        window.__CURRENT_USER__ = <?= json_encode($currentUser, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+        window.__PUBLIC_URL__ = '../index.php';
+    </script>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 fw-bold mb-1">Corporate CMS Dashboard</h1>
-        <p class="text-muted small mb-0">Overview administrasi sistem, elemen website dinamis, dan hak akses pengguna.</p>
-    </div>
-    <div class="d-flex gap-2">
-        <a href="site_sections.php" class="btn btn-outline-success btn-sm">
-            <i class="bi bi-layout-text-window-reverse me-1"></i> Kelola Elemen CMS
-        </a>
-        <a href="../index.php" target="_blank" class="btn btn-primary btn-sm">
-            <i class="bi bi-box-arrow-up-right me-1"></i> Buka Website
-        </a>
-    </div>
-</div>
+    <!-- Dashboard V14 Production Bundle (React 18, Tailwind, Lucide, Recharts) -->
+    <script type="module" src="dist/assets/index.js?v=<?= $jsVersion ?>"></script>
 
-<div class="row g-4">
-    <!-- Dynamic CMS Elements Widget -->
-    <div class="col-md-6 col-xl-3">
-        <div class="card stat-card border-0 shadow-sm">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <small class="text-muted fw-semibold">Dynamic CMS Elements</small>
-                    <h2 class="mt-2 mb-0 fw-bold text-success"><?= $secActiveCount ?><span class="fs-6 text-muted fw-normal">/<?= $secTotalCount ?></span></h2>
-                    <small class="text-muted">Elemen Aktif di Web</small>
-                </div>
-                <div class="stat-icon bg-success-subtle text-success p-3 rounded-circle">
-                    <i class="bi bi-layout-text-window-reverse fs-3"></i>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
-                <a href="site_sections.php" class="small text-success text-decoration-none fw-semibold">
-                    Atur Tiap Elemen & Toggle <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
+    <noscript>
+        <div style="padding: 2rem; font-family: 'Plus Jakarta Sans', sans-serif; text-align: center;">
+            <h2>JavaScript Required</h2>
+            <p>Please enable JavaScript in your browser to access the PT Nihon Plast Indonesia Executive Dashboard.</p>
         </div>
-    </div>
-
-    <!-- Products Widget -->
-    <div class="col-md-6 col-xl-3">
-        <div class="card stat-card border-0 shadow-sm">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <small class="text-muted fw-semibold">Produk Otomotif</small>
-                    <h2 class="mt-2 mb-0 fw-bold"><?= $productCount ?></h2>
-                    <small class="text-muted">Lini Komponen</small>
-                </div>
-                <div class="stat-icon bg-primary-subtle text-primary p-3 rounded-circle">
-                    <i class="bi bi-box-seam fs-3"></i>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
-                <a href="products.php" class="small text-primary text-decoration-none fw-semibold">
-                    Kelola Produk <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- ISO & Certifications Widget -->
-    <div class="col-md-6 col-xl-3">
-        <div class="card stat-card border-0 shadow-sm">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <small class="text-muted fw-semibold">Sertifikasi & Mutu</small>
-                    <h2 class="mt-2 mb-0 fw-bold"><?= $certCount ?></h2>
-                    <small class="text-muted">Standar ISO & Regulasi RI</small>
-                </div>
-                <div class="stat-icon bg-warning-subtle text-warning p-3 rounded-circle">
-                    <i class="bi bi-patch-check-fill fs-3"></i>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
-                <a href="certifications.php" class="small text-warning text-decoration-none fw-semibold">
-                    Kelola Akreditasi <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Users & RBAC Widget -->
-    <div class="col-md-6 col-xl-3">
-        <div class="card stat-card border-0 shadow-sm">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <small class="text-muted fw-semibold">User & Hak Akses</small>
-                    <h2 class="mt-2 mb-0 fw-bold"><?= $userCount ?></h2>
-                    <small class="text-muted">Pengguna Aktif (RBAC)</small>
-                </div>
-                <div class="stat-icon bg-info-subtle text-info p-3 rounded-circle">
-                    <i class="bi bi-people-fill fs-3"></i>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
-                <a href="users.php" class="small text-info text-decoration-none fw-semibold">
-                    Atur Izin CRUD <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mt-1">
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-                <h5 class="fw-bold mb-3">
-                    <i class="bi bi-grid-fill text-success me-2"></i>Aksi Cepat Menu Manajemen
-                </h5>
-                <div class="row g-2">
-                    <div class="col-md-4">
-                        <a href="site_sections.php" class="btn btn-outline-success w-100 p-3 text-start h-100 rounded-3">
-                            <i class="bi bi-layout-text-window-reverse fs-4 d-block mb-1 text-success"></i>
-                            <div class="fw-bold">Dynamic CMS</div>
-                            <small class="text-muted d-block">Ubah teks, judul, icon, background & aktif/nonaktif</small>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="users.php" class="btn btn-outline-dark w-100 p-3 text-start h-100 rounded-3">
-                            <i class="bi bi-person-gear fs-4 d-block mb-1 text-dark"></i>
-                            <div class="fw-bold">User & Izin CRUD</div>
-                            <small class="text-muted d-block">Otorisasi multiple user & hak menu</small>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="certifications.php" class="btn btn-outline-dark w-100 p-3 text-start h-100 rounded-3">
-                            <i class="bi bi-patch-check fs-4 d-block mb-1 text-dark"></i>
-                            <div class="fw-bold">ISO & Regulasi</div>
-                            <small class="text-muted d-block">IATF 16949, ISO 14001, SMK3</small>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="products.php" class="btn btn-outline-primary w-100 p-3 text-start h-100 rounded-3">
-                            <i class="bi bi-box-seam fs-4 d-block mb-1 text-primary"></i>
-                            <div class="fw-bold">Katalog Produk</div>
-                            <small class="text-muted d-block">Steering wheels, airbags, resin</small>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="gallery.php" class="btn btn-outline-primary w-100 p-3 text-start h-100 rounded-3">
-                            <i class="bi bi-camera fs-4 d-block mb-1 text-primary"></i>
-                            <div class="fw-bold">Galeri Foto</div>
-                            <small class="text-muted d-block">100% foto statis presisi bebas video</small>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="messages.php" class="btn btn-outline-warning w-100 p-3 text-start h-100 rounded-3">
-                            <i class="bi bi-envelope fs-4 d-block mb-1 text-warning"></i>
-                            <div class="fw-bold">Pesan Masuk (<?= $messageCount ?>)</div>
-                            <small class="text-muted d-block">Permintaan penawaran B2B RFQ</small>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body p-4">
-                <h5 class="fw-bold mb-3">
-                    <i class="bi bi-shield-check text-success me-2"></i>Spesifikasi Sistem
-                </h5>
-                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small">
-                    <li class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted">Arsitektur:</span>
-                        <strong class="text-dark">PHP 8.3 + MySQL (FOSS)</strong>
-                    </li>
-                    <li class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted">Multibahasa:</span>
-                        <strong class="text-success">5 Bahasa (ID, EN, JA, ZH, KO)</strong>
-                    </li>
-                    <li class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted">Media Konten:</span>
-                        <strong class="text-dark">Pure Static High-Res Photos</strong>
-                    </li>
-                    <li class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted">Otorisasi:</span>
-                        <strong class="text-dark">Granular Menu-Level CRUD RBAC</strong>
-                    </li>
-                    <li class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted">Elemen CMS:</span>
-                        <strong class="text-success">100% Dynamic & Active/Inactive</strong>
-                    </li>
-                    <li class="d-flex justify-content-between py-1">
-                        <span class="text-muted">Standar Mutu:</span>
-                        <strong class="text-dark">IATF 16949 / ISO 14001</strong>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<?php include __DIR__ . "/includes/footer.php"; ?>
+    </noscript>
 </body>
 </html>
