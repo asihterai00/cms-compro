@@ -158,4 +158,33 @@ return [
     'prod_airbag' => '탑승자 보호 에어백 모듈',
     'prod_interior' => '콕핏 및 고급 내장재 수지 부품',
     'prod_exterior' => '외장 트림 및 에어로 파츠',
+
+    // Extended Detail Keys
+    'product_not_found' => '제품을 찾을 수 없습니다.',
+    'back_to_products' => '제품 목록으로 돌아가기',
+    'back_to_product_line' => '제품 라인업으로 돌아가기',
+    'tier1_badge' => 'Tier-1 OEM 자동차 부품',
+    'spec_cert_std' => '품질 인증 표준',
+    'spec_facility' => '제조 설비',
+    'spec_env' => '환경 준수',
+    'spec_tolerance' => '정밀 공차',
+    'cta_rfq_part' => '이 부품에 대한 B2B RFQ 견적 요청',
+    'cta_quality_verify' => '품질 표준 검증',
+
+    // Error Handling Keys
+    'error_403_badge' => '403 · 시스템 접근 제한',
+    'error_403_title' => '디렉터리 및 시스템 파일 접근이 제한되었습니다',
+    'error_403_desc' => 'PT Nihon Plast Indonesia의 데이터 보호 및 시스템 보안을 위해 시스템 디렉터리, 설정 파일 또는 내부 스크립트에 대한 직접 접근은 엄격히 제한됩니다.',
+    'error_403_help' => '승인된 관리자이신 경우 공식 관리자 포털을 통해 로그인해 주시기 바랍니다.',
+    'error_404_badge' => '404 · 페이지를 찾을 수 없음',
+    'error_404_title' => '요청하신 페이지를 찾을 수 없습니다',
+    'error_404_desc' => '요청하신 페이지 또는 리소스가 삭제되었거나 이동되었을 수 있으며, 입력하신 URL이 잘못되었을 수 있습니다.',
+    'error_404_help' => 'URL 주소를 다시 확인하시거나 상단 네비게이션 메뉴를 이용해 주시기 바랍니다.',
+    'error_500_badge' => '500 · 내부 서버 오류',
+    'error_500_title' => '서버에 오류가 발생했습니다',
+    'error_500_desc' => '일시적인 시스템 점검 또는 내부 처리 오류로 인해 요청을 완료할 수 없습니다.',
+    'error_500_help' => '기술 엔지니어링 팀이 확인 중입니다. 잠시 후 다시 시도해 주시기 바랍니다.',
+    'error_countdown_prefix' => '초 후 자동으로 홈으로 이동합니다（남은 시간: ',
+    'error_countdown_suffix' => '초）...',
+    'error_btn_catalog' => '제품 카탈로그',
 ];

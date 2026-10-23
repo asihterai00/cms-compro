@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../includes/translation_helpers.php";
 
 require_permission('site_sections', 'read');
 
@@ -27,7 +28,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])
         $stmt->close();
 
         // Fetch updated status
-        $res = $conn->query("SELECT is_active, section_name FROM site_sections WHERE id = " . $id)->fetch_assoc();
+        $fStmt = $conn->prepare("SELECT is_active, section_name FROM site_sections WHERE id = ?");
+        $fStmt->bind_param("i", $id);
+        $fStmt->execute();
+        $res = $fStmt->get_result()->fetch_assoc();
+        $fStmt->close();
         $newStatus = (int)($res['is_active'] ?? 0);
         $secName = $res['section_name'] ?? 'Elemen';
 
@@ -97,12 +102,16 @@ if (!in_array($filterPage, $validPages)) {
 // 3. Edit Record Fetch
 $editId = (int)($_GET['edit'] ?? 0);
 $editRow = null;
+$sectionTranslations = [];
 if ($editId > 0) {
     $stmt = $conn->prepare("SELECT * FROM site_sections WHERE id = ? LIMIT 1");
     $stmt->bind_param("i", $editId);
     $stmt->execute();
     $editRow = $stmt->get_result()->fetch_assoc();
     $stmt->close();
+    if ($editRow) {
+        $sectionTranslations = get_entity_all_translations('site_section', $editId);
+    }
 }
 
 // 4. Handle POST Form Submission (Create or Update)
@@ -192,6 +201,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $isActive, $sortOrder, $id);
                 if ($stmt->execute()) {
                     $success = "Elemen '{$sectionName}' berhasil diperbarui.";
+                    if (!empty($_POST['trans']) && is_array($_POST['trans'])) {
+                        save_entity_translations('site_section', $id, $_POST['trans']);
+                    }
                     $editRow = null;
                 } else {
                     $error = "Gagal memperbarui elemen: " . $stmt->error;
@@ -206,6 +218,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $badgeText, $icon, $imagePath, $bgImagePath, $buttonText, $buttonLink,
                     $isActive, $sortOrder);
                 if ($stmt->execute()) {
+                    $newSecId = $conn->insert_id;
+                    if (!empty($_POST['trans']) && is_array($_POST['trans'])) {
+                        save_entity_translations('site_section', $newSecId, $_POST['trans']);
+                    }
                     $success = "Elemen baru '{$sectionName}' berhasil ditambahkan.";
                 } else {
                     $error = "Gagal menambahkan elemen: " . $stmt->error;
@@ -366,7 +382,41 @@ $pageLabels = [
     </div>
 
     <!-- SUB-MODULE SHORTCUT IF APPLICABLE -->
-    <?php if ($filterPage === 'facility'): ?>
+    <?php if ($filterPage === 'home'): ?>
+        <div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center py-2 px-3 mb-4 rounded-3 gap-2">
+            <div>
+                <i class="bi bi-house-door-fill me-1"></i> <strong>Halaman Beranda:</strong> Anda sedang mengelola seksi dinamis Beranda. Ingin edit kartu slider atau banner hero?
+            </div>
+            <div class="d-flex gap-2">
+                <a href="site_section_items.php?section_key=hero_slides" class="btn btn-sm btn-success">
+                    <i class="bi bi-collection me-1"></i> Kartu Slider Hero
+                </a>
+                <a href="banners.php?page_key=home" class="btn btn-sm btn-outline-success bg-white">
+                    <i class="bi bi-image me-1"></i> Banner Home
+                </a>
+                <a href="../index.php" target="_blank" class="btn btn-sm btn-outline-secondary bg-white">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Preview
+                </a>
+            </div>
+        </div>
+    <?php elseif ($filterPage === 'about'): ?>
+        <div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center py-2 px-3 mb-4 rounded-3 gap-2">
+            <div>
+                <i class="bi bi-building me-1"></i> <strong>Halaman Tentang Kami:</strong> Kelola profil legalitas perusahaan, visi misi & nilai korporat.
+            </div>
+            <div class="d-flex gap-2">
+                <a href="company.php" class="btn btn-sm btn-success">
+                    <i class="bi bi-building me-1"></i> Profil Perusahaan
+                </a>
+                <a href="site_section_items.php?section_key=about_values" class="btn btn-sm btn-outline-success bg-white">
+                    <i class="bi bi-collection me-1"></i> Nilai Perusahaan
+                </a>
+                <a href="banners.php?page_key=about" class="btn btn-sm btn-outline-secondary bg-white">
+                    <i class="bi bi-image me-1"></i> Banner About
+                </a>
+            </div>
+        </div>
+    <?php elseif ($filterPage === 'facility'): ?>
         <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-3">
             <div>
                 <i class="bi bi-cpu-fill me-1"></i> <strong>Permesinan Fasilitas:</strong> Ingin mengedit daftar permesinan 150T-2500T baris demi baris?
@@ -449,26 +499,175 @@ $pageLabels = [
                             <input type="number" name="sort_order" class="form-control" value="<?= (int)($editRow['sort_order'] ?? 10) ?>">
                         </div>
 
+                        <div class="col-12">
+                            <div class="card bg-light border-0 rounded-3 p-3 mb-2">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="small fw-bold text-dark text-uppercase"><i class="bi bi-translate me-1"></i> Konten Multilingual Elemen (5 Bahasa):</span>
+                                    <small class="text-muted">Teks otomatis tersimpan ke database & berubah saat bahasa dipilih pengunjung di web</small>
+                                </div>
+                                <ul class="nav nav-tabs mb-3" id="langTabsSection" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="nav-link active fw-bold text-success" id="sect-id-tab" data-bs-toggle="tab" data-bs-target="#sect-id" type="button" role="tab">
+                                            <img src="../assets/img/flags/id.svg" style="width:16px;height:12px;margin-right:4px;"> Indonesia (Utama)
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link fw-bold text-secondary" id="sect-en-tab" data-bs-toggle="tab" data-bs-target="#sect-en" type="button" role="tab">
+                                            <img src="../assets/img/flags/en.svg" style="width:16px;height:12px;margin-right:4px;"> English
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link fw-bold text-secondary" id="sect-ja-tab" data-bs-toggle="tab" data-bs-target="#sect-ja" type="button" role="tab">
+                                            <img src="../assets/img/flags/ja.svg" style="width:16px;height:12px;margin-right:4px;"> 日本語
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link fw-bold text-secondary" id="sect-zh-tab" data-bs-toggle="tab" data-bs-target="#sect-zh" type="button" role="tab">
+                                            <img src="../assets/img/flags/zh.svg" style="width:16px;height:12px;margin-right:4px;"> 简体中文
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link fw-bold text-secondary" id="sect-ko-tab" data-bs-toggle="tab" data-bs-target="#sect-ko" type="button" role="tab">
+                                            <img src="../assets/img/flags/ko.svg" style="width:16px;height:12px;margin-right:4px;"> 한국어
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="langTabsContentSection">
+                                    <!-- ID Tab (Base) -->
+                                    <div class="tab-pane fade show active" id="sect-id" role="tabpanel">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Judul Utama (🇮🇩 Indonesia)</label>
+                                                <input type="text" name="title" class="form-control" value="<?= htmlspecialchars($editRow['title'] ?? '') ?>" placeholder="Judul besar bagian">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Eyebrow / Badge Text (🇮🇩 Indonesia)</label>
+                                                <input type="text" name="badge_text" class="form-control" value="<?= htmlspecialchars($editRow['badge_text'] ?? '') ?>" placeholder="contoh: NIHON PLAST GROUP DNA">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">Subjudul / Deskripsi Pendek (🇮🇩 Indonesia)</label>
+                                                <textarea name="subtitle" class="form-control" rows="2" placeholder="Penjelasan ringkas paragraf"><?= htmlspecialchars($editRow['subtitle'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">Konten Detail Paragraf (🇮🇩 Indonesia)</label>
+                                                <textarea name="content" class="form-control" rows="4" placeholder="Teks konten lengkap elemen"><?= htmlspecialchars($editRow['content'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">Teks Tombol (🇮🇩 Indonesia)</label>
+                                                <input type="text" name="button_text" class="form-control" value="<?= htmlspecialchars($editRow['button_text'] ?? '') ?>" placeholder="contoh: Jelajahi Fasilitas">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- EN Tab -->
+                                    <div class="tab-pane fade" id="sect-en" role="tabpanel">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Main Title (🇬🇧 English)</label>
+                                                <input type="text" name="trans[en][title]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['en']['title'] ?? '') ?>" placeholder="Section main heading...">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Eyebrow / Badge Text (🇬🇧 English)</label>
+                                                <input type="text" name="trans[en][badge_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['en']['badge_text'] ?? '') ?>" placeholder="e.g. NIHON PLAST GROUP DNA">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">Subtitle / Summary (🇬🇧 English)</label>
+                                                <textarea name="trans[en][subtitle]" class="form-control" rows="2" placeholder="Concise paragraph summary..."><?= htmlspecialchars($sectionTranslations['en']['subtitle'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">Full Content (🇬🇧 English)</label>
+                                                <textarea name="trans[en][content]" class="form-control" rows="4" placeholder="Comprehensive detail text..."><?= htmlspecialchars($sectionTranslations['en']['content'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">Button Text (🇬🇧 English)</label>
+                                                <input type="text" name="trans[en][button_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['en']['button_text'] ?? '') ?>" placeholder="e.g. Explore Capabilities">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- JA Tab -->
+                                    <div class="tab-pane fade" id="sect-ja" role="tabpanel">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">メインタイトル (🇯🇵 日本語)</label>
+                                                <input type="text" name="trans[ja][title]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['ja']['title'] ?? '') ?>" placeholder="セクション見出し...">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">バッジテキスト (🇯🇵 日本語)</label>
+                                                <input type="text" name="trans[ja][badge_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['ja']['badge_text'] ?? '') ?>" placeholder="日本プラストグループDNA">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">サブタイトル (🇯🇵 日本語)</label>
+                                                <textarea name="trans[ja][subtitle]" class="form-control" rows="2" placeholder="概要説明..."><?= htmlspecialchars($sectionTranslations['ja']['subtitle'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">詳細内容 (🇯🇵 日本語)</label>
+                                                <textarea name="trans[ja][content]" class="form-control" rows="4" placeholder="段落の詳細なテキスト..."><?= htmlspecialchars($sectionTranslations['ja']['content'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">ボタンテキスト (🇯🇵 日本語)</label>
+                                                <input type="text" name="trans[ja][button_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['ja']['button_text'] ?? '') ?>" placeholder="設備を見る">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ZH Tab -->
+                                    <div class="tab-pane fade" id="sect-zh" role="tabpanel">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">主标题 (🇨🇳 简体中文)</label>
+                                                <input type="text" name="trans[zh][title]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['zh']['title'] ?? '') ?>" placeholder="章节标题...">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">角标徽章文本 (🇨🇳 简体中文)</label>
+                                                <input type="text" name="trans[zh][badge_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['zh']['badge_text'] ?? '') ?>" placeholder="日本塑胶集团DNA">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">副标题/概要 (🇨🇳 简体中文)</label>
+                                                <textarea name="trans[zh][subtitle]" class="form-control" rows="2" placeholder="段落简短说明..."><?= htmlspecialchars($sectionTranslations['zh']['subtitle'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">详细内容 (🇨🇳 简体中文)</label>
+                                                <textarea name="trans[zh][content]" class="form-control" rows="4" placeholder="完整段落说明..."><?= htmlspecialchars($sectionTranslations['zh']['content'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">按钮文字 (🇨🇳 简体中文)</label>
+                                                <input type="text" name="trans[zh][button_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['zh']['button_text'] ?? '') ?>" placeholder="探索制造设施">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- KO Tab -->
+                                    <div class="tab-pane fade" id="sect-ko" role="tabpanel">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">메인 제목 (🇰🇷 한국어)</label>
+                                                <input type="text" name="trans[ko][title]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['ko']['title'] ?? '') ?>" placeholder="섹션 메인 제목...">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">배지 텍스트 (🇰🇷 한국어)</label>
+                                                <input type="text" name="trans[ko][badge_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['ko']['badge_text'] ?? '') ?>" placeholder="니혼플라스트 그룹 DNA">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">소제목 / 요약 (🇰🇷 한국어)</label>
+                                                <textarea name="trans[ko][subtitle]" class="form-control" rows="2" placeholder="간단한 설명..."><?= htmlspecialchars($sectionTranslations['ko']['subtitle'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">상세 내용 (🇰🇷 한국어)</label>
+                                                <textarea name="trans[ko][content]" class="form-control" rows="4" placeholder="상세 문단 내용..."><?= htmlspecialchars($sectionTranslations['ko']['content'] ?? '') ?></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-semibold">버튼 텍스트 (🇰🇷 한국어)</label>
+                                                <input type="text" name="trans[ko][button_text]" class="form-control" value="<?= htmlspecialchars($sectionTranslations['ko']['button_text'] ?? '') ?>" placeholder="시설 둘러보기">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Judul Utama (Title)</label>
-                            <input type="text" name="title" class="form-control" value="<?= htmlspecialchars($editRow['title'] ?? '') ?>" placeholder="Judul besar bagian">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Eyebrow / Badge Text</label>
-                            <input type="text" name="badge_text" class="form-control" value="<?= htmlspecialchars($editRow['badge_text'] ?? '') ?>" placeholder="contoh: NIHON PLAST GROUP DNA">
-                        </div>
-
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Subjudul / Deskripsi Pendek (Subtitle)</label>
-                            <textarea name="subtitle" class="form-control" rows="2" placeholder="Penjelasan ringkas paragraf"><?= htmlspecialchars($editRow['subtitle'] ?? '') ?></textarea>
-                        </div>
-
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Konten Detail Paragraf (Content)</label>
-                            <textarea name="content" class="form-control" rows="4" placeholder="Teks konten lengkap elemen"><?= htmlspecialchars($editRow['content'] ?? '') ?></textarea>
-                        </div>
-
-                        <div class="col-md-4">
                             <label class="form-label fw-semibold">Icon Bootstrap</label>
                             <div class="input-group">
                                 <span class="input-group-text" id="iconPreviewSpan"><i class="bi <?= htmlspecialchars($editRow['icon'] ?? 'bi-shield-check') ?>"></i></span>
@@ -479,11 +678,7 @@ $pageLabels = [
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Teks Tombol (Button Text)</label>
-                            <input type="text" name="button_text" class="form-control" value="<?= htmlspecialchars($editRow['button_text'] ?? '') ?>" placeholder="contoh: Jelajahi Fasilitas">
-                        </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Tautan Tombol (Button Link)</label>
                             <input type="text" name="button_link" class="form-control" value="<?= htmlspecialchars($editRow['button_link'] ?? '') ?>" placeholder="contoh: facility.php">
                         </div>
@@ -579,7 +774,17 @@ $pageLabels = [
                         <?php else: ?>
                             <?php foreach ($allSections as $s): ?>
                                 <tr class="<?= $s['is_active'] ? '' : 'table-light opacity-75' ?>">
-                                    <td class="ps-3 fw-bold text-muted"><?= (int)$s['sort_order'] ?></td>
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <a href="ajax_reorder.php?table=site_sections&action=move_up&id=<?= (int)$s['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Atas">
+                                                <i class="bi bi-arrow-up"></i>
+                                            </a>
+                                            <a href="ajax_reorder.php?table=site_sections&action=move_down&id=<?= (int)$s['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Bawah">
+                                                <i class="bi bi-arrow-down"></i>
+                                            </a>
+                                            <span class="badge bg-light text-dark border px-2 py-1 font-monospace"><?= (int)$s['sort_order'] ?></span>
+                                        </div>
+                                    </td>
                                     <td>
                                         <div class="icon-preview-box">
                                             <i class="bi <?= htmlspecialchars($s['icon'] ?? 'bi-grid') ?>"></i>

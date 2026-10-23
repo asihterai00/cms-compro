@@ -28,9 +28,9 @@ $image = contentImageUrl($article["image"] ?? "", "uploads/news");
     <div class="container content-detail-container">
         <?php if (!$article): ?>
             <div class="alert alert-warning">Berita tidak ditemukan.</div>
-            <a href="news.php" class="btn btn-np-outline">Kembali ke News</a>
+            <a href="news" class="btn btn-np-outline">Kembali ke News</a>
         <?php else: ?>
-            <a href="news.php" class="content-back-link">← Kembali ke News</a>
+            <a href="news" class="content-back-link">← Kembali ke News</a>
             <article class="content-article mt-3">
                 <?php if ($image !== ""): ?>
                     <a href="<?= htmlspecialchars($image) ?>" target="_blank" rel="noopener">

@@ -1,8 +1,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?php
-$headAssetPrefix = (isset($is_admin) && $is_admin) || (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/admin/') !== false) ? '../' : '';
+$isAdmin = (isset($is_admin) && $is_admin) || (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/admin/') !== false);
+$headAssetPrefix = $isAdmin ? '../' : '';
+
+// Calculate web application base root URL for consistent asset & route resolution
+$scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
+$appBasePath = preg_replace('#/(admin|config|includes|scripts|database)$#', '', str_replace('\\', '/', $scriptDir));
+$appBaseHref = rtrim($appBasePath, '/') . '/';
+if ($appBaseHref === '//') $appBaseHref = '/';
 ?>
+<?php if (!$isAdmin): ?>
+<base href="<?= htmlspecialchars($appBaseHref, ENT_QUOTES, 'UTF-8') ?>">
+<?php endif; ?>
 <!-- Favicon & Touch Icons (NPI Emerald Monozukuri Edition) -->
 <link rel="icon" type="image/svg+xml" href="<?= $headAssetPrefix ?>assets/img/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="64x64" href="<?= $headAssetPrefix ?>assets/img/favicon.png?v=2">

@@ -23,6 +23,7 @@ $brandLogo = $companyNav["logo"] ?? "";
 $navPhone  = $companyNav["phone"] ?? "+62-264-351-888";
 $navEmail  = $companyNav["email"] ?? "corporate@n-plast.co.id";
 $currentPage = basename($_SERVER["PHP_SELF"]);
+$currentClean = preg_replace('/\.php$/i', '', $currentPage);
 $currentLang = current_lang();
 $currentLangInfo = get_current_lang_info();
 $supportedLanguages = get_supported_languages();
@@ -84,7 +85,7 @@ $supportedLanguages = get_supported_languages();
 <!-- 2. Primary Navigation Bar (Strict No-Wrap, Fluid Spacing) -->
 <nav class="navbar navbar-expand-lg navbar-light site-navbar sticky-top">
     <div class="container-fluid px-3 px-xl-5">
-        <a class="navbar-brand d-flex align-items-center gap-2 py-0" href="index.php">
+        <a class="navbar-brand d-flex align-items-center gap-2 py-0" href="./">
             <?php if ($brandLogo !== ""): ?>
                 <?php
                 if (strpos($brandLogo, "uploads/") === 0) {
@@ -123,42 +124,42 @@ $supportedLanguages = get_supported_languages();
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1 my-3 my-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'index.php' ? 'active' : '' ?>" href="index.php">
+                    <a class="nav-link <?= in_array($currentClean, ['index', '']) ? 'active' : '' ?>" href="./">
                         <?= htmlspecialchars(__('nav_home', 'Home')) ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'about.php' ? 'active' : '' ?>" href="about.php">
+                    <a class="nav-link <?= $currentClean === 'about' ? 'active' : '' ?>" href="about">
                         <?= htmlspecialchars(__('nav_about', 'Tentang Kami')) ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'products.php' ? 'active' : '' ?>" href="products.php">
+                    <a class="nav-link <?= $currentClean === 'products' ? 'active' : '' ?>" href="products">
                         <?= htmlspecialchars(__('nav_products', 'Produk')) ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'quality.php' ? 'active' : '' ?>" href="quality.php">
+                    <a class="nav-link <?= $currentClean === 'quality' ? 'active' : '' ?>" href="quality">
                         <?= htmlspecialchars(__('nav_quality', 'Mutu & ISO')) ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'facility.php' ? 'active' : '' ?>" href="facility.php">
+                    <a class="nav-link <?= $currentClean === 'facility' ? 'active' : '' ?>" href="facility">
                         <?= htmlspecialchars(__('nav_facility', 'Fasilitas')) ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'gallery.php' ? 'active' : '' ?>" href="gallery.php">
+                    <a class="nav-link <?= $currentClean === 'gallery' ? 'active' : '' ?>" href="gallery">
                         <?= htmlspecialchars(__('nav_gallery', 'Galeri')) ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'news.php' ? 'active' : '' ?>" href="news.php">
+                    <a class="nav-link <?= $currentClean === 'news' ? 'active' : '' ?>" href="news">
                         <?= htmlspecialchars(__('nav_news', 'Berita')) ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $currentPage === 'career.php' ? 'active' : '' ?>" href="career.php">
+                    <a class="nav-link <?= $currentClean === 'career' ? 'active' : '' ?>" href="career">
                         <?= htmlspecialchars(__('nav_career', 'Karir')) ?>
                     </a>
                 </li>
@@ -194,7 +195,7 @@ $supportedLanguages = get_supported_languages();
 
                 <!-- B2B RFQ Button -->
                 <li class="nav-item ms-lg-2 my-2 my-lg-0">
-                    <a class="btn btn-np-nav w-100 justify-content-center" href="contact.php">
+                    <a class="btn btn-np-nav w-100 justify-content-center" href="contact">
                         <i class="bi bi-file-earmark-text me-1"></i> <?= htmlspecialchars(__('nav_rfq', 'B2B RFQ')) ?>
                     </a>
                 </li>

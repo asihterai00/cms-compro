@@ -36,10 +36,10 @@ $image = contentImageUrl($product["image"] ?? "", "uploads/products");
 <main class="section-padding">
     <div class="container">
         <?php if (!$product): ?>
-            <div class="alert alert-warning">Produk tidak ditemukan.</div>
-            <a href="products.php" class="btn btn-np-outline">Kembali ke Products</a>
+            <div class="alert alert-warning"><?= htmlspecialchars(__('product_not_found', 'Produk tidak ditemukan.')) ?></div>
+            <a href="products" class="btn btn-np-outline"><?= htmlspecialchars(__('back_to_products', 'Kembali ke Produk')) ?></a>
         <?php else: ?>
-            <a href="products.php" class="content-back-link mb-4 d-inline-block text-np-green fw-bold">← Kembali ke Lini Produk</a>
+            <a href="products" class="content-back-link mb-4 d-inline-block text-np-green fw-bold">← <?= htmlspecialchars(__('back_to_product_line', 'Kembali ke Lini Produk')) ?></a>
             <div class="product-detail-layout">
                 <div class="product-detail-media">
                     <?php if ($image !== ""): ?>
@@ -54,7 +54,7 @@ $image = contentImageUrl($product["image"] ?? "", "uploads/products");
                 </div>
                 <div class="product-detail-info">
                     <span class="eyebrow-badge">
-                        <i class="bi bi-patch-check-fill"></i> TIER-1 OEM AUTOMOTIVE COMPONENT
+                        <i class="bi bi-patch-check-fill"></i> <?= htmlspecialchars(__('tier1_badge', 'TIER-1 OEM AUTOMOTIVE COMPONENT')) ?>
                     </span>
                     <h1 class="display-6 fw-bold text-np-green mb-3"><?= htmlspecialchars($product["name"]) ?></h1>
                     
@@ -66,25 +66,25 @@ $image = contentImageUrl($product["image"] ?? "", "uploads/products");
                     <div class="row g-3 mb-4">
                         <div class="col-sm-6">
                             <div class="spec-box-item">
-                                <div class="small text-muted fw-bold text-uppercase">Standar Sertifikasi Mutu</div>
+                                <div class="small text-muted fw-bold text-uppercase"><?= htmlspecialchars(__('spec_cert_std', 'Standar Sertifikasi Mutu')) ?></div>
                                 <div class="fw-bold text-np-green"><i class="bi bi-shield-check me-1"></i> IATF 16949:2016</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="spec-box-item">
-                                <div class="small text-muted fw-bold text-uppercase">Fasilitas Manufaktur</div>
+                                <div class="small text-muted fw-bold text-uppercase"><?= htmlspecialchars(__('spec_facility', 'Fasilitas Manufaktur')) ?></div>
                                 <div class="fw-bold text-np-green"><i class="bi bi-building me-1"></i> Cikampek, Karawang Plant</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="spec-box-item">
-                                <div class="small text-muted fw-bold text-uppercase">Kepatuhan Lingkungan</div>
+                                <div class="small text-muted fw-bold text-uppercase"><?= htmlspecialchars(__('spec_env', 'Kepatuhan Lingkungan')) ?></div>
                                 <div class="fw-bold text-np-green"><i class="bi bi-recycle me-1"></i> ISO 14001 & RoHS / ELV</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="spec-box-item">
-                                <div class="small text-muted fw-bold text-uppercase">Toleransi Presisi</div>
+                                <div class="small text-muted fw-bold text-uppercase"><?= htmlspecialchars(__('spec_tolerance', 'Toleransi Presisi')) ?></div>
                                 <div class="fw-bold text-np-green"><i class="bi bi-crosshair me-1"></i> CMM Verified (±0.001 mm)</div>
                             </div>
                         </div>
@@ -92,11 +92,11 @@ $image = contentImageUrl($product["image"] ?? "", "uploads/products");
 
                     <!-- Call To Action Buttons -->
                     <div class="d-flex flex-wrap gap-3">
-                        <a href="contact.php?product=<?= urlencode($product['name']) ?>" class="btn btn-np-primary">
-                            <i class="bi bi-file-earmark-text me-1"></i> Ajukan B2B RFQ untuk Komponen Ini
+                        <a href="contact?product=<?= urlencode($product['name']) ?>" class="btn btn-np-primary">
+                            <i class="bi bi-file-earmark-text me-1"></i> <?= htmlspecialchars(__('cta_rfq_part', 'Ajukan B2B RFQ untuk Komponen Ini')) ?>
                         </a>
-                        <a href="quality.php" class="btn btn-np-outline">
-                            <i class="bi bi-patch-check me-1"></i> Verifikasi Standar Mutu
+                        <a href="quality" class="btn btn-np-outline">
+                            <i class="bi bi-patch-check me-1"></i> <?= htmlspecialchars(__('cta_quality_verify', 'Verifikasi Standar Mutu')) ?>
                         </a>
                     </div>
                 </div>

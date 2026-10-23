@@ -317,7 +317,17 @@ $certList = $conn->query("SELECT * FROM certifications ORDER BY sort_order ASC, 
                             <?php if ($certList && $certList->num_rows > 0): ?>
                                 <?php while ($row = $certList->fetch_assoc()): ?>
                                     <tr>
-                                        <td class="ps-4 text-muted fw-bold"><?= (int)$row['sort_order'] ?></td>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-1">
+                                                <a href="ajax_reorder.php?table=certifications&action=move_up&id=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Atas">
+                                                    <i class="bi bi-arrow-up"></i>
+                                                </a>
+                                                <a href="ajax_reorder.php?table=certifications&action=move_down&id=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Bawah">
+                                                    <i class="bi bi-arrow-down"></i>
+                                                </a>
+                                                <span class="badge bg-light text-dark border px-2 py-1 font-monospace"><?= (int)$row['sort_order'] ?></span>
+                                            </div>
+                                        </td>
                                         <td>
                                             <div class="d-flex align-items-center gap-3">
                                                 <?php if (!empty($row['image'])): ?>

@@ -5,7 +5,7 @@ import {navigation,modules,can,kpis,revenue,productStats,initialData,languages,r
 test('navigation labels aligned with public site', () => {
   assert.deepEqual(
     navigation.map(n => n.label),
-    ['Dashboard', 'Page Builder', 'Products', 'Quality & ISO', 'Facilities', 'Gallery', 'News', 'Career', 'B2B RFQ', 'Settings']
+    ['Dashboard', 'Beranda', 'Tentang Kami', 'Produk', 'Mutu & ISO', 'Fasilitas', 'Galeri', 'Berita', 'Karir', 'B2B RFQ', 'Pengaturan']
   );
 });
 

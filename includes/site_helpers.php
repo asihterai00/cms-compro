@@ -3,6 +3,13 @@
  * PT Nihon Plast Indonesia - Global Dynamic CMS & Section Helpers
  * Supports 100% dynamic element rendering and active/inactive toggle across all pages
  */
+
+// Direct invocation guard
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    http_response_code(403);
+    exit('Access Denied');
+}
+
 require_once __DIR__ . '/translation_helpers.php';
 
 /**
@@ -69,6 +76,27 @@ function is_section_active($page, $section_key, $default = true) {
 }
 
 /**
+ * Clean public URL: strip .php extension and ensure clean routing
+ *
+ * @param string $url
+ * @return string
+ */
+function clean_public_url($url) {
+    if (!is_string($url) || trim($url) === '') return $url;
+    $url = trim($url);
+    // Don't modify external links (http/https not pointing to localhost or current domain)
+    if (preg_match('~^https?://~i', $url) && !preg_match('~^(https?://[^/]+)?(/cms-compro/)?~i', $url)) {
+        return $url;
+    }
+    // Clean index.php or /index.php to ./
+    $url = preg_replace('~/(index\.php)(\?|#|$)~i', '/$2', $url);
+    $url = preg_replace('~^index\.php(\?|#|$)~i', './$1', $url);
+    // Strip .php extension from internal filenames
+    $url = preg_replace('~\b([a-zA-Z0-9_-]+)\.php(\?|#|$)~i', '$1$2', $url);
+    return $url;
+}
+
+/**
  * Get dynamic value from site_sections (title, subtitle, content, badge_text, icon, image, bg_image, button_text, button_link)
  *
  * @param string $page
@@ -92,7 +120,7 @@ function get_section_val($page, $section_key, $field, $default = '') {
         if (isset($sections[$section_key]['id']) && function_exists('get_content_translation')) {
             $dbTrans = get_content_translation('site_section', (int)$sections[$section_key]['id'], $field, current_lang());
             if ($dbTrans !== null && $dbTrans !== '') {
-                return $dbTrans;
+                return $field === 'button_link' && is_string($dbTrans) ? clean_public_url($dbTrans) : $dbTrans;
             }
         }
         // 2. Check translation keys fallback
@@ -100,15 +128,19 @@ function get_section_val($page, $section_key, $field, $default = '') {
             $transKey = $section_key . '_' . $field;
             $t = __($transKey, null);
             if ($t !== null && $t !== $transKey) {
-                return $t;
+                return $field === 'button_link' && is_string($t) ? clean_public_url($t) : $t;
             }
             if (is_string($val) && strlen($val) < 255) {
                 $tVal = __($val, null);
                 if ($tVal !== null && $tVal !== $val) {
-                    return $tVal;
+                    return $field === 'button_link' && is_string($tVal) ? clean_public_url($tVal) : $tVal;
                 }
             }
         }
+    }
+
+    if ($field === 'button_link' && is_string($val)) {
+        $val = clean_public_url($val);
     }
 
     return $val;
@@ -170,7 +202,12 @@ function get_section_items($section_key, $onlyActive = true, $resetCache = false
                 while ($row = $res->fetch_assoc()) {
                     if (!empty($row['extra_data'])) {
                         $decoded = json_decode($row['extra_data'], true);
-                        if (json_last_error() === JSON_ERROR_NONE) {
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                            foreach ($decoded as $dKey => $dVal) {
+                                if (is_string($dVal) && (strpos($dKey, 'link') !== false || strpos($dKey, 'url') !== false)) {
+                                    $decoded[$dKey] = clean_public_url($dVal);
+                                }
+                            }
                             $row['extra'] = $decoded;
                         }
                     }

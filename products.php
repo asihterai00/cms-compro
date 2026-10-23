@@ -6,13 +6,13 @@ require_once __DIR__ . "/includes/translation_helpers.php";
 $categoryFilter = trim($_GET["category"] ?? "");
 
 if ($categoryFilter !== "") {
-    $stmt = $conn->prepare("SELECT * FROM products WHERE name LIKE ? ORDER BY id ASC");
+    $stmt = $conn->prepare("SELECT * FROM products WHERE name LIKE ? ORDER BY sort_order ASC, id ASC");
     $param = "%" . $categoryFilter . "%";
     $stmt->bind_param("s", $param);
     $stmt->execute();
     $products = $stmt->get_result();
 } else {
-    $products = $conn->query("SELECT * FROM products ORDER BY id ASC");
+    $products = $conn->query("SELECT * FROM products ORDER BY sort_order ASC, id ASC");
 }
 ?>
 <!DOCTYPE html>
@@ -69,19 +69,19 @@ if ($categoryFilter !== "") {
 
         <!-- Filter Tabs -->
         <div class="d-flex flex-wrap align-items-center justify-content-center gap-2 mb-5">
-            <a href="products.php" class="product-filter-btn <?= $categoryFilter === '' ? 'active' : '' ?>">
+            <a href="products" class="product-filter-btn <?= $categoryFilter === '' ? 'active' : '' ?>">
                 <i class="bi bi-grid-fill"></i> Semua Lini Produk
             </a>
-            <a href="products.php?category=Steering" class="product-filter-btn <?= $categoryFilter === 'Steering' ? 'active' : '' ?>">
+            <a href="products?category=Steering" class="product-filter-btn <?= $categoryFilter === 'Steering' ? 'active' : '' ?>">
                 <i class="bi bi-circle-square"></i> Steering Wheel Systems
             </a>
-            <a href="products.php?category=Airbag" class="product-filter-btn <?= $categoryFilter === 'Airbag' ? 'active' : '' ?>">
+            <a href="products?category=Airbag" class="product-filter-btn <?= $categoryFilter === 'Airbag' ? 'active' : '' ?>">
                 <i class="bi bi-shield-shaded"></i> Airbag Safety Modules
             </a>
-            <a href="products.php?category=Cockpit" class="product-filter-btn <?= $categoryFilter === 'Cockpit' ? 'active' : '' ?>">
+            <a href="products?category=Cockpit" class="product-filter-btn <?= $categoryFilter === 'Cockpit' ? 'active' : '' ?>">
                 <i class="bi bi-speedometer2"></i> Cockpit & Interior Resins
             </a>
-            <a href="products.php?category=Exterior" class="product-filter-btn <?= $categoryFilter === 'Exterior' ? 'active' : '' ?>">
+            <a href="products?category=Exterior" class="product-filter-btn <?= $categoryFilter === 'Exterior' ? 'active' : '' ?>">
                 <i class="bi bi-shield-check"></i> Exterior & Aero Trims
             </a>
         </div>
@@ -113,7 +113,7 @@ if ($categoryFilter !== "") {
                                     IATF 16949 Certified
                                 </span>
                                 <h3 class="h5 fw-bold text-np-green mb-2">
-                                    <a class="text-decoration-none text-np-green" href="product-detail.php?id=<?= (int) $product["id"] ?>">
+                                    <a class="text-decoration-none text-np-green" href="product-detail?id=<?= (int) $product["id"] ?>">
                                         <?= htmlspecialchars($product["name"] ?? "") ?>
                                     </a>
                                 </h3>
@@ -121,10 +121,10 @@ if ($categoryFilter !== "") {
                                     <?= htmlspecialchars($product["description"] ?? "") ?>
                                 </p>
                                 <div class="pt-3 border-top d-flex justify-content-between align-items-center">
-                                    <a class="small fw-bold text-np-green text-decoration-none" href="product-detail.php?id=<?= (int) $product["id"] ?>">
+                                    <a class="small fw-bold text-np-green text-decoration-none" href="product-detail?id=<?= (int) $product["id"] ?>">
                                         Detail Spesifikasi →
                                     </a>
-                                    <a href="contact.php?product=<?= urlencode($product['name']) ?>" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1" title="Minta Penawaran B2B">
+                                    <a href="contact?product=<?= urlencode($product['name']) ?>" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1" title="Minta Penawaran B2B">
                                         RFQ <i class="bi bi-send"></i>
                                     </a>
                                 </div>
@@ -135,7 +135,7 @@ if ($categoryFilter !== "") {
             <?php else: ?>
                 <div class="col-12 text-center py-5">
                     <p class="text-muted fs-5">Tidak ada produk ditemukan untuk kategori ini.</p>
-                    <a href="products.php" class="btn btn-np-primary">Kembali ke Semua Produk</a>
+                    <a href="products" class="btn btn-np-primary">Kembali ke Semua Produk</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -233,7 +233,7 @@ if ($categoryFilter !== "") {
         <p class="lead text-white-50 mb-4">
             <?= htmlspecialchars(get_section_val('products', 'products_cta', 'subtitle', 'Ajukan permintaan penawaran harga (RFQ) dan jadwalkan sesi tinjauan teknis bersama tim rekayasa kami.')) ?>
         </p>
-        <a href="<?= htmlspecialchars(get_section_val('products', 'products_cta', 'button_link', 'contact.php')) ?>" class="btn btn-light text-np-green fw-bold px-4 py-3 rounded-pill">
+        <a href="<?= htmlspecialchars(get_section_val('products', 'products_cta', 'button_link', 'contact')) ?>" class="btn btn-light text-np-green fw-bold px-4 py-3 rounded-pill">
             <?= htmlspecialchars(get_section_val('products', 'products_cta', 'button_text', 'Ajukan Permintaan RFQ')) ?>
             <i class="bi bi-arrow-right ms-2"></i>
         </a>

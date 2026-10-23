@@ -5,6 +5,12 @@
  * 100% Free & Open-Source, zero paid external APIs.
  */
 
+// Direct invocation guard
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    http_response_code(403);
+    exit('Access Denied');
+}
+
 require_once __DIR__ . '/../config/database.php';
 if (!function_exists('current_lang')) {
     require_once __DIR__ . '/lang.php';

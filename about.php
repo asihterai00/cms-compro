@@ -41,7 +41,7 @@ if ($company && function_exists('translate_entity_row')) {
                     </p>
                     <?php if (get_section_val('about', 'about_dna', 'button_text')): ?>
                         <div class="mt-4">
-                            <a href="<?= htmlspecialchars(get_section_val('about', 'about_dna', 'button_link', 'contact.php')) ?>" class="btn btn-np-primary">
+                            <a href="<?= htmlspecialchars(get_section_val('about', 'about_dna', 'button_link', 'contact')) ?>" class="btn btn-np-primary">
                                 <?= htmlspecialchars(get_section_val('about', 'about_dna', 'button_text', __('contact_us', 'Hubungi Kami'))) ?> <i class="bi bi-arrow-right"></i>
                             </a>
                         </div>
@@ -261,10 +261,10 @@ if ($company && function_exists('translate_entity_row')) {
                 <?= htmlspecialchars(get_section_val('about', 'about_cta', 'subtitle', 'Jelajahi kapabilitas permesinan presisi kami atau tinjau sertifikasi sistem mutu internasional IATF 16949 yang kami miliki.')) ?>
             </p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="<?= htmlspecialchars(get_section_val('about', 'about_cta', 'button_link', 'facility.php')) ?>" class="btn btn-light px-4 py-3 fw-bold rounded-pill text-np-green shadow">
+                <a href="<?= htmlspecialchars(get_section_val('about', 'about_cta', 'button_link', 'facility')) ?>" class="btn btn-light px-4 py-3 fw-bold rounded-pill text-np-green shadow">
                     <i class="bi bi-cpu me-2"></i> <?= htmlspecialchars(get_section_val('about', 'about_cta', 'button_text', 'Tinjau Fasilitas & Mesin')) ?>
                 </a>
-                <a href="quality.php" class="btn btn-outline-light px-4 py-3 fw-bold rounded-pill">
+                <a href="quality" class="btn btn-outline-light px-4 py-3 fw-bold rounded-pill">
                     <i class="bi bi-patch-check me-2"></i> <?= htmlspecialchars(__('nav_quality', 'Standar Mutu & ISO')) ?>
                 </a>
             </div>

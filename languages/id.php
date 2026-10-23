@@ -158,4 +158,33 @@ return [
     'prod_airbag' => 'Airbag Safety Modules (Modul Kantung Udara)',
     'prod_interior' => 'Cockpit & Interior Resins (Resin Interior)',
     'prod_exterior' => 'Exterior & Aero Trims (Trim Eksterior)',
+
+    // Extended Detail Keys
+    'product_not_found' => 'Produk tidak ditemukan.',
+    'back_to_products' => 'Kembali ke Produk',
+    'back_to_product_line' => 'Kembali ke Lini Produk',
+    'tier1_badge' => 'TIER-1 OEM AUTOMOTIVE COMPONENT',
+    'spec_cert_std' => 'Standar Sertifikasi Mutu',
+    'spec_facility' => 'Fasilitas Manufaktur',
+    'spec_env' => 'Kepatuhan Lingkungan',
+    'spec_tolerance' => 'Toleransi Presisi',
+    'cta_rfq_part' => 'Ajukan B2B RFQ untuk Komponen Ini',
+    'cta_quality_verify' => 'Verifikasi Standar Mutu',
+
+    // Error Handling Keys
+    'error_403_badge' => '403 · AKSES SISTEM DIBATASI',
+    'error_403_title' => 'Akses Direktori / File Sistem Dibatasi',
+    'error_403_desc' => 'Untuk melindungi integritas data dan keamanan sistem PT Nihon Plast Indonesia, akses langsung ke direktori sistem, konfigurasi, atau script internal dibatasi secara ketat.',
+    'error_403_help' => 'Jika Anda adalah administrator yang sah, silakan masuk melalui portal otorisasi resmi.',
+    'error_404_badge' => '404 · HALAMAN TIDAK DITEMUKAN',
+    'error_404_title' => 'Halaman Tidak Ditemukan (Page Not Found)',
+    'error_404_desc' => 'Halaman atau sumber daya yang Anda cari tidak tersedia, telah dipindahkan, atau alamat URL yang Anda masukkan kurang tepat.',
+    'error_404_help' => 'Silakan periksa kembali tautan Anda atau gunakan menu navigasi untuk menjelajahi situs kami.',
+    'error_500_badge' => '500 · KENDALA SISTEM INTERNAL',
+    'error_500_title' => 'Terjadi Kendala pada Server',
+    'error_500_desc' => 'Sistem kami sedang mengalami pemeliharaan sementara atau proses tidak dapat diselesaikan saat ini.',
+    'error_500_help' => 'Tim teknis kami sedang menangani hal ini. Silakan coba kembali beberapa saat lagi.',
+    'error_countdown_prefix' => 'Mengalihkan otomatis ke Beranda dalam',
+    'error_countdown_suffix' => 'detik...',
+    'error_btn_catalog' => 'Katalog Produk',
 ];

@@ -4,12 +4,24 @@
  * PT Nihon Plast Indonesia CMS
  */
 
+// Direct invocation guard
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    http_response_code(403);
+    exit('Access Denied');
+}
+
 // Ensure session is started with secure parameters
 if (session_status() === PHP_SESSION_NONE) {
     if (!headers_sent()) {
         @ini_set('session.cookie_httponly', '1');
         @ini_set('session.use_only_cookies', '1');
         @ini_set('session.cookie_samesite', 'Lax');
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+        if ($isHttps) {
+            @ini_set('session.cookie_secure', '1');
+        }
     }
     @session_start();
 }

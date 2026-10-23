@@ -12,6 +12,7 @@ require_once __DIR__ . "/../includes/translation_helpers.php";
 require_permission('translations', 'read');
 
 $supportedLangs = [
+    'id' => ['name' => 'Bahasa Indonesia (Utama)', 'flag' => '../assets/img/flags/id.svg', 'short' => 'ID'],
     'en' => ['name' => 'English', 'flag' => '../assets/img/flags/en.svg', 'short' => 'EN'],
     'ja' => ['name' => '日本語 (Japanese)', 'flag' => '../assets/img/flags/ja.svg', 'short' => 'JA'],
     'zh' => ['name' => '简体中文 (Chinese)', 'flag' => '../assets/img/flags/zh.svg', 'short' => 'ZH'],
@@ -34,7 +35,7 @@ $entities = [
     'company_profile' => [
         'name' => '🏢 Profil Perusahaan',
         'table' => 'company_profile',
-        'fields' => ['tagline' => 'Tagline Utama', 'short_description' => 'Ringkasan Profil', 'about_text' => 'Tentang Kami', 'vision' => 'Visi Perusahaan', 'mission' => 'Misi Perusahaan'],
+        'fields' => ['tagline' => 'Tagline Utama', 'short_description' => 'Ringkasan Profil', 'about_text' => 'Tentang Kami', 'vision' => 'Visi Perusahaan', 'mission' => 'Misi Perusahaan', 'values_text' => 'Nilai Perusahaan'],
         'title_field' => 'company_name'
     ],
     'page_banner' => [
@@ -75,9 +76,9 @@ $entities = [
     ]
 ];
 
-$currentLang = trim($_GET['lang'] ?? 'en');
+$currentLang = trim($_GET['lang'] ?? 'id');
 if (!isset($supportedLangs[$currentLang])) {
-    $currentLang = 'en';
+    $currentLang = 'id';
 }
 
 $currentEntity = trim($_GET['entity'] ?? 'product');
@@ -109,17 +110,44 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     }
                 }
             }
+
+            // If updating Indonesian, sync back to base table
+            if ($currentLang === 'id') {
+                $tbl = $entityConfig['table'];
+                $allowedCols = array_keys($entityConfig['fields']);
+                $updates = [];
+                $types = '';
+                $vals = [];
+                foreach ($fields as $fName => $val) {
+                    if (in_array($fName, $allowedCols, true)) {
+                        $updates[] = "`$fName` = ?";
+                        $types .= 's';
+                        $vals[] = (string)$val;
+                    }
+                }
+                if (!empty($updates)) {
+                    $sql = "UPDATE `$tbl` SET " . implode(', ', $updates) . " WHERE id = ?";
+                    $types .= 'i';
+                    $vals[] = $eId;
+                    $stmt = $conn->prepare($sql);
+                    if ($stmt) {
+                        $stmt->bind_param($types, ...$vals);
+                        $stmt->execute();
+                        $stmt->close();
+                    }
+                }
+            }
         }
     }
 
-    $successMsg = "Berhasil memperbarui $savedCount kolom terjemahan bahasa [{$supportedLangs[$currentLang]['name']}] ke database!";
+    $successMsg = "Berhasil memperbarui $savedCount kolom konten/terjemahan bahasa [{$supportedLangs[$currentLang]['name']}] ke database!";
 }
 
-// Fetch source records with safe static queries
+// Fetch source records with safe static queries (respecting sort_order)
 $records = [];
 switch ($currentEntity) {
     case 'news':
-        $q = $conn->query("SELECT * FROM `news` ORDER BY id ASC");
+        $q = $conn->query("SELECT * FROM `news` ORDER BY sort_order ASC, id ASC");
         break;
     case 'company_profile':
         $q = $conn->query("SELECT * FROM `company_profile` ORDER BY id ASC");
@@ -128,23 +156,23 @@ switch ($currentEntity) {
         $q = $conn->query("SELECT * FROM `page_banners` ORDER BY id ASC");
         break;
     case 'certification':
-        $q = $conn->query("SELECT * FROM `certifications` ORDER BY id ASC");
+        $q = $conn->query("SELECT * FROM `certifications` ORDER BY sort_order ASC, id ASC");
         break;
     case 'career':
-        $q = $conn->query("SELECT * FROM `careers` ORDER BY id ASC");
+        $q = $conn->query("SELECT * FROM `careers` ORDER BY sort_order ASC, id ASC");
         break;
     case 'facility_machinery':
-        $q = $conn->query("SELECT * FROM `facility_machinery` ORDER BY id ASC");
+        $q = $conn->query("SELECT * FROM `facility_machinery` ORDER BY sort_order ASC, id ASC");
         break;
     case 'site_section':
-        $q = $conn->query("SELECT * FROM `site_sections` ORDER BY id ASC");
+        $q = $conn->query("SELECT * FROM `site_sections` ORDER BY page ASC, sort_order ASC, id ASC");
         break;
     case 'site_section_item':
-        $q = $conn->query("SELECT * FROM `site_section_items` ORDER BY id ASC");
+        $q = $conn->query("SELECT * FROM `site_section_items` ORDER BY section_key ASC, sort_order ASC, id ASC");
         break;
     case 'product':
     default:
-        $q = $conn->query("SELECT * FROM `products` ORDER BY id ASC");
+        $q = $conn->query("SELECT * FROM `products` ORDER BY sort_order ASC, id ASC");
         break;
 }
 if ($q) {
@@ -346,7 +374,7 @@ function get_trans_entity_count($eKey) {
                     <div class="row g-3">
                         <?php foreach ($entityConfig['fields'] as $fKey => $fLabel): 
                             $sourceVal = $rec[$fKey] ?? '';
-                            $currentTransVal = $existingTranslations[$rId][$fKey] ?? '';
+                            $currentTransVal = $existingTranslations[$rId][$fKey] ?? ($currentLang === 'id' ? $sourceVal : '');
                             $isLong = strlen($sourceVal) > 100 || str_contains($sourceVal, "\n");
                         ?>
                             <div class="col-12">

@@ -5,6 +5,12 @@
  * 100% Free & Open-Source, zero paid external APIs
  */
 
+// Direct invocation guard
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    http_response_code(403);
+    exit('Access Denied');
+}
+
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
@@ -179,5 +185,10 @@ function get_lang_switch_url($langCode) {
     $queryParams = $_GET;
     $queryParams['lang'] = $langCode;
     $currentScript = basename($_SERVER['PHP_SELF'] ?? 'index.php');
-    return $currentScript . '?' . http_build_query($queryParams);
+    if ($currentScript === 'index.php' || $currentScript === 'index') {
+        $cleanTarget = './';
+    } else {
+        $cleanTarget = preg_replace('/\.php$/i', '', $currentScript);
+    }
+    return $cleanTarget . '?' . http_build_query($queryParams);
 }

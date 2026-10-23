@@ -158,4 +158,33 @@ return [
     'prod_airbag' => 'エアバッグ安全モジュール',
     'prod_interior' => 'コックピット＆内装樹脂部品',
     'prod_exterior' => 'エクステリア＆エアロトリム',
+
+    // Extended Detail Keys
+    'product_not_found' => '製品が見つかりませんでした。',
+    'back_to_products' => '製品一覧に戻る',
+    'back_to_product_line' => '製品ラインナップに戻る',
+    'tier1_badge' => 'Tier-1 OEM自動車部品',
+    'spec_cert_std' => '品質認証基準',
+    'spec_facility' => '製造施設',
+    'spec_env' => '環境コンプライアンス',
+    'spec_tolerance' => '精密公差',
+    'cta_rfq_part' => 'この部品のB2B見積（RFQ）を依頼する',
+    'cta_quality_verify' => '品質基準を確認する',
+
+    // Error Handling Keys
+    'error_403_badge' => '403 · システムアクセス制限',
+    'error_403_title' => 'ディレクトリおよびシステムファイルへのアクセスが制限されています',
+    'error_403_desc' => 'PT Nihon Plast Indonesia のデータ保護およびシステムセキュリティ確保のため、システムディレクトリ、設定ファイル、内部スクリプトへの直接アクセスは厳重に制限されています。',
+    'error_403_help' => '正規の管理者権限をお持ちの場合は、公式管理ポータルよりログインしてください。',
+    'error_404_badge' => '404 · ページが見つかりません',
+    'error_404_title' => '指定されたページが見つかりません',
+    'error_404_desc' => 'アクセスしようとしたページまたはリソースは、移動または削除されたか、URLが正しくない可能性があります。',
+    'error_404_help' => 'URLをご確認いただくか、上部ナビゲーションメニューより目的のページをお探しください。',
+    'error_500_badge' => '500 · サーバー内部エラー',
+    'error_500_title' => 'サーバーで問題が発生しました',
+    'error_500_desc' => '一時的なメンテナンスまたはサーバー内部処理の問題により、リクエストを完了できませんでした。',
+    'error_500_help' => '技術担当者が対応中です。しばらく経ってから再度お試しください。',
+    'error_countdown_prefix' => '自動的にホームへ戻ります（残り',
+    'error_countdown_suffix' => '秒）...',
+    'error_btn_catalog' => '製品カタログ',
 ];

@@ -46,6 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name = trim($_POST["name"] ?? "");
     $description = trim($_POST["description"] ?? "");
     $image = trim($_POST["old_image"] ?? "");
+    $sort_order = (int)($_POST["sort_order"] ?? 10);
     if (!empty($_POST["preset_image"])) {
         $image = trim($_POST["preset_image"]);
     }
@@ -76,15 +77,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 "UPDATE products
                  SET name = ?,
                      description = ?,
-                     image = ?
+                     image = ?,
+                     sort_order = ?
                  WHERE id = ?"
             );
 
             $stmt->bind_param(
-                "sssi",
+                "sssii",
                 $name,
                 $description,
                 $image,
+                $sort_order,
                 $id
             );
 
@@ -95,15 +98,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $stmt = $conn->prepare(
                 "INSERT INTO products
-                 (name, description, image)
-                 VALUES (?, ?, ?)"
+                 (name, description, image, sort_order)
+                 VALUES (?, ?, ?, ?)"
             );
 
             $stmt->bind_param(
-                "sss",
+                "sssi",
                 $name,
                 $description,
-                $image
+                $image,
+                $sort_order
             );
 
             $stmt->execute();
@@ -146,7 +150,7 @@ if (isset($_GET["delete"])) {
 $products = $conn->query(
     "SELECT *
      FROM products
-     ORDER BY id DESC"
+     ORDER BY sort_order ASC, id ASC"
 );
 
 ?>
@@ -367,6 +371,15 @@ $products = $conn->query(
                         <span class="small text-muted flex-grow-1 text-truncate" id="product_preview_label"><?= htmlspecialchars($editItem['image'] ?? '') ?></span>
                     </div>
                 </div>
+
+                <div class="mb-3 mt-3">
+                    <label class="form-label fw-bold">Nomor Urutan Tampil (Sort Order):</label>
+                    <div class="input-group" style="max-width: 220px;">
+                        <span class="input-group-text"><i class="bi bi-sort-numeric-down"></i></span>
+                        <input type="number" name="sort_order" class="form-control" value="<?= (int)($editItem['sort_order'] ?? 10) ?>" step="5">
+                    </div>
+                    <small class="text-muted">Angka lebih kecil tampil lebih dulu di halaman publik (contoh: 10, 20, 30).</small>
+                </div>
             </div>
 
             <script>
@@ -411,7 +424,8 @@ $products = $conn->query(
                 <thead>
 
                     <tr>
-                        <th style="width: 100px;">Foto</th>
+                        <th style="width: 110px;">Urutan</th>
+                        <th style="width: 90px;">Foto</th>
                         <th style="width: 250px;">Nama Produk</th>
                         <th>Deskripsi</th>
                         <th style="width: 140px;" class="text-end pe-3">Aksi</th>
@@ -424,6 +438,18 @@ $products = $conn->query(
                 <?php while ($item = $products->fetch_assoc()): ?>
 
                     <tr>
+
+                        <td>
+                            <div class="d-flex align-items-center gap-1">
+                                <a href="ajax_reorder.php?table=products&action=move_up&id=<?= (int)$item['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Atas">
+                                    <i class="bi bi-arrow-up"></i>
+                                </a>
+                                <a href="ajax_reorder.php?table=products&action=move_down&id=<?= (int)$item['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Bawah">
+                                    <i class="bi bi-arrow-down"></i>
+                                </a>
+                                <span class="badge bg-light text-dark border px-2 py-1 font-monospace"><?= (int)($item['sort_order'] ?? 10) ?></span>
+                            </div>
+                        </td>
 
                         <td>
 

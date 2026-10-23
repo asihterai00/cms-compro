@@ -1,7 +1,7 @@
 # 🧠 CMS Company Profile - Project Memory Bank
 
 > Auto-exported from MySQL Database `db_cms_compro.project_memory`
-> Generated on: 2026-10-22 09:40:49
+> Generated on: 2026-10-23 04:58:17
 
 
 ## 📂 Category: ARCHITECTURE
@@ -198,6 +198,22 @@ Harmonized Admin CMS color palette with official PT Nihon Plast Indonesia Forest
 
 ---
 
+### #36 - 1-to-1 Navigation Alignment, Sort Order Re-Ordering Engine &amp; Full Dynamic Multilingual Coverage
+- **Recorded At:** 2026-10-23 09:27:45
+- **Author:** antigravity-ai
+
+Aligned Admin CMS navigation 1-to-1 with Public Site pages (Dashboard, Beranda, Tentang Kami, Produk, Mutu & ISO, Fasilitas, Galeri, Berita, Karir, B2B RFQ, Pengaturan). Added sort_order column to products, gallery, news, careers. Created universal reorder API admin/ajax_reorder.php supporting Move Up/Down and drag-and-drop. Added Up/Down action controls across all CMS tables and verified 100% database multilingual translations.
+
+---
+
+### #37 - 1-to-1 CMS Alignment, Sort Order Reordering Engine &amp; 5-Language Multilingual Tabs
+- **Recorded At:** 2026-10-23 10:49:37
+- **Author:** antigravity-ai
+
+Synchronized CMS Admin and Public Site navigation 1-to-1 across 11 menus. Added populated sort_order and live Move Up/Down reordering across MySQL tables and React ModuleView via admin/ajax_reorder.php. Built 5-language tabs (ID, EN, JA, ZH, KO) in site_sections, site_section_items, and company_profile, and placed 5-flag combobox in PHP admin header and React Topbar.
+
+---
+
 
 ## 📂 Category: CHANGELOG
 
@@ -340,6 +356,38 @@ Benchmarked key Tier-1 interior and safety competitors: Japan (Toyoda Gosei, Tok
 
 ---
 
+### #38 - Multilingual CMS and Live DB Sync Overhaul
+- **Recorded At:** 2026-10-23 11:29:50
+- **Author:** antigravity-ai
+
+Fixed Admin CMS language switching by eliminating stale localStorage cache in App.jsx when window.__CMS_DATA__ is present. Integrated 5-language tabs (ID, EN, JA, ZH, KO) in RecordEditor with preloaded content_translations. Connected record editing and ordering directly to MySQL via ajax_save.php, ajax_delete.php, and ajax_reorder.php. Ensured sort_order is always initialized with numeric fallback.
+
+---
+
+### #40 - Full-Stack Codebase Audit, Security Hardening &amp; Documentation Suite
+- **Recorded At:** 2026-10-23 13:58:13
+- **Author:** antigravity-ai
+
+Completed 8-phase full-stack audit. Closed preview_dashboard backdoor and enforce RBAC on admin/index.php. Converted reorder/machinery/section queries to prepared statements. Added banners case to ajax_save.php. Hardened CSRF with hash_equals. Created scripts/create_admin.php for secure admin bootstrapping. Sanitized .env.example. Removed temporary files (index_bk.php, zip archives). Created comprehensive documentation suite in docs/ (DEPLOYMENT, BACKUP_RESTORE, AUDIT_REPORT, CLEANUP_REPORT, TEST_REPORT, SECURITY, THREAT_MODEL, SECURITY_TEST_REPORT). Verified 100% test pass across 114 PHP files, 15 admin pages, 12 public pages, and 60 multilingual scenarios.
+
+---
+
+### #43 - Resolution for Broken Error Layout and Active Language Preservation
+- **Recorded At:** 2026-10-23 14:48:32
+- **Author:** antigravity-ai
+
+Fixed relative asset resolution failure on error pages by adding dynamic base href to includes/head.php. Added automatic 302 redirection for internal folder access preserving the active language. Added full 5-language dictionary keys (ID, EN, JA, ZH, KO) for error pages, auto-redirect countdown, and navigation buttons.
+
+---
+
+### #44 - Regex Delimiter Conflict Fix in clean_public_url
+- **Recorded At:** 2026-10-23 14:57:32
+- **Author:** antigravity-ai
+
+Fixed regex delimiter conflict in clean_public_url() where # delimiter collided with # in anchor pattern, causing PHP warnings on index.php. Changed regex delimiter to ~ and verified zero PHP errors across all pages.
+
+---
+
 
 ## 📂 Category: NOTES
 
@@ -370,6 +418,30 @@ Comprehensive bug audit, security fixes, and robustness engineering across the P
 9. RBAC & CSRF Protection across all 13 Admin Modules: Enforced require_permission() and CSRF verification across all admin pages.
 10. Public RFQ Hardening: contact.php protected with CSRF, anti-bot honeypot, time-trap, and flood rate-limiting.
 11. Verification: All 26 dynamic CMS tests pass, all RBAC tests pass, and comprehensive audit reports 0 issues across all 76 PHP files.
+
+---
+
+### #39 - Enterprise Security Hardening, Zero-Defect Remediation &amp; Full OWASP ASVS Alignment
+- **Recorded At:** 2026-10-23 13:48:06
+- **Author:** antigravity-ai
+
+Comprehensive audit conducted across all 15 admin pages, 12 public pages, database, and APIs. Remediated preview_dashboard unauthenticated session backdoor, parameterized all queries in ajax_reorder.php, machinery.php, site_sections.php, and site_section_items.php, implemented banners case in ajax_save.php, added cookie invalidation in logout.php, added conditional Secure cookie flag in csrf.php, created scripts/create_admin.php for secure CLI bootstrapping, eliminated unused backup artifacts, and published complete documentation suite.
+
+---
+
+### #41 - Multi-Layer HTTP Access Denial for Internal Folders
+- **Recorded At:** 2026-10-23 14:12:39
+- **Author:** antigravity-ai
+
+Hardened Apache root .htaccess and deployed individual .htaccess files to config/, database/, includes/, scripts/, languages/, and docs/ with Require all denied. Implemented direct script invocation guards in config/database.php, scripts/db_check.php, scripts/memory.php, and includes/*.php to guarantee 403 Forbidden even if direct file names are known.
+
+---
+
+### #42 - Clean URLs and Branded Error Handler with Auto-Redirect
+- **Recorded At:** 2026-10-23 14:36:07
+- **Author:** antigravity-ai
+
+Implemented enterprise-grade URL rewrite system stripping .php extension from browser address bar across all public pages and assets. Replaced raw Apache 403/404 screens with dedicated, branded error.php page featuring auto-redirection back to home after 5 seconds. Added directory access interception in .htaccess and database cleanup for clean button links.
 
 ---
 

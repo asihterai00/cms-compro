@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../includes/translation_helpers.php";
 
 require_permission('site_section_items', 'read');
 
@@ -27,7 +28,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])
         $stmt->close();
 
         // Fetch updated status
-        $res = $conn->query("SELECT is_active, title FROM site_section_items WHERE id = " . $id)->fetch_assoc();
+        $fStmt = $conn->prepare("SELECT is_active, title FROM site_section_items WHERE id = ?");
+        $fStmt->bind_param("i", $id);
+        $fStmt->execute();
+        $res = $fStmt->get_result()->fetch_assoc();
+        $fStmt->close();
         $newStatus = (int)($res['is_active'] ?? 0);
         $title = $res['title'] ?? 'Sub-item';
 
@@ -90,12 +95,16 @@ $filterSection = trim($_GET['section_key'] ?? 'all');
 // Fetch edit record
 $editId = (int)($_GET['edit'] ?? 0);
 $editRow = null;
+$itemTranslations = [];
 if ($editId > 0) {
     $stmt = $conn->prepare("SELECT * FROM site_section_items WHERE id = ? LIMIT 1");
     $stmt->bind_param("i", $editId);
     $stmt->execute();
     $editRow = $stmt->get_result()->fetch_assoc();
     $stmt->close();
+    if ($editRow) {
+        $itemTranslations = get_entity_all_translations('site_section_item', $editId);
+    }
 }
 
 // Handle Form Submission (Add or Update)
@@ -196,6 +205,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bind_param("sssssssssiis", $sectionKey, $itemKeyVal, $title, $subVal, $contVal, $iconVal, $imgVal, $badgeVal, $extraData, $sortOrder, $isActive, $id);
                 if ($stmt->execute()) {
                     $success = "Sub-item '{$title}' berhasil diperbarui.";
+                    if (!empty($_POST['trans']) && is_array($_POST['trans'])) {
+                        save_entity_translations('site_section_item', $id, $_POST['trans']);
+                    }
                     $editRow = null;
                 } else {
                     $error = "Gagal memperbarui: " . $stmt->error;
@@ -205,6 +217,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("INSERT INTO site_section_items (section_key, item_key, title, subtitle, content, icon, image, badge, extra_data, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->bind_param("sssssssssii", $sectionKey, $itemKeyVal, $title, $subVal, $contVal, $iconVal, $imgVal, $badgeVal, $extraData, $sortOrder, $isActive);
                 if ($stmt->execute()) {
+                    $newItemId = $conn->insert_id;
+                    if (!empty($_POST['trans']) && is_array($_POST['trans'])) {
+                        save_entity_translations('site_section_item', $newItemId, $_POST['trans']);
+                    }
                     $success = "Sub-item baru '{$title}' berhasil ditambahkan ke '{$sectionKey}'.";
                 } else {
                     $error = "Gagal menyimpan: " . $stmt->error;
@@ -444,22 +460,155 @@ $iconCategories = [
                         <input type="text" name="item_key" class="form-control" value="<?= htmlspecialchars($editRow['item_key'] ?? '') ?>" placeholder="contoh: steering, airbag, stat_solar">
                     </div>
 
-                    <div class="col-md-8">
-                        <label class="form-label fw-semibold small">Judul Sub-Item / Teks Utama <span class="text-danger">*</span></label>
-                        <input type="text" name="title" class="form-control" value="<?= htmlspecialchars($editRow['title'] ?? '') ?>" placeholder="contoh: Steering Wheel Systems, CMM Geometric Lab, dll" required>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold small">Sub-judul / Poin Nomor</label>
-                        <input type="text" name="subtitle" class="form-control" value="<?= htmlspecialchars($editRow['subtitle'] ?? '') ?>" placeholder="contoh: 01, Driver Cockpit, Standar Mutu">
-                    </div>
-
                     <div class="col-12">
-                        <label class="form-label fw-semibold small">Deskripsi / Konten Teks Lengkap</label>
-                        <textarea name="content" class="form-control" rows="3" placeholder="Isi deskripsi atau detail spesifikasi sub-item..."><?= htmlspecialchars($editRow['content'] ?? '') ?></textarea>
+                        <div class="card bg-light border-0 rounded-3 p-3 mb-2">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small fw-bold text-dark text-uppercase"><i class="bi bi-translate me-1"></i> Konten Multilingual Sub-Item (5 Bahasa):</span>
+                                <small class="text-muted">Tersimpan ke database & berubah otomatis saat bahasa website diganti</small>
+                            </div>
+                            <ul class="nav nav-tabs mb-3" id="langTabsItem" role="tablist">
+                                <li class="nav-item">
+                                    <button class="nav-link active fw-bold text-success" id="item-id-tab" data-bs-toggle="tab" data-bs-target="#item-id" type="button" role="tab">
+                                        <img src="../assets/img/flags/id.svg" style="width:16px;height:12px;margin-right:4px;"> Indonesia (Utama)
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link fw-bold text-secondary" id="item-en-tab" data-bs-toggle="tab" data-bs-target="#item-en" type="button" role="tab">
+                                        <img src="../assets/img/flags/en.svg" style="width:16px;height:12px;margin-right:4px;"> English
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link fw-bold text-secondary" id="item-ja-tab" data-bs-toggle="tab" data-bs-target="#item-ja" type="button" role="tab">
+                                        <img src="../assets/img/flags/ja.svg" style="width:16px;height:12px;margin-right:4px;"> 日本語
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link fw-bold text-secondary" id="item-zh-tab" data-bs-toggle="tab" data-bs-target="#item-zh" type="button" role="tab">
+                                        <img src="../assets/img/flags/zh.svg" style="width:16px;height:12px;margin-right:4px;"> 简体中文
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link fw-bold text-secondary" id="item-ko-tab" data-bs-toggle="tab" data-bs-target="#item-ko" type="button" role="tab">
+                                        <img src="../assets/img/flags/ko.svg" style="width:16px;height:12px;margin-right:4px;"> 한국어
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="langTabsContentItem">
+                                <!-- ID Tab (Base) -->
+                                <div class="tab-pane fade show active" id="item-id" role="tabpanel">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-semibold small">Judul Sub-Item (🇮🇩 Indonesia) <span class="text-danger">*</span></label>
+                                            <input type="text" name="title" class="form-control" value="<?= htmlspecialchars($editRow['title'] ?? '') ?>" placeholder="contoh: Steering Wheel Systems" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">Sub-judul / Poin (🇮🇩 Indonesia)</label>
+                                            <input type="text" name="subtitle" class="form-control" value="<?= htmlspecialchars($editRow['subtitle'] ?? '') ?>" placeholder="contoh: 01, Driver Cockpit">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">Deskripsi / Konten Teks (🇮🇩 Indonesia)</label>
+                                            <textarea name="content" class="form-control" rows="3" placeholder="Isi deskripsi atau detail spesifikasi sub-item..."><?= htmlspecialchars($editRow['content'] ?? '') ?></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">Badge Text / Label Tag (🇮🇩 Indonesia)</label>
+                                            <input type="text" name="badge" class="form-control" value="<?= htmlspecialchars($editRow['badge'] ?? '') ?>" placeholder="contoh: OEM Partner, Injeksi Presisi">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- EN Tab -->
+                                <div class="tab-pane fade" id="item-en" role="tabpanel">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-semibold small">Item Title (🇬🇧 English)</label>
+                                            <input type="text" name="trans[en][title]" class="form-control" value="<?= htmlspecialchars($itemTranslations['en']['title'] ?? '') ?>" placeholder="e.g. Steering Wheel Systems">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">Subtitle / Point (🇬🇧 English)</label>
+                                            <input type="text" name="trans[en][subtitle]" class="form-control" value="<?= htmlspecialchars($itemTranslations['en']['subtitle'] ?? '') ?>" placeholder="e.g. 01, Driver Cockpit">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">Description / Content (🇬🇧 English)</label>
+                                            <textarea name="trans[en][content]" class="form-control" rows="3" placeholder="Detailed item specification or description..."><?= htmlspecialchars($itemTranslations['en']['content'] ?? '') ?></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">Badge Text / Label (🇬🇧 English)</label>
+                                            <input type="text" name="trans[en][badge]" class="form-control" value="<?= htmlspecialchars($itemTranslations['en']['badge'] ?? '') ?>" placeholder="e.g. OEM Partner">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- JA Tab -->
+                                <div class="tab-pane fade" id="item-ja" role="tabpanel">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-semibold small">サブ項目タイトル (🇯🇵 日本語)</label>
+                                            <input type="text" name="trans[ja][title]" class="form-control" value="<?= htmlspecialchars($itemTranslations['ja']['title'] ?? '') ?>" placeholder="ステアリングホイールシステム">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">サブタイトル (🇯🇵 日本語)</label>
+                                            <input type="text" name="trans[ja][subtitle]" class="form-control" value="<?= htmlspecialchars($itemTranslations['ja']['subtitle'] ?? '') ?>" placeholder="01, 運転席">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">詳細説明 (🇯🇵 日本語)</label>
+                                            <textarea name="trans[ja][content]" class="form-control" rows="3" placeholder="仕様または詳細説明..."><?= htmlspecialchars($itemTranslations['ja']['content'] ?? '') ?></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">バッジテキスト (🇯🇵 日本語)</label>
+                                            <input type="text" name="trans[ja][badge]" class="form-control" value="<?= htmlspecialchars($itemTranslations['ja']['badge'] ?? '') ?>" placeholder="OEMパートナー">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ZH Tab -->
+                                <div class="tab-pane fade" id="item-zh" role="tabpanel">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-semibold small">子项目标题 (🇨🇳 简体中文)</label>
+                                            <input type="text" name="trans[zh][title]" class="form-control" value="<?= htmlspecialchars($itemTranslations['zh']['title'] ?? '') ?>" placeholder="方向盘系统">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">副标题 (🇨🇳 简体中文)</label>
+                                            <input type="text" name="trans[zh][subtitle]" class="form-control" value="<?= htmlspecialchars($itemTranslations['zh']['subtitle'] ?? '') ?>" placeholder="01, 驾驶舱">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">说明内容 (🇨🇳 简体中文)</label>
+                                            <textarea name="trans[zh][content]" class="form-control" rows="3" placeholder="子项目详细介绍..."><?= htmlspecialchars($itemTranslations['zh']['content'] ?? '') ?></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">徽章标签 (🇨🇳 简体中文)</label>
+                                            <input type="text" name="trans[zh][badge]" class="form-control" value="<?= htmlspecialchars($itemTranslations['zh']['badge'] ?? '') ?>" placeholder="OEM合作伙伴">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- KO Tab -->
+                                <div class="tab-pane fade" id="item-ko" role="tabpanel">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-semibold small">하위 항목 제목 (🇰🇷 한국어)</label>
+                                            <input type="text" name="trans[ko][title]" class="form-control" value="<?= htmlspecialchars($itemTranslations['ko']['title'] ?? '') ?>" placeholder="스티어링 휠 시스템">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">소제목 (🇰🇷 한국어)</label>
+                                            <input type="text" name="trans[ko][subtitle]" class="form-control" value="<?= htmlspecialchars($itemTranslations['ko']['subtitle'] ?? '') ?>" placeholder="01, 운전석">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">상세 설명 (🇰🇷 한국어)</label>
+                                            <textarea name="trans[ko][content]" class="form-control" rows="3" placeholder="하위 항목 상세 내용..."><?= htmlspecialchars($itemTranslations['ko']['content'] ?? '') ?></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold small">배지 텍스트 (🇰🇷 한국어)</label>
+                                            <input type="text" name="trans[ko][badge]" class="form-control" value="<?= htmlspecialchars($itemTranslations['ko']['badge'] ?? '') ?>" placeholder="OEM 파트너">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold small">Pilih Icon (Bootstrap Icons)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i id="iconPreview" class="bi <?= htmlspecialchars($editRow['icon'] ?? 'bi-grid') ?>"></i></span>
@@ -470,12 +619,7 @@ $iconCategories = [
                         </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold small">Badge Text / Label Tag</label>
-                        <input type="text" name="badge" class="form-control" value="<?= htmlspecialchars($editRow['badge'] ?? '') ?>" placeholder="contoh: OEM Partner, 3D Metrology, Injeksi Presisi">
-                    </div>
-
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold small">Urutan Tampil (Sort Order)</label>
                         <input type="number" name="sort_order" class="form-control" value="<?= (int)($editRow['sort_order'] ?? 10) ?>" step="5">
                     </div>
@@ -598,7 +742,17 @@ $iconCategories = [
                         <?php else: ?>
                             <?php foreach ($allItems as $it): ?>
                                 <tr class="<?= $it['is_active'] ? '' : 'table-light opacity-75' ?>">
-                                    <td class="ps-3 fw-bold text-muted"><?= (int)$it['sort_order'] ?></td>
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <a href="ajax_reorder.php?table=site_section_items&action=move_up&id=<?= (int)$it['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Atas">
+                                                <i class="bi bi-arrow-up"></i>
+                                            </a>
+                                            <a href="ajax_reorder.php?table=site_section_items&action=move_down&id=<?= (int)$it['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Bawah">
+                                                <i class="bi bi-arrow-down"></i>
+                                            </a>
+                                            <span class="badge bg-light text-dark border px-2 py-1 font-monospace"><?= (int)$it['sort_order'] ?></span>
+                                        </div>
+                                    </td>
                                     <td>
                                         <?php if (!empty($it['image'])): ?>
                                             <img src="../<?= htmlspecialchars($it['image']) ?>" class="img-thumb-preview" alt="Thumb">

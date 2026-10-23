@@ -40,6 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $title = trim($_POST["title"] ?? "");
     $content = trim($_POST["content"] ?? "");
     $image = trim($_POST["old_image"] ?? "");
+    $sort_order = (int)($_POST["sort_order"] ?? 10);
 
     if ($title === "") {
         $error = "Judul berita wajib diisi.";
@@ -56,12 +57,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($error === "") {
             $newsId = $id;
             if ($id > 0) {
-                $stmt = $conn->prepare("UPDATE news SET title = ?, content = ?, image = ? WHERE id = ?");
-                $stmt->bind_param("sssi", $title, $content, $image, $id);
+                $stmt = $conn->prepare("UPDATE news SET title = ?, content = ?, image = ?, sort_order = ? WHERE id = ?");
+                $stmt->bind_param("sssii", $title, $content, $image, $sort_order, $id);
                 $stmt->execute();
             } else {
-                $stmt = $conn->prepare("INSERT INTO news (title, content, image, published_at) VALUES (?, ?, ?, NOW())");
-                $stmt->bind_param("sss", $title, $content, $image);
+                $stmt = $conn->prepare("INSERT INTO news (title, content, image, sort_order, published_at) VALUES (?, ?, ?, ?, NOW())");
+                $stmt->bind_param("sssi", $title, $content, $image, $sort_order);
                 $stmt->execute();
                 $newsId = $conn->insert_id;
             }
@@ -93,7 +94,7 @@ if (isset($_GET["delete"])) {
 if (isset($_GET["saved"])) $notice = "Berita berhasil disimpan.";
 if (isset($_GET["deleted"])) $notice = "Berita berhasil dihapus.";
 
-$news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
+$news = $conn->query("SELECT * FROM news ORDER BY sort_order ASC, published_at DESC, id DESC");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -248,10 +249,17 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
                     </div>
                 </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Foto berita (JPG/PNG/WEBP, maksimal 5 MB)</label>
-                <input type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
-                <div class="form-text">Opsional. Jika tidak memilih foto baru, foto lama tetap digunakan.</div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-8">
+                    <label class="form-label">Foto berita (JPG/PNG/WEBP, maksimal 5 MB)</label>
+                    <input type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
+                    <div class="form-text">Opsional. Jika tidak memilih foto baru, foto lama tetap digunakan.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Nomor Urutan (Sort Order)</label>
+                    <input type="number" name="sort_order" class="form-control" value="<?= (int)($editItem['sort_order'] ?? 10) ?>" step="5">
+                    <div class="form-text">Angka kecil tampil lebih dulu.</div>
+                </div>
             </div>
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-emerald px-4 fw-bold shadow-sm">
@@ -275,7 +283,8 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 110px;">Foto</th>
+                        <th style="width: 110px;">Urutan</th>
+                        <th style="width: 90px;">Foto</th>
                         <th style="width: 140px;">Tanggal</th>
                         <th style="width: 260px;">Judul Berita</th>
                         <th>Ringkasan Isi</th>
@@ -285,6 +294,17 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
                 <tbody>
                 <?php if ($news): while ($item = $news->fetch_assoc()): ?>
                     <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-1">
+                                <a href="ajax_reorder.php?table=news&action=move_up&id=<?= (int)$item['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Atas">
+                                    <i class="bi bi-arrow-up"></i>
+                                </a>
+                                <a href="ajax_reorder.php?table=news&action=move_down&id=<?= (int)$item['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Bawah">
+                                    <i class="bi bi-arrow-down"></i>
+                                </a>
+                                <span class="badge bg-light text-dark border px-2 py-1 font-monospace"><?= (int)($item['sort_order'] ?? 10) ?></span>
+                            </div>
+                        </td>
                         <td>
                             <?php if (!empty($item["image"])): ?>
                                 <img src="../<?= htmlspecialchars(ltrim($item["image"], "/")) ?>" alt="" class="rounded-3 border" style="width:75px;height:50px;object-fit:cover;">

@@ -10,7 +10,7 @@
  */
 
 $rootDir = realpath(__DIR__ . '/..');
-$phpBin = 'C:\\Devaron\\bin\\php\\php-8.3.30\\php.exe';
+$phpBin = PHP_BINARY;
 
 $pages = [
     'index.php',

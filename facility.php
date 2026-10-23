@@ -286,10 +286,10 @@ if (function_exists('translate_entity_rows')) {
                 <?= htmlspecialchars(get_section_val('facility', 'facility_cta', 'subtitle', 'Tim Commercial & Engineering kami siap menyambut kunjungan teknis atau meninjau kebutuhan penawaran spesifikasi komponen Anda.')) ?>
             </p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="<?= htmlspecialchars(get_section_val('facility', 'facility_cta', 'button_link', 'contact.php')) ?>" class="btn btn-light px-5 py-3 fw-bold rounded-pill text-np-green shadow">
+                <a href="<?= htmlspecialchars(get_section_val('facility', 'facility_cta', 'button_link', 'contact')) ?>" class="btn btn-light px-5 py-3 fw-bold rounded-pill text-np-green shadow">
                     <i class="bi bi-file-earmark-text me-2"></i> <?= htmlspecialchars(get_section_val('facility', 'facility_cta', 'button_text', 'Kirim Pengajuan B2B RFQ')) ?>
                 </a>
-                <a href="about.php" class="btn btn-outline-light px-4 py-3 fw-bold rounded-pill">
+                <a href="about" class="btn btn-outline-light px-4 py-3 fw-bold rounded-pill">
                     <?= htmlspecialchars(__('nav_about', 'Tentang Kami')) ?>
                 </a>
             </div>

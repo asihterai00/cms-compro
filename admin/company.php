@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../includes/translation_helpers.php";
 
 require_permission('company', 'read');
 
@@ -37,6 +38,8 @@ if (!$company) {
 
     $company = $result->fetch_assoc();
 }
+
+$companyTranslations = ($company && isset($company['id'])) ? get_entity_all_translations('company_profile', (int)$company['id']) : [];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     require_csrf();
@@ -142,6 +145,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $success =
                     "Company Profile berhasil disimpan.";
 
+                if (!empty($_POST['trans']) && is_array($_POST['trans']) && isset($company['id'])) {
+                    save_entity_translations('company_profile', (int)$company['id'], $_POST['trans']);
+                    $companyTranslations = get_entity_all_translations('company_profile', (int)$company['id']);
+                }
+
                 $company["company_name"] =
                     $company_name;
 
@@ -231,6 +239,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
     </div>
 
+    <!-- Quick Navigation Tabs for Tentang Kami -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="company.php" class="btn btn-emerald btn-sm rounded-pill px-3 shadow-sm">
+            <i class="bi bi-building me-1"></i> Profil & Kontak Perusahaan
+        </a>
+        <a href="site_sections.php?page=about" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="bi bi-layout-text-window-reverse me-1"></i> Seksi Halaman Tentang Kami
+        </a>
+        <a href="site_section_items.php?section_key=about_values" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="bi bi-collection me-1"></i> Sub-Item & Nilai Perusahaan
+        </a>
+        <a href="banners.php?page_key=about" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="bi bi-image me-1"></i> Banner Header About
+        </a>
+    </div>
+
     <?php if ($success !== ""): ?>
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2 text-success"></i><?= htmlspecialchars($success) ?>
@@ -261,57 +285,203 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     <div class="card-body p-4">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Nama Perusahaan *</label>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Nama Legal Perusahaan *</label>
                                 <input type="text" name="company_name" class="form-control" value="<?= htmlspecialchars($company["company_name"] ?? "") ?>" required>
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Tagline / Slogan</label>
-                                <input type="text" name="tagline" class="form-control" value="<?= htmlspecialchars($company["tagline"] ?? "") ?>">
-                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="card bg-light border-0 rounded-3 p-3">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="small fw-bold text-dark text-uppercase"><i class="bi bi-translate me-1"></i> Konten Profil Perusahaan Multilingual (5 Bahasa):</span>
+                                        <small class="text-muted">Tersimpan ke database & berganti otomatis saat bahasa situs dipilih</small>
+                                    </div>
+                                    <ul class="nav nav-tabs mb-3" id="langTabsCompany" role="tablist">
+                                        <li class="nav-item">
+                                            <button class="nav-link active fw-bold text-success" id="comp-id-tab" data-bs-toggle="tab" data-bs-target="#comp-id" type="button" role="tab">
+                                                <img src="../assets/img/flags/id.svg" style="width:16px;height:12px;margin-right:4px;"> Indonesia (Utama)
+                                            </button>
+                                        </li>
+                                        <li class="nav-item">
+                                            <button class="nav-link fw-bold text-secondary" id="comp-en-tab" data-bs-toggle="tab" data-bs-target="#comp-en" type="button" role="tab">
+                                                <img src="../assets/img/flags/en.svg" style="width:16px;height:12px;margin-right:4px;"> English
+                                            </button>
+                                        </li>
+                                        <li class="nav-item">
+                                            <button class="nav-link fw-bold text-secondary" id="comp-ja-tab" data-bs-toggle="tab" data-bs-target="#comp-ja" type="button" role="tab">
+                                                <img src="../assets/img/flags/ja.svg" style="width:16px;height:12px;margin-right:4px;"> 日本語
+                                            </button>
+                                        </li>
+                                        <li class="nav-item">
+                                            <button class="nav-link fw-bold text-secondary" id="comp-zh-tab" data-bs-toggle="tab" data-bs-target="#comp-zh" type="button" role="tab">
+                                                <img src="../assets/img/flags/zh.svg" style="width:16px;height:12px;margin-right:4px;"> 简体中文
+                                            </button>
+                                        </li>
+                                        <li class="nav-item">
+                                            <button class="nav-link fw-bold text-secondary" id="comp-ko-tab" data-bs-toggle="tab" data-bs-target="#comp-ko" type="button" role="tab">
+                                                <img src="../assets/img/flags/ko.svg" style="width:16px;height:12px;margin-right:4px;"> 한국어
+                                            </button>
+                                        </li>
+                                    </ul>
 
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Deskripsi Singkat (Short Description)</label>
-                                <textarea name="short_description" class="form-control" rows="2"><?= htmlspecialchars($company["short_description"] ?? "") ?></textarea>
-                            </div>
+                                    <div class="tab-content" id="langTabsContentCompany">
+                                        <!-- ID Tab (Base) -->
+                                        <div class="tab-pane fade show active" id="comp-id" role="tabpanel">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Tagline / Slogan (🇮🇩 Indonesia)</label>
+                                                    <input type="text" name="tagline" class="form-control" value="<?= htmlspecialchars($company["tagline"] ?? "") ?>">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Deskripsi Singkat (🇮🇩 Indonesia)</label>
+                                                    <textarea name="short_description" class="form-control" rows="2"><?= htmlspecialchars($company["short_description"] ?? "") ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Tentang Perusahaan (🇮🇩 Indonesia)</label>
+                                                    <textarea name="about_text" class="form-control" rows="4"><?= htmlspecialchars($company["about_text"] ?? "") ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Visi Perusahaan (🇮🇩 Indonesia)</label>
+                                                    <textarea name="vision" class="form-control" rows="3"><?= htmlspecialchars($company["vision"] ?? "") ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Misi Perusahaan (🇮🇩 Indonesia)</label>
+                                                    <textarea name="mission" class="form-control" rows="3"><?= htmlspecialchars($company["mission"] ?? "") ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Nilai-Nilai Inti (🇮🇩 Indonesia)</label>
+                                                    <textarea name="values_text" class="form-control" rows="2"><?= htmlspecialchars($company["values_text"] ?? "") ?></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Tentang Perusahaan (About Company)</label>
-                                <textarea name="about_text" class="form-control" rows="5"><?= htmlspecialchars($company["about_text"] ?? "") ?></textarea>
+                                        <!-- EN Tab -->
+                                        <div class="tab-pane fade" id="comp-en" role="tabpanel">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Tagline / Slogan (🇬🇧 English)</label>
+                                                    <input type="text" name="trans[en][tagline]" class="form-control" value="<?= htmlspecialchars($companyTranslations['en']['tagline'] ?? '') ?>" placeholder="e.g. Precision Automotive Interior & Safety Systems">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Short Description (🇬🇧 English)</label>
+                                                    <textarea name="trans[en][short_description]" class="form-control" rows="2" placeholder="Brief corporate summary..."><?= htmlspecialchars($companyTranslations['en']['short_description'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">About Company (🇬🇧 English)</label>
+                                                    <textarea name="trans[en][about_text]" class="form-control" rows="4" placeholder="Full about company text..."><?= htmlspecialchars($companyTranslations['en']['about_text'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Corporate Vision (🇬🇧 English)</label>
+                                                    <textarea name="trans[en][vision]" class="form-control" rows="3" placeholder="Vision statement..."><?= htmlspecialchars($companyTranslations['en']['vision'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Corporate Mission (🇬🇧 English)</label>
+                                                    <textarea name="trans[en][mission]" class="form-control" rows="3" placeholder="Mission statement..."><?= htmlspecialchars($companyTranslations['en']['mission'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">Corporate Values (🇬🇧 English)</label>
+                                                    <textarea name="trans[en][values_text]" class="form-control" rows="2" placeholder="Key organizational values..."><?= htmlspecialchars($companyTranslations['en']['values_text'] ?? '') ?></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- JA Tab -->
+                                        <div class="tab-pane fade" id="comp-ja" role="tabpanel">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">スローガン (🇯🇵 日本語)</label>
+                                                    <input type="text" name="trans[ja][tagline]" class="form-control" value="<?= htmlspecialchars($companyTranslations['ja']['tagline'] ?? '') ?>" placeholder="精密自動車内装・安全システム">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">会社概要 (🇯🇵 日本語)</label>
+                                                    <textarea name="trans[ja][short_description]" class="form-control" rows="2" placeholder="簡潔な会社概要..."><?= htmlspecialchars($companyTranslations['ja']['short_description'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">会社紹介 (🇯🇵 日本語)</label>
+                                                    <textarea name="trans[ja][about_text]" class="form-control" rows="4" placeholder="詳細な企業紹介..."><?= htmlspecialchars($companyTranslations['ja']['about_text'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">企業ビジョン (🇯🇵 日本語)</label>
+                                                    <textarea name="trans[ja][vision]" class="form-control" rows="3" placeholder="企業のビジョン..."><?= htmlspecialchars($companyTranslations['ja']['vision'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">ミッション (🇯🇵 日本語)</label>
+                                                    <textarea name="trans[ja][mission]" class="form-control" rows="3" placeholder="企業の使命..."><?= htmlspecialchars($companyTranslations['ja']['mission'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">行動指針・価値観 (🇯🇵 日本語)</label>
+                                                    <textarea name="trans[ja][values_text]" class="form-control" rows="2" placeholder="行動指針・共有価値観..."><?= htmlspecialchars($companyTranslations['ja']['values_text'] ?? '') ?></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- ZH Tab -->
+                                        <div class="tab-pane fade" id="comp-zh" role="tabpanel">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">企业口号 (🇨🇳 简体中文)</label>
+                                                    <input type="text" name="trans[zh][tagline]" class="form-control" value="<?= htmlspecialchars($companyTranslations['zh']['tagline'] ?? '') ?>" placeholder="精密汽车内饰与安全系统">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">公司简介 (🇨🇳 简体中文)</label>
+                                                    <textarea name="trans[zh][short_description]" class="form-control" rows="2" placeholder="简要公司介绍..."><?= htmlspecialchars($companyTranslations['zh']['short_description'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">关于公司 (🇨🇳 简体中文)</label>
+                                                    <textarea name="trans[zh][about_text]" class="form-control" rows="4" placeholder="详细公司介绍..."><?= htmlspecialchars($companyTranslations['zh']['about_text'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">企业愿景 (🇨🇳 简体中文)</label>
+                                                    <textarea name="trans[zh][vision]" class="form-control" rows="3" placeholder="企业愿景..."><?= htmlspecialchars($companyTranslations['zh']['vision'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">企业使命 (🇨🇳 简体中文)</label>
+                                                    <textarea name="trans[zh][mission]" class="form-control" rows="3" placeholder="企业使命..."><?= htmlspecialchars($companyTranslations['zh']['mission'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">核心价值观 (🇨🇳 简体中文)</label>
+                                                    <textarea name="trans[zh][values_text]" class="form-control" rows="2" placeholder="核心价值观..."><?= htmlspecialchars($companyTranslations['zh']['values_text'] ?? '') ?></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- KO Tab -->
+                                        <div class="tab-pane fade" id="comp-ko" role="tabpanel">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">슬로건 (🇰🇷 한국어)</label>
+                                                    <input type="text" name="trans[ko][tagline]" class="form-control" value="<?= htmlspecialchars($companyTranslations['ko']['tagline'] ?? '') ?>" placeholder="정밀 자동차 내장 및 안전 시스템">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">회사 요약 (🇰🇷 한국어)</label>
+                                                    <textarea name="trans[ko][short_description]" class="form-control" rows="2" placeholder="간단한 회사 소개..."><?= htmlspecialchars($companyTranslations['ko']['short_description'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">회사 소개 (🇰🇷 한국어)</label>
+                                                    <textarea name="trans[ko][about_text]" class="form-control" rows="4" placeholder="상세 회사 소개..."><?= htmlspecialchars($companyTranslations['ko']['about_text'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">비전 (🇰🇷 한국어)</label>
+                                                    <textarea name="trans[ko][vision]" class="form-control" rows="3" placeholder="기업 비전..."><?= htmlspecialchars($companyTranslations['ko']['vision'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">미션 (🇰🇷 한국어)</label>
+                                                    <textarea name="trans[ko][mission]" class="form-control" rows="3" placeholder="기업 미션..."><?= htmlspecialchars($companyTranslations['ko']['mission'] ?? '') ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold small text-muted text-uppercase">핵심 가치 (🇰🇷 한국어)</label>
+                                                    <textarea name="trans[ko][values_text]" class="form-control" rows="2" placeholder="핵심 가치..."><?= htmlspecialchars($companyTranslations['ko']['values_text'] ?? '') ?></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Vision, Mission & Values -->
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center gap-2">
-                        <span class="avatar-sm rounded-3 bg-emerald-subtle text-emerald d-inline-flex align-items-center justify-content-center p-2">
-                            <i class="bi bi-compass"></i>
-                        </span>
-                        <h5 class="fw-bold mb-0 text-dark">Filosofi, Visi & Misi</h5>
-                    </div>
 
-                    <div class="card-body p-4">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Visi Perusahaan (Vision)</label>
-                                <textarea name="vision" class="form-control" rows="3"><?= htmlspecialchars($company["vision"] ?? "") ?></textarea>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Misi Perusahaan (Mission)</label>
-                                <textarea name="mission" class="form-control" rows="3"><?= htmlspecialchars($company["mission"] ?? "") ?></textarea>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Nilai-Nilai Inti (Corporate Values)</label>
-                                <textarea name="values_text" class="form-control" rows="3"><?= htmlspecialchars($company["values_text"] ?? "") ?></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Right Column: Logo & Contact Info -->

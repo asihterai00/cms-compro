@@ -166,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <p class="small text-muted mb-3">
                         <?= htmlspecialchars(get_section_val('contact', 'contact_download_deck', 'subtitle', 'Unduh rangkuman profil korporat, data mesin injeksi plastik, kapasitas produksi, dan sertifikasi IATF 16949 / ISO 14001 dalam format PDF resmi.')) ?>
                     </p>
-                    <a href="<?= htmlspecialchars(get_section_val('contact', 'contact_download_deck', 'button_link', 'about.php')) ?>" class="btn btn-outline-success w-100 fw-bold rounded-pill mb-2">
+                    <a href="<?= htmlspecialchars(get_section_val('contact', 'contact_download_deck', 'button_link', 'about')) ?>" class="btn btn-outline-success w-100 fw-bold rounded-pill mb-2">
                         <i class="bi bi-file-earmark-arrow-down me-2"></i> <?= htmlspecialchars(get_section_val('contact', 'contact_download_deck', 'button_text', 'Unduh Company Profile (PDF / Deck)')) ?>
                     </a>
                     <a href="https://wa.me/6281234567890?text=Halo%20PT%20Nihon%20Plast%20Indonesia,%20saya%20ingin%20berkonsultasi%20mengenai%20kebutuhan%20komponen%20otomotif" target="_blank" rel="noopener noreferrer" class="btn btn-success w-100 fw-bold rounded-pill">
@@ -230,7 +230,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         </script>
                     <?php endif; ?>
 
-                    <form method="post" action="contact.php">
+                    <form method="post" action="contact">
                         <?= csrf_field() ?>
                         <!-- Honeypot anti-spam field (hidden from real users) -->
                         <div style="display:none !important;" aria-hidden="true">

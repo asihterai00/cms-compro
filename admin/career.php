@@ -72,6 +72,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_POST["description"] ?? ""
     );
 
+    $sort_order = (int)(
+        $_POST["sort_order"] ?? 10
+    );
+
     if ($position === "") {
 
         $error =
@@ -85,16 +89,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 position = ?,
                 department = ?,
                 location = ?,
-                description = ?
+                description = ?,
+                sort_order = ?
              WHERE id = ?"
         );
 
         $stmt->bind_param(
-            "ssssi",
+            "ssssii",
             $position,
             $department,
             $location,
             $description,
+            $sort_order,
             $id
         );
 
@@ -114,17 +120,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 position,
                 department,
                 location,
-                description
+                description,
+                sort_order
              )
-             VALUES (?, ?, ?, ?)"
+             VALUES (?, ?, ?, ?, ?)"
         );
 
         $stmt->bind_param(
-            "ssss",
+            "ssssi",
             $position,
             $department,
             $location,
-            $description
+            $description,
+            $sort_order
         );
 
         if ($stmt->execute()) {
@@ -182,7 +190,7 @@ if (isset($_GET["delete"])) {
 $careers = $conn->query(
     "SELECT *
      FROM careers
-     ORDER BY id DESC"
+     ORDER BY sort_order ASC, id DESC"
 );
 
 ?>
@@ -271,7 +279,7 @@ $careers = $conn->query(
                     <input type="hidden" name="id" value="<?= (int) $editCareer["id"] ?>">
 
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold small text-muted text-uppercase">Posisi / Jabatan *</label>
                             <input type="text" name="position" class="form-control" value="<?= htmlspecialchars($editCareer["position"]) ?>" placeholder="Contoh: Mold Maintenance Engineer" required>
                         </div>
@@ -284,6 +292,11 @@ $careers = $conn->query(
                         <div class="col-md-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Lokasi Penempatan</label>
                             <input type="text" name="location" class="form-control" value="<?= htmlspecialchars($editCareer["location"] ?: 'Cikampek, Jawa Barat') ?>" placeholder="Contoh: Plant Cikampek">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Urutan</label>
+                            <input type="number" name="sort_order" class="form-control" value="<?= (int)($editCareer["sort_order"] ?? 10) ?>" step="5">
                         </div>
 
                         <div class="col-12">
@@ -315,7 +328,7 @@ $careers = $conn->query(
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4" style="width: 70px;">No</th>
+                            <th class="ps-4" style="width: 120px;">Urutan</th>
                             <th>Posisi / Jabatan</th>
                             <th>Departemen</th>
                             <th>Lokasi</th>
@@ -331,9 +344,19 @@ $careers = $conn->query(
                                 </td>
                             </tr>
                         <?php else: ?>
-                            <?php $no = 1; while ($row = $careers->fetch_assoc()): ?>
+                            <?php while ($row = $careers->fetch_assoc()): ?>
                                 <tr>
-                                    <td class="ps-4 fw-bold text-muted"><?= $no++ ?></td>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <a href="ajax_reorder.php?table=careers&action=move_up&id=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Atas">
+                                                <i class="bi bi-arrow-up"></i>
+                                            </a>
+                                            <a href="ajax_reorder.php?table=careers&action=move_down&id=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Bawah">
+                                                <i class="bi bi-arrow-down"></i>
+                                            </a>
+                                            <span class="badge bg-light text-dark border px-2 py-1 font-monospace"><?= (int)($row['sort_order'] ?? 10) ?></span>
+                                        </div>
+                                    </td>
                                     <td>
                                         <div class="fw-bold text-dark"><?= htmlspecialchars($row["position"]) ?></div>
                                         <?php if (!empty($row["description"])): ?>

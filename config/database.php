@@ -4,6 +4,12 @@
  * PT Nihon Plast Indonesia CMS
  */
 
+// Direct HTTP script execution guard
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    http_response_code(403);
+    exit('Access Denied');
+}
+
 // 1. Simple Environment Variable Loader (.env)
 $envFile = __DIR__ . '/../.env';
 if (file_exists($envFile)) {

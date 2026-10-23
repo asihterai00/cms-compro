@@ -268,7 +268,7 @@ $certList = $conn->query("SELECT * FROM certifications WHERE status = 'active' O
         <p class="lead text-white-50 mb-4">
             <?= htmlspecialchars(get_section_val('quality', 'quality_cta', 'subtitle', 'Hubungi divisi Quality Assurance kami untuk mendapatkan salinan dokumen sertifikat resmi IATF 16949, ISO 14001, atau kepatuhan RoHS/ELV.')) ?>
         </p>
-        <a href="<?= htmlspecialchars(get_section_val('quality', 'quality_cta', 'button_link', 'contact.php')) ?>" class="btn btn-light text-np-green fw-bold px-4 py-3 rounded-pill">
+        <a href="<?= htmlspecialchars(get_section_val('quality', 'quality_cta', 'button_link', 'contact')) ?>" class="btn btn-light text-np-green fw-bold px-4 py-3 rounded-pill">
             <?= htmlspecialchars(get_section_val('quality', 'quality_cta', 'button_text', 'Hubungi Tim QA & Compliance')) ?>
             <i class="bi bi-arrow-right ms-2"></i>
         </a>

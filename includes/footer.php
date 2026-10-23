@@ -40,11 +40,11 @@ $email = $footerComp["email"] ?? "corporate@n-plast.co.id";
             <div class="col-6 col-md-3 col-lg-2">
                 <h5><?= htmlspecialchars(__('footer_products', 'Lini Produk')) ?></h5>
                 <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-                    <li><a href="products.php"><?= htmlspecialchars(__('prod_steering', 'Steering Wheel Systems')) ?></a></li>
-                    <li><a href="products.php"><?= htmlspecialchars(__('prod_airbag', 'Airbag Safety Modules')) ?></a></li>
-                    <li><a href="products.php"><?= htmlspecialchars(__('prod_interior', 'Cockpit & Interior Resins')) ?></a></li>
-                    <li><a href="products.php"><?= htmlspecialchars(__('prod_exterior', 'Exterior & Aero Trims')) ?></a></li>
-                    <li><a href="quality.php"><?= htmlspecialchars(__('nav_quality', 'Quality & ISO')) ?></a></li>
+                    <li><a href="products"><?= htmlspecialchars(__('prod_steering', 'Steering Wheel Systems')) ?></a></li>
+                    <li><a href="products"><?= htmlspecialchars(__('prod_airbag', 'Airbag Safety Modules')) ?></a></li>
+                    <li><a href="products"><?= htmlspecialchars(__('prod_interior', 'Cockpit & Interior Resins')) ?></a></li>
+                    <li><a href="products"><?= htmlspecialchars(__('prod_exterior', 'Exterior & Aero Trims')) ?></a></li>
+                    <li><a href="quality"><?= htmlspecialchars(__('nav_quality', 'Quality & ISO')) ?></a></li>
                 </ul>
             </div>
 
@@ -52,12 +52,12 @@ $email = $footerComp["email"] ?? "corporate@n-plast.co.id";
             <div class="col-6 col-md-3 col-lg-2">
                 <h5><?= htmlspecialchars(__('footer_quick_links', 'Tautan Cepat')) ?></h5>
                 <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-                    <li><a href="about.php"><?= htmlspecialchars(__('nav_about', 'About')) ?></a></li>
-                    <li><a href="quality.php"><?= htmlspecialchars(__('nav_quality', 'Quality & ISO')) ?></a></li>
-                    <li><a href="facility.php"><?= htmlspecialchars(__('nav_facility', 'Facility')) ?></a></li>
-                    <li><a href="gallery.php"><?= htmlspecialchars(__('nav_gallery', 'Gallery')) ?></a></li>
-                    <li><a href="news.php"><?= htmlspecialchars(__('nav_news', 'News')) ?></a></li>
-                    <li><a href="career.php"><?= htmlspecialchars(__('nav_career', 'Career')) ?></a></li>
+                    <li><a href="about"><?= htmlspecialchars(__('nav_about', 'About')) ?></a></li>
+                    <li><a href="quality"><?= htmlspecialchars(__('nav_quality', 'Quality & ISO')) ?></a></li>
+                    <li><a href="facility"><?= htmlspecialchars(__('nav_facility', 'Facility')) ?></a></li>
+                    <li><a href="gallery"><?= htmlspecialchars(__('nav_gallery', 'Gallery')) ?></a></li>
+                    <li><a href="news"><?= htmlspecialchars(__('nav_news', 'News')) ?></a></li>
+                    <li><a href="career"><?= htmlspecialchars(__('nav_career', 'Career')) ?></a></li>
                 </ul>
             </div>
 

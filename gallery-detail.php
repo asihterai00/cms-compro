@@ -54,7 +54,7 @@ if ($item && !$rows && !empty($item['image'])) {
 
 <main class="section-padding">
     <div class="container">
-        <a href="gallery.php" class="content-back-link mb-4 d-inline-flex align-items-center gap-1 text-decoration-none fw-semibold">
+        <a href="gallery" class="content-back-link mb-4 d-inline-flex align-items-center gap-1 text-decoration-none fw-semibold">
             <i class="bi bi-arrow-left"></i> <?= htmlspecialchars(__('back_to_list', 'Kembali ke Galeri')) ?>
         </a>
 

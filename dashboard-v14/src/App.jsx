@@ -1,12 +1,284 @@
-import React,{useState,useEffect,useCallback} from 'react';
-import {APP,currentUser,initialData,can,parseRoute,routeFor,productStats} from './config';
+import React, { useState, useEffect, useCallback } from 'react';
+import { APP, currentUser, initialData, can, parseRoute, routeFor, productStats, moduleEntityMap } from './config';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
-import Dashboard,{DateRangeSelector} from './components/Dashboard';
+import Dashboard, { DateRangeSelector } from './components/Dashboard';
 import ModuleView from './components/ModuleView';
-import {Empty,Icon} from './components/UI';
-function readStored(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
-export default function App(){const [data,setData]=useState(()=>{const saved=readStored(APP.storageKey,null);return saved&&Object.keys(initialData).every(k=>Array.isArray(saved[k]))?saved:initialData;});const [role,setRole]=useState(currentUser.role);const [dark,setDark]=useState(()=>readStored(APP.storageKey+'-dark',false));const [session,setSession]=useState(()=>readStored(APP.storageKey+'-session',true));const [open,setOpen]=useState(false);const [route,setRoute]=useState(()=>parseRoute(location.hash));const [range,setRange]=useState({start:'2025-01-01',end:'2025-01-31'});const [toast,setToast]=useState('');const [storageError,setStorageError]=useState(false);const user={...currentUser,role};useEffect(()=>{const handler=()=>{setRoute(parseRoute(location.hash));setOpen(false);};window.addEventListener('hashchange',handler);return()=>window.removeEventListener('hashchange',handler);},[]);useEffect(()=>{try{localStorage.setItem(APP.storageKey,JSON.stringify(data));}catch{setStorageError(true);}},[data]);useEffect(()=>{document.documentElement.classList.toggle('dark',dark);try{localStorage.setItem(APP.storageKey+'-dark',JSON.stringify(dark));}catch{}},[dark]);useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(''),3200);return()=>clearTimeout(t);},[toast]);function save(module,row){if(!can(role,module,row.id?'update':'create')){setToast('Access denied.');return;}setData(prev=>({...prev,[module]:row.id?prev[module].map(r=>r.id===row.id?row:r):[...prev[module],{...row,id:Math.max(0,...prev[module].map(r=>r.id))+1}]}));setToast('Changes saved to this browser.');}function remove(module,id){if(!can(role,module,'delete'))return;setData(prev=>({...prev,[module]:prev[module].filter(r=>r.id!==id)}));setToast('Record deleted.');}const logout=useCallback(()=>{if(typeof window!=='undefined'&&window.__CURRENT_USER__){window.location.href='logout.php';return;}setSession(false);setOpen(false);try{localStorage.setItem(APP.storageKey+'-session','false');}catch{}},[]);function login(){setSession(true);setRole(currentUser.role);location.hash=routeFor('dashboard');try{localStorage.setItem(APP.storageKey+'-session','true');}catch{}}
-if(new URLSearchParams(location.search).get('preview')==='1')return <main className="preview-page"><div className="preview-heading"><span className="brand-logo"><Icon name="BarChart3" size={22}/></span><strong>{APP.company}</strong></div><section><p className="eyebrow">COMPANY PROFILE PREVIEW · DEMO</p><h1>Precision in every component.</h1><p>This local preview uses the CMS product data saved in this browser. Set VITE_PUBLIC_SITE_URL to open your actual public website.</p><div className="preview-products">{productStats.map(s=>{const p=data.products.find(r=>r.id===s.id);return p&&<article className="card" key={s.id}><Icon name={s.icon} size={28}/><h2>{p.name}</h2><p>{p.description}</p></article>;})}</div></section></main>;
-if(!session)return <main className="session-screen"><section className="card"><span className="brand-logo"><Icon name="BarChart3" size={23}/></span><h1>You’re signed out</h1><p>Your local demo session has ended.</p><button className="primary-button" onClick={login}>Return to demo</button><small>Demo only. No real authentication is configured.</small></section></main>;
-return <div className="app"><a className="skip-link" href="#main-content" onClick={e=>{e.preventDefault();document.getElementById('main-content')?.focus();}}>Skip to content</a><Sidebar active={route.menu} role={role} unread={data.messages.filter(m=>m.status==='unread').length} open={open} setOpen={setOpen} logout={logout}/><div className="app-shell"><Topbar data={data} user={user} dark={dark} setDark={setDark} setOpen={setOpen} logout={logout} setRole={setRole}/><main id="main-content" tabIndex={-1} className="main-content">{!can(role,route.menu)?<Empty title="403 · Access denied" description="Your current role cannot access this page." icon="ShieldAlert"/>:route.menu==='dashboard'?<Dashboard data={data} role={role} range={range} setRange={setRange}/>:route.menu==='analytics'?<><div className="page-header"><div><h1>Analytics</h1><p>Analytics overview</p></div><DateRangeSelector range={range} setRange={setRange}/></div><section className="card"><Empty title="Analytics workspace" description="Connect your reporting API here. Dashboard revenue values are fixed design fixtures, not live business metrics." icon="ChartNoAxesCombined"/><div className="analytics-summary"><span>{data.messages.filter(m=>m.created_at.slice(0,10)>=range.start&&m.created_at.slice(0,10)<=range.end).length} RFQ messages in selected range</span></div></section></>:<ModuleView route={route} data={data} role={role} save={save} remove={remove} range={range} setRange={setRange}/>}</main></div>{(toast||storageError)&&<div className="toast" role="status"><Icon name={storageError?'TriangleAlert':'CircleCheck'} size={18}/>{storageError?'Browser storage unavailable. Changes last only for this session.':toast}</div>}</div>;}
+import { Empty, Icon } from './components/UI';
+
+function readStored(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export default function App() {
+  const [data, setData] = useState(() => {
+    // If running within CMS dashboard backed by MySQL
+    if (typeof window !== 'undefined' && window.__CMS_DATA__) {
+      try {
+        localStorage.removeItem(APP.storageKey);
+      } catch (e) {}
+      return initialData;
+    }
+    const saved = readStored(APP.storageKey, null);
+    return saved && Object.keys(initialData).every(k => Array.isArray(saved[k])) ? saved : initialData;
+  });
+
+  const [role, setRole] = useState(currentUser.role);
+  const [dark, setDark] = useState(() => readStored(APP.storageKey + '-dark', false));
+  const [session, setSession] = useState(() => readStored(APP.storageKey + '-session', true));
+  const [open, setOpen] = useState(false);
+  const [route, setRoute] = useState(() => parseRoute(location.hash));
+  const [range, setRange] = useState({ start: '2025-01-01', end: '2025-01-31' });
+  const [toast, setToast] = useState('');
+  const [storageError, setStorageError] = useState(false);
+  const user = { ...currentUser, role };
+
+  useEffect(() => {
+    const handler = () => {
+      setRoute(parseRoute(location.hash));
+      setOpen(false);
+    };
+    window.addEventListener('hashchange', handler);
+    return () => window.removeEventListener('hashchange', handler);
+  }, []);
+
+  useEffect(() => {
+    // Only persist to localStorage if running standalone demo without MySQL backend
+    if (typeof window !== 'undefined' && window.__CMS_DATA__) {
+      return;
+    }
+    try {
+      localStorage.setItem(APP.storageKey, JSON.stringify(data));
+    } catch {
+      setStorageError(true);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    try {
+      localStorage.setItem(APP.storageKey + '-dark', JSON.stringify(dark));
+    } catch {}
+  }, [dark]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(''), 3200);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  function save(module, row, translations = {}) {
+    if (!can(role, module, row.id ? 'update' : 'create')) {
+      setToast('Akses ditolak: Anda tidak memiliki izin untuk menyimpan data ini.');
+      return;
+    }
+
+    const csrfToken = (typeof window !== 'undefined' && window.__CSRF_TOKEN__) || '';
+
+    // Directly persist to MySQL via ajax_save.php
+    fetch('ajax_save.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        module,
+        record: row,
+        translations: translations || {},
+        csrf_token: csrfToken
+      })
+    })
+      .then(res => res.json())
+      .then(resData => {
+        if (resData.success) {
+          const finalId = row.id || resData.id;
+          const finalRow = { ...row, id: finalId };
+          setData(prev => ({
+            ...prev,
+            [module]: row.id
+              ? prev[module].map(r => r.id === row.id ? finalRow : r)
+              : [...(prev[module] || []), finalRow]
+          }));
+
+          // Synchronize in-memory translations map
+          if (typeof window !== 'undefined' && window.__CMS_ALL_TRANSLATIONS__ && translations) {
+            const ent = moduleEntityMap[module];
+            if (ent) {
+              if (!window.__CMS_ALL_TRANSLATIONS__[ent]) window.__CMS_ALL_TRANSLATIONS__[ent] = {};
+              if (!window.__CMS_ALL_TRANSLATIONS__[ent][finalId]) window.__CMS_ALL_TRANSLATIONS__[ent][finalId] = {};
+              Object.entries(translations).forEach(([lCode, fMap]) => {
+                window.__CMS_ALL_TRANSLATIONS__[ent][finalId][lCode] = {
+                  ...(window.__CMS_ALL_TRANSLATIONS__[ent][finalId][lCode] || {}),
+                  ...fMap
+                };
+              });
+            }
+          }
+          setToast(resData.message || 'Data berhasil disimpan ke database MySQL.');
+        } else {
+          setToast(resData.message || 'Gagal menyimpan perubahan.');
+        }
+      })
+      .catch(() => {
+        // Fallback for standalone mockup preview
+        setData(prev => ({
+          ...prev,
+          [module]: row.id
+            ? prev[module].map(r => r.id === row.id ? row : r)
+            : [...(prev[module] || []), { ...row, id: Math.max(0, ...(prev[module] || []).map(r => r.id)) + 1 }]
+        }));
+        setToast('Perubahan disimpan di sesi lokal.');
+      });
+  }
+
+  function remove(module, id) {
+    if (!can(role, module, 'delete')) {
+      setToast('Akses ditolak: Anda tidak memiliki izin untuk menghapus data ini.');
+      return;
+    }
+
+    const csrfToken = (typeof window !== 'undefined' && window.__CSRF_TOKEN__) || '';
+
+    fetch('ajax_delete.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        module,
+        id,
+        csrf_token: csrfToken
+      })
+    })
+      .then(res => res.json())
+      .then(resData => {
+        if (resData.success) {
+          setData(prev => ({
+            ...prev,
+            [module]: prev[module].filter(r => r.id !== id)
+          }));
+          setToast(resData.message || 'Record berhasil dihapus dari database.');
+        } else {
+          setToast(resData.message || 'Gagal menghapus record.');
+        }
+      })
+      .catch(() => {
+        setData(prev => ({
+          ...prev,
+          [module]: prev[module].filter(r => r.id !== id)
+        }));
+        setToast('Record dihapus di sesi lokal.');
+      });
+  }
+
+  const logout = useCallback(() => {
+    if (typeof window !== 'undefined' && window.__CURRENT_USER__) {
+      window.location.href = 'logout.php';
+      return;
+    }
+    setSession(false);
+    setOpen(false);
+    try {
+      localStorage.setItem(APP.storageKey + '-session', 'false');
+    } catch {}
+  }, []);
+
+  function login() {
+    setSession(true);
+    setRole(currentUser.role);
+    location.hash = routeFor('dashboard');
+    try {
+      localStorage.setItem(APP.storageKey + '-session', 'true');
+    } catch {}
+  }
+
+  if (new URLSearchParams(location.search).get('preview') === '1') {
+    return (
+      <main className="preview-page">
+        <div className="preview-heading">
+          <span className="brand-logo"><Icon name="BarChart3" size={22} /></span>
+          <strong>{APP.company}</strong>
+        </div>
+        <section>
+          <p className="eyebrow">COMPANY PROFILE PREVIEW · DEMO</p>
+          <h1>Precision in every component.</h1>
+          <p>This local preview uses the CMS product data saved in this browser. Set VITE_PUBLIC_SITE_URL to open your actual public website.</p>
+          <div className="preview-products">
+            {productStats.map(s => {
+              const p = data.products.find(r => r.id === s.id);
+              return p && (
+                <article className="card" key={s.id}>
+                  <Icon name={s.icon} size={28} />
+                  <h2>{p.name}</h2>
+                  <p>{p.description}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="session-screen">
+        <section className="card">
+          <span className="brand-logo"><Icon name="BarChart3" size={23} /></span>
+          <h1>You’re signed out</h1>
+          <p>Your local demo session has ended.</p>
+          <button className="primary-button" onClick={login}>Return to demo</button>
+          <small>Demo only. No real authentication is configured.</small>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <div className="app">
+      <a className="skip-link" href="#main-content" onClick={e => { e.preventDefault(); document.getElementById('main-content')?.focus(); }}>Skip to content</a>
+      <Sidebar active={route.menu} role={role} unread={(data.messages || []).filter(m => m.status === 'unread').length} open={open} setOpen={setOpen} logout={logout} />
+      <div className="app-shell">
+        <Topbar data={data} user={user} dark={dark} setDark={setDark} setOpen={setOpen} logout={logout} setRole={setRole} />
+        <main id="main-content" tabIndex={-1} className="main-content">
+          {!can(role, route.menu) ? (
+            <Empty title="403 · Access denied" description="Your current role cannot access this page." icon="ShieldAlert" />
+          ) : route.menu === 'dashboard' ? (
+            <Dashboard data={data} role={role} range={range} setRange={setRange} />
+          ) : route.menu === 'analytics' ? (
+            <>
+              <div className="page-header">
+                <div>
+                  <h1>Analytics</h1>
+                  <p>Analytics overview</p>
+                </div>
+                <DateRangeSelector range={range} setRange={setRange} />
+              </div>
+              <section className="card">
+                <Empty title="Analytics workspace" description="Connect your reporting API here. Dashboard revenue values are fixed design fixtures, not live business metrics." icon="ChartNoAxesCombined" />
+                <div className="analytics-summary">
+                  <span>{(data.messages || []).filter(m => m.created_at && m.created_at.slice(0, 10) >= range.start && m.created_at.slice(0, 10) <= range.end).length} RFQ messages in selected range</span>
+                </div>
+              </section>
+            </>
+          ) : (
+            <ModuleView route={route} data={data} role={role} save={save} remove={remove} range={range} setRange={setRange} />
+          )}
+        </main>
+      </div>
+      {(toast || storageError) && (
+        <div className="toast" role="status">
+          <Icon name={storageError ? 'TriangleAlert' : 'CircleCheck'} size={18} />
+          {storageError ? 'Browser storage unavailable. Changes last only for this session.' : toast}
+        </div>
+      )}
+    </div>
+  );
+}

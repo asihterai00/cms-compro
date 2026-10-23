@@ -1,12 +1,40 @@
 # =========================================================
 # PT NIHON PLAST INDONESIA - HIGH PERFORMANCE & SECURITY .HTACCESS
-# Apache 2.4+ | Gzip Compression, Browser Caching & Security Headers
+# Apache 2.4+ | Clean URLs, Branded Redirection & Hardened Security
 # =========================================================
 
 # 1. PREVENT DIRECTORY BROWSING
-Options -Indexes
+Options -Indexes +FollowSymLinks
 
-# 2. GZIP / BROTLI COMPRESSION (mod_deflate)
+# 2. CUSTOM BRANDED ERROR PAGES (NO RAW APACHE ERRORS)
+ErrorDocument 403 /cms-compro/error?code=403
+ErrorDocument 404 /cms-compro/error?code=404
+ErrorDocument 500 /cms-compro/error?code=500
+
+# 3. URL REWRITING & CLEAN URL ROUTING
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /cms-compro/
+
+    # 3.1 Redirect internal sensitive directories to dedicated branded error page (with auto-redirect to Home)
+    RewriteRule ^(config|database|includes|scripts|docs|languages|\.agents|\.git|dashboard-v14)(/.*)?$ /cms-compro/error?code=403 [R=302,L,NC]
+
+    # 3.2 Canonical redirect: /index.php -> /
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/cms-compro/index\.php [NC]
+    RewriteRule ^index\.php$ /cms-compro/ [R=301,L]
+
+    # 3.3 External redirect: strip .php extension from browser address bar (exclude admin)
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/cms-compro/(?!admin/)([a-zA-Z0-9_-]+)\.php [NC]
+    RewriteRule ^([a-zA-Z0-9_-]+)\.php$ /cms-compro/$1 [R=301,L]
+
+    # 3.4 Internal rewrite: resolve clean URL to .php file if it exists
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{DOCUMENT_ROOT}/cms-compro/$1.php -f
+    RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L,QSA]
+</IfModule>
+
+# 3. GZIP / BROTLI COMPRESSION (mod_deflate)
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/plain
     AddOutputFilterByType DEFLATE text/html
@@ -22,7 +50,7 @@ Options -Indexes
     AddOutputFilterByType DEFLATE image/svg+xml
 </IfModule>
 
-# 3. BROWSER CACHING HEADERS (mod_expires)
+# 4. BROWSER CACHING HEADERS (mod_expires)
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresDefault "access plus 1 month"
@@ -54,7 +82,7 @@ Options -Indexes
     ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
-# 4. HTTP SECURITY HEADERS (mod_headers)
+# 5. HTTP SECURITY HEADERS (mod_headers)
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
@@ -63,8 +91,19 @@ Options -Indexes
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
-# 5. PROTECT SENSITIVE FILES & CONFIGURATIONS
-<FilesMatch "(\.env|\.sql|\.jsonl|\.git|composer\.json|package\.json|PROJECT_MEMORY\.md|CHANGELOG\.md)$">
+# 6. BLOCK HIDDEN FILES (.env, .git, etc.)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 7. BLOCK SENSITIVE EXTENSIONS AND CONFIGURATION FILES
+<FilesMatch "(\.env.*|\.sql|\.jsonl|\.git.*|composer\.(json|lock)|package(-lock)?\.json|\.md|\.log|\.bak|\.txt|\.zip|\.ini|\.sh|\.bat|\.py)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

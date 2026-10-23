@@ -4,6 +4,150 @@ Semua perubahan, penemuan, dan pembaruan arsitektur pada proyek PT Nihon Plast I
 
 ---
 
+## [Clean URLs & Branded Error Handler with Auto-Redirect] - 2026-10-23
+
+### 1. Eliminasi Default Raw Apache 403/404 & Pengalihan Branded
+- **Halaman Error Terdedikasi (`error.php`)**: Membangun halaman error profesional berstandar korporat PT Nihon Plast Indonesia (`/error?code=403` & `/error?code=404`) dengan countdown timer otomatis 5 detik yang mengalihkan pengunjung langsung kembali ke Beranda (`./`).
+- **Resolusi Aset Anti-Pecah via `<base href>`**: Menambahkan injeksi `<base href="<?= $appBaseHref ?>">` dinamis pada [`includes/head.php`](file:///c:/Devaron/www/cms-compro/includes/head.php), memastikan seluruh stylesheet, font, logo, bendera, dan script JS selalu ter-resolve sempurna tanpa terpengaruh kedalaman URL browser (seperti `/config/`).
+- **Preservasi Bahasa Aktif (ID, EN, JA, ZH, KO)**: Seluruh elemen pada `error.php` (badge status, judul, deskripsi keamanan, tombol CTA, dan teks countdown otomatis) kini terhubung 100% dengan kamus bahasa aktif (`languages/*.php`), serta mempertahankan bahasa terakhir pengguna (`?lang=...`) saat countdown redirect ke Beranda.
+- **Intersepsi Akses Folder Sensitif**: Mengonfigurasi Apache `.htaccess` pada root dan subdirektori internal (`config/`, `database/`, `includes/`, `scripts/`, `docs/`, `languages/`) untuk mengalihkan permintaan HTTP langsung (302 redirect) ke `/error?code=403` dengan membawa parameter bahasa aktif.
+- **ErrorDocument Directive**: Mengarahkan seluruh status HTTP 403, 404, dan 500 Apache langsung ke handler `/cms-compro/error`.
+
+### 2. Penghapusan Ekstensi `.php` dari Address Bar (Clean URLs)
+- **External 301 Canonical Redirect**: Permintaan browser ke file berekstensi `.php` (seperti `/about.php`, `/products.php`, `/product-detail.php?id=1`) secara otomatis dialihkan (HTTP 301 Moved Permanently) ke URL bersih (`/about`, `/products`, `/product-detail?id=1`), dengan mempertahankan seluruh parameter query string.
+- **Internal Rewrite Engine**: Menangani permintaan URL bersih tanpa ekstensi dan meresolusi secara transparan ke file PHP yang relevan tanpa mengubah tampilan pada address bar browser.
+- **Pengecualian Khusus Admin**: Rute backend admin (`/admin/`) dikecualikan agar proses autentikasi, API AJAX, dan SPA React Vite tetap beroperasi normal tanpa disrupsi.
+- **Sanitasi Seluruh Tautan Publik & Database**: Memperbarui semua tautan menu, banner breadcrumb, tombol CTA, kartu produk, kartu berita, dan footer agar menggunakan format URL bersih (`./`, `about`, `products`, `facility`, `quality`, `gallery`, `news`, `career`, `contact`).
+- **Pembersihan Database & Helper Otomatis**: Membersihkan 13 baris pada `site_sections.button_link` dan 8 baris pada `site_section_items.extra_data` dari ekstensi `.php`, serta menambahkan helper `clean_public_url()` di `includes/site_helpers.php` sebagai proteksi jangka panjang.
+- **Pemberantasan PHP Warning Regex di `clean_public_url`**: Memperbaiki konflik delimiter `#` pada pola regular expression `clean_public_url()` di `includes/site_helpers.php` (diubah menjadi delimiter `~`) yang sebelumnya memicu warning PHP `Unknown modifier '|'` saat merender halaman beranda (`index.php`). Halaman publik kini 100% bersih dari pesan warning.
+
+---
+
+## [Enterprise Security Hardening, Zero-Defect Remediation & Full OWASP ASVS Alignment] - 2026-10-23
+
+### 1. Perbaikan Keamanan & Penutupan Celah Autentikasi
+- **Penutupan Backdoor `admin/preview_dashboard.php`**: Mengganti pengisian paksa sesi `superadmin` tanpa autentikasi dengan pemeriksaan ketat `require_once 'auth.php'` dan `require_permission('dashboard', 'read')`. Menutup potensi eskalasi hak akses unauthenticated menjadi Super Administrator.
+- **Pemeriksaan Izin Eksplisit di `admin/index.php`**: Menambahkan verifikasi `require_permission('dashboard', 'read')` sebelum redirect ke dashboard.
+- **Pengamanan Sesi & Penghancuran Cookie di `admin/logout.php`**: Menambahkan pembersihan eksplisit cookie sesi di sisi klien (`setcookie(session_name(), '', time() - 42000, ...)`) dengan flag keamanan yang cocok saat proses logout.
+- **Proteksi Cookie HTTPS di `includes/csrf.php`**: Mengaktifkan flag `session.cookie_secure = 1` secara kondisional saat koneksi HTTPS atau reverse proxy SSL terdeteksi.
+
+### 2. Eliminasi 100% Celah SQL Injection & Penerapan Parameterized Queries
+- **Universal Re-order API (`admin/ajax_reorder.php`)**: Menulis ulang seluruh query pencarian scope dan query penukaran urutan (`move_up` dan `move_down`) menggunakan `mysqli::prepare()` dan integer parameter binding (`bind_param`).
+- **Status Toggle di Controller Mesin (`admin/machinery.php`)**: Mengganti konkatenasi string `$id` pada query pasca-update dengan prepared statement.
+- **Status Toggle di Elemen Halaman (`admin/site_sections.php` & `admin/site_section_items.php`)**: Mengganti query konkatenasi `$id` dengan prepared statement terikat parameter integer.
+- **Pembersihan Static Analysis Scanner**: Script `scripts/comprehensive_audit.php` kini melaporkan **0 potensi SQL Injection** di seluruh codebase aplikasi.
+
+### 3. Penyempurnaan Backend & Integrasi CMS
+- **Penambahan Modul Banners di `admin/ajax_save.php`**: Menambahkan `case 'banners':` lengkap dengan prepared statement INSERT/UPDATE ke tabel `page_banners`. Menyelaraskan izin modul menjadi `'banners'`.
+- **Alat CLI Bootstrap Super Administrator (`scripts/create_admin.php`)**: Menyediakan utility baris perintah untuk membuat atau mereset kredensial admin secara aman tanpa password default statis, mendukung opsi pembuatan password acak kriptografis 16 karakter.
+- **Sanitasi Konfigurasi `.env.example`**: Mengganti credential riil pada file contoh dengan nilai placeholder aman (`cms_user`, `your_secure_password_here`).
+
+### 4. Pembersihan Artefak & Pengamanan File Cadangan
+- **Pembersihan Root Web**: Menghapus file arsip cadangan lama (`index_bk.php`, `index.zip`, `product-detail.zip`, `gallery-detail.zip`) dari root web publik untuk mencegah kebocoran kode sumber (source code disclosure).
+- **Verifikasi Skema Database**: Memverifikasi 16 tabel aktif di database MySQL `db_cms_compro` dengan status integritas 100% utuh tanpa penghapusan destruktif.
+
+### 5. Suite Pengujian & Dokumentasi Lengkap
+- **Pengujian Multibahasa 60 Skenario (`scripts/test_all_languages_and_pages.php`)**: Memperbaiki pemanggilan biner PHP ke `PHP_BINARY` dan memvalidasi 100% sukses (60/60 lulus) di 5 bahasa (ID, EN, JA, ZH, KO) pada 12 halaman publik.
+- **Dokumentasi Lengkap Operasional & Keamanan**:
+  - `README.md`: Quick start, stack, dependensi, dan perintah pengujian.
+  - `docs/DEPLOYMENT.md`: Prosedur deployment production, konfigurasi Apache/Nginx, dan checklist verifikasi.
+  - `docs/BACKUP_RESTORE.md`: Prosedur backup otomatis harian, verifikasi checksum, dan disaster recovery.
+  - `docs/AUDIT_REPORT.md`: Laporan temuan audit menyeluruh dan status resolusi 15 isu.
+  - `docs/CLEANUP_REPORT.md`: Laporan pembersihan artefak dan kandidat yang dipertahankan.
+  - `docs/TEST_REPORT.md`: Rekaman verifikasi pengujian unit, render, dan statis.
+  - `docs/SECURITY.md`: Standar keamanan dan hardening sistem.
+  - `docs/THREAT_MODEL.md`: Analisis threat model dan matriks STRIDE.
+  - `docs/SECURITY_TEST_REPORT.md`: Laporan kepatuhan kontrol OWASP ASVS v4.0.3 Level 2.
+
+---
+
+## [Live MySQL Persistence, 5-Language Tabs & Language Switcher Sync Overhaul] - 2026-10-23
+
+### 1. Perbaikan Sinkronisasi Bahasa di Admin CMS Dashboard
+- **Eliminasi Cache Stale `localStorage`**: Menghapus ketergantungan `App.jsx` pada `localStorage` ketika `window.__CMS_DATA__` dari backend MySQL tersedia. Hal ini memastikan setiap pemilihan bahasa (`id`, `en`, `ja`, `zh`, `ko`) langsung merender data terjemahan aktif dari MySQL dan tidak tertimpa mock data browser lama.
+- **Sinkronisasi Cookie & Session Bahasa**: Topbar `LanguageSwitcher` kini secara otomatis menyinkronkan `cms_lang` cookie dan query parameter URL `?lang=XX`. `admin/dashboard.php` langsung memuat seluruh record menggunakan `translate_entity_row()` sesuai bahasa terpilih.
+
+### 2. Tab Multibahasa 5 Bahasa di Modal Editor (`RecordEditor`)
+- **5-Language Switcher Tabs**: Menambahkan tab 🇮🇩 ID (Utama), 🇬🇧 EN, 🇯🇵 JA, 🇨🇳 ZH, dan 🇰🇷 KO pada modal edit.
+- **Pemisahan Field Terjemahan vs Pengaturan Umum**:
+  - Kolom teks translatable (nama, judul, deskripsi, konten, badge, dll.) dapat diedit per tab bahasa lengkap dengan placeholder teks referensi Bahasa Indonesia.
+  - Kolom non-translatable (`sort_order`, `image`, `is_active`, `tonnage`, dll.) dikelompokkan rapi dalam seksi *Pengaturan Umum & Posisi Urutan*.
+- **Integrasi Penuh `content_translations`**: Modal otomatis memuat terjemahan yang tersimpan dari `window.__CMS_ALL_TRANSLATIONS__`.
+
+### 3. Jaminan Nilai Posisi Urutan (`sort_order`) Selalu Terisi
+- **Numeric Fallback Otomatis**: Memastikan input `sort_order` selalu terisi nilai numerik valid (`record.sort_order ?? 10`), mencegah input tampil kosong.
+- **Tombol Move Up / Move Down & Input Langsung**: Urutan dapat digeser langsung via tombol panah atau diketik manual.
+
+### 4. Endpoints AJAX Live Database
+- **`admin/ajax_save.php`**: Menyimpan record master dan seluruh array terjemahan multibahasa ke tabel MySQL terkait dan `content_translations` secara transaksional dengan proteksi RBAC dan token CSRF.
+- **`admin/ajax_delete.php`**: Menghapus data dari MySQL sekaligus membersihkan seluruh relasi terjemahan bahasa.
+- **`admin/ajax_reorder.php`**: Mendukung re-ordering batch, swap urutan naik/turun, dan input numerik.
+
+---
+
+## [1-to-1 Navigation Alignment, Sort Order Re-Ordering Engine & Full Dynamic Multilingual Coverage] - 2026-10-23
+
+### 1. Struktur Menu Navigasi Admin CMS 1-ke-1 Selaras Penuh dengan Website Publik
+- **Penyelarasan Urutan & Penamaan**: Menata ulang struktur navigasi sidebar di Admin CMS (`admin/includes/header.php`, `dashboard-v14/src/config.js`, dan `admin/auth.php`) agar persis 1-ke-1 mencerminkan urutan halaman pada Website Publik (`includes/navbar.php`):
+  1. **Dashboard** (`admin/dashboard.php`): Ringkasan utama sistem, KPI eksekutif, dan status CMS.
+  2. **Beranda** (`admin/site_sections.php?page=home`): Seksi dinamis, hero slider, dan banner header Beranda.
+  3. **Tentang Kami** (`admin/company.php`): Profil legalitas perusahaan, visi misi, nilai korporat, dan seksi About.
+  4. **Produk** (`admin/products.php`): Katalog 4 pilar komponen manufaktur otomotif Tier-1.
+  5. **Mutu & ISO** (`admin/certifications.php`): Akreditasi mutu IATF 16949, ISO 9001, ISO 14001, ISO 45001 & SMK3.
+  6. **Fasilitas** (`admin/machinery.php`): Fasilitas pabrik Cikampek dan matriks mesin injeksi 150T–2500T.
+  7. **Galeri** (`admin/gallery.php`): Dokumentasi foto presisi manufaktur dan media library.
+  8. **Berita** (`admin/news.php`): Publikasi resmi, rilis pers, dan agenda korporat.
+  9. **Karir** (`admin/career.php`): Lowongan pekerjaan, kualifikasi, dan rekrutmen.
+  10. **B2B RFQ** (`admin/messages.php`): Pesan masuk form penawaran dengan indikator dot merah notifikasi unread.
+  11. **Pengaturan** (`admin/translations.php`, `users.php`): Pusat multibahasa 5 negara dan manajemen pengguna RBAC.
+- **Tautan Cepat Antar Modul Terkait**:
+  - Halaman `company.php` kini dilengkapi tab navigasi langsung ke `Seksi Tentang Kami`, `Sub-Item Nilai Perusahaan`, dan `Banner Header About`.
+  - Halaman `site_sections.php?page=home` kini dilengkapi alert navigasi cepat ke `Kartu Slider Hero`, `Banner Home`, dan preview publik.
+
+### 2. Fitur Re-Ordering / Pengaturan Urutan Tampil (`sort_order`) di Seluruh CMS
+- **Migrasi Skema Kolom `sort_order`**: Menambahkan kolom `sort_order INT NOT NULL DEFAULT 10` pada tabel `products`, `gallery`, `news`, dan `careers` (melengkapi `site_sections`, `site_section_items`, `certifications`, dan `facility_machinery` yang sudah memilikinya).
+- **Universal Re-Ordering Engine (`admin/ajax_reorder.php`)**:
+  - Mendukung penataan posisi instan naik/turun (`action=move_up` / `action=move_down`).
+  - Mendukung input angka spesifik (`id` + `sort_order`).
+  - Mendukung batch drag-and-drop array (`order_ids[]`).
+  - Dilindungi otentikasi session, validasi RBAC per tabel, dan mitigasi CSRF.
+- **Kontrol Tombol Naik/Turun & Input Urutan pada Seluruh Tabel CMS**:
+  - `admin/products.php`: Ditambahkan tombol panah atas/bawah, badge urutan, dan input number pada form.
+  - `admin/site_sections.php`: Ditambahkan tombol panah atas/bawah untuk reorder posisi seksi halaman.
+  - `admin/site_section_items.php`: Ditambahkan tombol panah atas/bawah untuk reorder kartu/sub-item.
+  - `admin/certifications.php`: Ditambahkan tombol panah atas/bawah pada tabel sertifikat.
+  - `admin/machinery.php`: Ditambahkan tombol panah atas/bawah pada matriks mesin injeksi.
+  - `admin/gallery.php`: Ditambahkan tombol panah kiri/kanan pada album galeri dan input form.
+  - `admin/news.php`: Ditambahkan tombol panah atas/bawah dan input urutan form berita.
+  - `admin/career.php`: Ditambahkan tombol panah atas/bawah dan input urutan form lowongan.
+- **Refleksi Live pada Query Halaman Publik**:
+  - `index.php`: `SELECT * FROM products ORDER BY sort_order ASC, id ASC LIMIT 4` dan berita `ORDER BY sort_order ASC, published_at DESC LIMIT 3`.
+  - `products.php`: `ORDER BY sort_order ASC, id ASC`.
+  - `gallery.php`: `ORDER BY g.sort_order ASC, g.id DESC`.
+  - `news.php`: `ORDER BY sort_order ASC, published_at DESC, id DESC`.
+  - `career.php`: `ORDER BY sort_order ASC, id ASC`.
+
+### 3. Jaminan 100% Elemen Dinamik & Multi-Bahasa Database (Tanpa Hardcode)
+- **Tab Editor Multilingual (5 Bahasa) di Seluruh Modul Kunci**:
+  - `admin/site_sections.php`: Dilengkapi tab multibahasa (ID, EN, JA, ZH, KO) untuk `title`, `badge_text`, `subtitle`, `content`, dan `button_text`.
+  - `admin/site_section_items.php`: Dilengkapi tab multibahasa (ID, EN, JA, ZH, KO) untuk `title`, `subtitle`, `content`, dan `badge`.
+  - `admin/company.php`: Dilengkapi tab multibahasa (ID, EN, JA, ZH, KO) untuk `tagline`, `short_description`, `about_text`, `vision`, `mission`, dan `values_text`.
+  - `admin/products.php`: Tab multibahasa (ID, EN, JA, ZH, KO) untuk `name` dan `description`.
+  - Seluruh input form otomatis tersimpan ke tabel database `content_translations` via helper `save_entity_translations()`.
+- **Dukungan Penuh Bahasa Indonesia di `admin/translations.php`**:
+  - Menambahkan `'id' => ['name' => 'Bahasa Indonesia (Utama)', 'flag' => '../assets/img/flags/id.svg', 'short' => 'ID']` ke dalam `$supportedLangs`.
+  - Perubahan teks bahasa Indonesia di `translations.php` otomatis disinkronkan langsung ke tabel sumber database (`products`, `news`, `company_profile`, `page_banners`, `certifications`, `careers`, `facility_machinery`, `site_sections`, `site_section_items`).
+- **5-Language Switcher Combobox di Header Admin**:
+  - Ditempatkan pada Topbar PHP Admin (`admin/includes/header.php`) dan Topbar React SPA (`dashboard-v14/src/components/Topbar.jsx`).
+  - Menampilkan bendera negara, kode bahasa (ID, EN, JA, ZH, KO), dan status aktif dengan peralihan instan.
+- **Sort Order & Re-Ordering di React SPA Dashboard V14**:
+  - `dashboard-v14/src/components/ModuleView.jsx`: Menampilkan badge urutan posisi `#{sort_order}` dan tombol Move Up / Move Down interaktif pada setiap baris data.
+  - Re-ordering mengirimkan request AJAX live ke `admin/ajax_reorder.php` dan memperbarui state lokal secara instan.
+- Seluruh teks antarmuka dan detail produk (`product-detail.php`) dialihkan ke database helpers `translate_entity_row()` dan helper translasi `__('key', 'default')`.
+- Tabel `content_translations` (1.352 entri aktif) terhubung langsung ke `admin/translations.php` untuk manipulasi data bahasa live dari database.
+
+---
+
 ## [Admin CMS Palette & Navigation Alignment with Public Site] - 2026-10-22
 
 ### 1. Harmonisasi Palet Warna Admin CMS dengan Identitas Resmi Perusahaan (Forest Green)

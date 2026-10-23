@@ -27,7 +27,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])
         $stmt->close();
 
         // Fetch updated status
-        $res = $conn->query("SELECT is_active, model_brand FROM facility_machinery WHERE id = " . $id)->fetch_assoc();
+        $fStmt = $conn->prepare("SELECT is_active, model_brand FROM facility_machinery WHERE id = ?");
+        $fStmt->bind_param("i", $id);
+        $fStmt->execute();
+        $res = $fStmt->get_result()->fetch_assoc();
+        $fStmt->close();
         $newStatus = (int)($res['is_active'] ?? 0);
         $mb = $res['model_brand'] ?? 'Mesin';
 
@@ -287,7 +291,17 @@ $machineryList = $conn->query("SELECT * FROM facility_machinery ORDER BY sort_or
                         <?php else: ?>
                             <?php while ($m = $machineryList->fetch_assoc()): ?>
                                 <tr class="<?= $m['is_active'] ? '' : 'table-light opacity-75' ?>" id="row-machinery-<?= $m['id'] ?>">
-                                    <td class="ps-4 fw-bold text-muted"><?= (int)$m['sort_order'] ?></td>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <a href="ajax_reorder.php?table=facility_machinery&action=move_up&id=<?= (int)$m['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Atas">
+                                                <i class="bi bi-arrow-up"></i>
+                                            </a>
+                                            <a href="ajax_reorder.php?table=facility_machinery&action=move_down&id=<?= (int)$m['id'] ?>" class="btn btn-sm btn-outline-secondary p-1" title="Pindah ke Bawah">
+                                                <i class="bi bi-arrow-down"></i>
+                                            </a>
+                                            <span class="badge bg-light text-dark border px-2 py-1 font-monospace"><?= (int)$m['sort_order'] ?></span>
+                                        </div>
+                                    </td>
                                     <td class="fw-bold text-dark"><?= htmlspecialchars($m['category']) ?></td>
                                     <td><span class="fw-semibold text-dark"><?= htmlspecialchars($m['model_brand']) ?></span></td>
                                     <td><span class="badge bg-light text-dark border fw-bold"><?= htmlspecialchars($m['tonnage']) ?></span></td>

@@ -1,4 +1,17 @@
 <?php
+if (!function_exists('current_lang')) {
+    require_once __DIR__ . '/../../includes/lang.php';
+}
+$adminLangs = [
+    'id' => ['short' => 'ID', 'name' => 'Bahasa Indonesia', 'flag' => '../assets/img/flags/id.svg'],
+    'en' => ['short' => 'EN', 'name' => 'English', 'flag' => '../assets/img/flags/en.svg'],
+    'ja' => ['short' => 'JA', 'name' => '日本語', 'flag' => '../assets/img/flags/ja.svg'],
+    'zh' => ['short' => 'ZH', 'name' => '简体中文', 'flag' => '../assets/img/flags/zh.svg'],
+    'ko' => ['short' => 'KO', 'name' => '한국어', 'flag' => '../assets/img/flags/ko.svg'],
+];
+$adminCurrentLang = function_exists('current_lang') ? current_lang() : ($_SESSION['cms_lang'] ?? 'id');
+$adminCurrentLangInfo = $adminLangs[$adminCurrentLang] ?? $adminLangs['id'];
+
 $rawCurrent = basename($_SERVER["PHP_SELF"]);
 $currentPage = ($rawCurrent === 'preview_dashboard.php' || $rawCurrent === 'index.php') ? 'dashboard.php' : $rawCurrent;
 $userRole = $_SESSION["admin_role"] ?? "admin";
@@ -32,61 +45,68 @@ if (isset($conn) && $conn instanceof mysqli) {
         <div class="admin-brand-title">Dashboard</div>
     </a>
 
-    <!-- Dashboard V14 Nav Menu (Aligned with Public Site Structure) -->
+    <!-- Dashboard V14 Nav Menu (Strict 1-to-1 Aligned with Public Site Structure) -->
     <nav class="admin-menu">
-        <a href="dashboard.php" class="admin-menu-link <?= ($currentPage === 'dashboard.php') ? 'active' : '' ?>">
+        <a href="dashboard.php" class="admin-menu-link <?= ($currentPage === 'dashboard.php') ? 'active' : '' ?>" title="Ringkasan Utama & Status CMS">
             <div class="d-flex align-items-center">
-                <i class="bi bi-house-door-fill admin-menu-icon"></i>
+                <i class="bi bi-grid-1x2-fill admin-menu-icon"></i>
                 <span>Dashboard</span>
             </div>
         </a>
 
-        <a href="site_sections.php" class="admin-menu-link <?= in_array($currentPage, ['site_sections.php', 'site_section_items.php', 'banners.php']) ? 'active' : '' ?>" title="Halaman Home, About & Banners">
+        <a href="site_sections.php?page=home" class="admin-menu-link <?= (($currentPage === 'site_sections.php' || $currentPage === 'site_section_items.php') && ($_GET['page'] ?? 'home') === 'home') || ($currentPage === 'banners.php' && ($_GET['page_key'] ?? '') === 'home') ? 'active' : '' ?>" title="Seksi & Banner Halaman Beranda">
             <div class="d-flex align-items-center">
-                <i class="bi bi-layout-text-window-reverse admin-menu-icon"></i>
-                <span>Page Builder</span>
+                <i class="bi bi-house-door-fill admin-menu-icon"></i>
+                <span>Beranda</span>
             </div>
         </a>
 
-        <a href="products.php" class="admin-menu-link <?= ($currentPage === 'products.php') ? 'active' : '' ?>" title="Katalog Produk Otomotif">
+        <a href="company.php" class="admin-menu-link <?= ($currentPage === 'company.php') || (($currentPage === 'site_sections.php' || $currentPage === 'site_section_items.php') && ($_GET['page'] ?? '') === 'about') ? 'active' : '' ?>" title="Profil Perusahaan, Visi Misi & Seksi Tentang Kami">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-building admin-menu-icon"></i>
+                <span>Tentang Kami</span>
+            </div>
+        </a>
+
+        <a href="products.php" class="admin-menu-link <?= ($currentPage === 'products.php') ? 'active' : '' ?>" title="Katalog Produk Otomotif Tier-1">
             <div class="d-flex align-items-center">
                 <i class="bi bi-box-seam admin-menu-icon"></i>
-                <span>Products</span>
+                <span>Produk</span>
             </div>
         </a>
 
-        <a href="certifications.php" class="admin-menu-link <?= ($currentPage === 'certifications.php') ? 'active' : '' ?>" title="Sertifikasi Mutu IATF & ISO">
+        <a href="certifications.php" class="admin-menu-link <?= ($currentPage === 'certifications.php') ? 'active' : '' ?>" title="Sertifikasi Mutu IATF 16949 & ISO">
             <div class="d-flex align-items-center">
                 <i class="bi bi-patch-check admin-menu-icon"></i>
-                <span>Quality & ISO</span>
+                <span>Mutu & ISO</span>
             </div>
         </a>
 
-        <a href="machinery.php" class="admin-menu-link <?= ($currentPage === 'machinery.php') ? 'active' : '' ?>" title="Fasilitas & Mesin Injeksi">
+        <a href="machinery.php" class="admin-menu-link <?= ($currentPage === 'machinery.php') ? 'active' : '' ?>" title="Fasilitas Pabrik & Mesin Injeksi Presisi">
             <div class="d-flex align-items-center">
-                <i class="bi bi-buildings admin-menu-icon"></i>
-                <span>Facilities</span>
+                <i class="bi bi-cpu admin-menu-icon"></i>
+                <span>Fasilitas</span>
             </div>
         </a>
 
         <a href="gallery.php" class="admin-menu-link <?= in_array($currentPage, ['gallery.php', 'media.php']) ? 'active' : '' ?>" title="Galeri Foto Manufaktur & Media">
             <div class="d-flex align-items-center">
                 <i class="bi bi-images admin-menu-icon"></i>
-                <span>Gallery</span>
+                <span>Galeri</span>
             </div>
         </a>
 
         <a href="news.php" class="admin-menu-link <?= ($currentPage === 'news.php') ? 'active' : '' ?>" title="Berita & Publikasi Perusahaan">
             <div class="d-flex align-items-center">
                 <i class="bi bi-newspaper admin-menu-icon"></i>
-                <span>News</span>
+                <span>Berita</span>
             </div>
         </a>
 
-        <a href="career.php" class="admin-menu-link <?= ($currentPage === 'career.php') ? 'active' : '' ?>" title="Karir & Rekrutmen">
+        <a href="career.php" class="admin-menu-link <?= ($currentPage === 'career.php') ? 'active' : '' ?>" title="Lowongan Kerja & Rekrutmen">
             <div class="d-flex align-items-center">
                 <i class="bi bi-briefcase admin-menu-icon"></i>
-                <span>Career</span>
+                <span>Karir</span>
             </div>
         </a>
 
@@ -100,10 +120,10 @@ if (isset($conn) && $conn instanceof mysqli) {
             <?php endif; ?>
         </a>
 
-        <a href="company.php" class="admin-menu-link <?= in_array($currentPage, ['company.php', 'translations.php', 'users.php']) ? 'active' : '' ?>" title="Pengaturan Sistem, Bahasa & RBAC">
+        <a href="translations.php" class="admin-menu-link <?= in_array($currentPage, ['translations.php', 'users.php']) ? 'active' : '' ?>" title="Pusat Bahasa Multibahasa & Manajemen Pengguna RBAC">
             <div class="d-flex align-items-center">
                 <i class="bi bi-gear admin-menu-icon"></i>
-                <span>Settings</span>
+                <span>Pengaturan</span>
             </div>
         </a>
 
@@ -143,7 +163,32 @@ if (isset($conn) && $conn instanceof mysqli) {
             </div>
         </div>
 
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <!-- 5-Language Switcher Combobox -->
+            <div class="dropdown">
+                <button class="btn btn-sm btn-light border d-inline-flex align-items-center gap-2 rounded-pill px-2 py-1 shadow-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ganti Bahasa Sistem">
+                    <img src="<?= htmlspecialchars($adminCurrentLangInfo['flag']) ?>" alt="<?= htmlspecialchars($adminCurrentLangInfo['short']) ?>" style="width: 18px; height: 13px; object-fit: cover; border-radius: 2px;">
+                    <span class="small fw-bold text-dark"><?= htmlspecialchars($adminCurrentLangInfo['short']) ?></span>
+                    <i class="bi bi-chevron-down text-muted" style="font-size: 0.65rem;"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 rounded-4 p-2" style="min-width: 190px;">
+                    <li class="px-2 py-1 small fw-bold text-muted text-uppercase" style="font-size: 0.68rem;"><i class="bi bi-translate me-1"></i> Bahasa CMS / Publik</li>
+                    <?php foreach ($adminLangs as $lCode => $lInfo): ?>
+                        <li>
+                            <a class="dropdown-item rounded-3 py-1 px-2 small d-flex align-items-center gap-2 <?= $adminCurrentLang === $lCode ? 'active bg-success text-white' : '' ?>" href="?lang=<?= urlencode($lCode) ?><?= !empty($_SERVER['QUERY_STRING']) ? '&' . preg_replace('/(^|&)lang=[^&]*/', '', $_SERVER['QUERY_STRING']) : '' ?>">
+                                <img src="<?= htmlspecialchars($lInfo['flag']) ?>" alt="<?= htmlspecialchars($lInfo['short']) ?>" style="width: 18px; height: 13px; object-fit: cover; border-radius: 2px;">
+                                <span class="flex-grow-1"><?= htmlspecialchars($lInfo['name']) ?></span>
+                                <?php if ($adminCurrentLang === $lCode): ?>
+                                    <i class="bi bi-check-circle-fill"></i>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li><a class="dropdown-item rounded-3 py-1 px-2 small text-muted" href="translations.php"><i class="bi bi-pencil-square me-1"></i> Edit Terjemahan Database</a></li>
+                </ul>
+            </div>
+
             <!-- Theme toggle button -->
             <button class="topbar-circle-btn" type="button" title="Theme Mode" id="themeToggleBtn">
                 <i class="bi bi-sun text-success"></i>

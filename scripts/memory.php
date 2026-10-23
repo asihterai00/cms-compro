@@ -11,6 +11,11 @@
  *   php scripts/memory.php stats
  */
 
+if (php_sapi_name() !== 'cli' && PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Forbidden: CLI execution only.');
+}
+
 require_once __DIR__ . '/../config/database.php';
 
 function printHelp() {

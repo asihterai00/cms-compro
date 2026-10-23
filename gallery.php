@@ -21,7 +21,7 @@ $galleryItems = $conn->query("
          ORDER BY gm.id LIMIT 1),
         g.image
     ) AS cover
-    FROM gallery g ORDER BY g.id DESC
+    FROM gallery g ORDER BY g.sort_order ASC, g.id DESC
 ");
 
 /* Mengumpulkan seluruh foto untuk setiap kategori yang akan dibuka dalam modal. */

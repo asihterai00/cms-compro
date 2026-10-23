@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
     $id = (int)($_POST['id'] ?? 0);
     $title = trim($_POST['title'] ?? '');
+    $sort_order = (int)($_POST['sort_order'] ?? 10);
     $currentImage = $editGallery['image'] ?? '';
     $newFiles = [];
     $error = '';
@@ -78,14 +79,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($error === '') {
         if ($id) {
-            $st = $conn->prepare('UPDATE gallery SET title = ? WHERE id = ?');
-            $st->bind_param('si', $title, $id);
+            $st = $conn->prepare('UPDATE gallery SET title = ?, sort_order = ? WHERE id = ?');
+            $st->bind_param('sii', $title, $sort_order, $id);
             $st->execute();
             $galleryId = $id;
         } else {
-            $st = $conn->prepare('INSERT INTO gallery (title, image) VALUES (?, ?)');
+            $st = $conn->prepare('INSERT INTO gallery (title, image, sort_order) VALUES (?, ?, ?)');
             $blank = '';
-            $st->bind_param('ss', $title, $blank);
+            $st->bind_param('ssi', $title, $blank, $sort_order);
             $st->execute();
             $galleryId = $conn->insert_id;
         }
@@ -180,7 +181,7 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-$gallery = $conn->query('SELECT * FROM gallery ORDER BY id DESC');
+$gallery = $conn->query('SELECT * FROM gallery ORDER BY sort_order ASC, id DESC');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -255,15 +256,21 @@ $gallery = $conn->query('SELECT * FROM gallery ORDER BY id DESC');
                     <input type="hidden" name="id" value="<?= (int)$editGallery['id'] ?>">
                     
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <label class="form-label fw-bold small text-muted text-uppercase">Nama Album / Judul Dokumentasi *</label>
                             <input type="text" name="title" class="form-control" required value="<?= htmlspecialchars($editGallery['title']) ?>" placeholder="Contoh: Fasilitas Injection Molding Cikampek">
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold small text-muted text-uppercase">Unggah Foto Presisi (Bisa Pilih Sekaligus Banyak)</label>
                             <input type="file" name="media[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.webp">
                             <div class="form-text fs-xs">Format didukung: JPG, JPEG, PNG, WEBP. Maksimal 10 MB per foto.</div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nomor Urutan Tampil</label>
+                            <input type="number" name="sort_order" class="form-control" value="<?= (int)($editGallery['sort_order'] ?? 10) ?>" step="5">
+                            <div class="form-text fs-xs">Urutan tampil album di web.</div>
                         </div>
                     </div>
 
@@ -347,6 +354,15 @@ $gallery = $conn->query('SELECT * FROM gallery ORDER BY id DESC');
                                 <span class="badge bg-emerald-subtle text-emerald rounded-pill px-2 py-1 fs-xs fw-bold border">
                                     <i class="bi bi-image me-1"></i> <?= $count ?> Foto
                                 </span>
+                                <div class="d-flex align-items-center gap-1">
+                                    <a href="ajax_reorder.php?table=gallery&action=move_up&id=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-secondary p-0 px-1" title="Pindah ke Kiri/Atas" style="font-size: 0.72rem;">
+                                        <i class="bi bi-arrow-left"></i>
+                                    </a>
+                                    <span class="badge bg-light text-dark border px-1 py-0 font-monospace" style="font-size: 0.72rem;">#<?= (int)($row['sort_order'] ?? 10) ?></span>
+                                    <a href="ajax_reorder.php?table=gallery&action=move_down&id=<?= (int)$row['id'] ?>" class="btn btn-sm btn-outline-secondary p-0 px-1" title="Pindah ke Kanan/Bawah" style="font-size: 0.72rem;">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
                             </div>
                             <h6 class="fw-bold text-dark mb-3 text-truncate" title="<?= htmlspecialchars($row['title']) ?>"><?= htmlspecialchars($row['title']) ?></h6>
                             <div class="mt-auto d-flex gap-2 pt-2 border-top">

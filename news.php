@@ -3,7 +3,7 @@ require_once __DIR__ . "/config/database.php";
 require_once __DIR__ . "/includes/content_helpers.php";
 require_once __DIR__ . "/includes/translation_helpers.php";
 
-$news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
+$news = $conn->query("SELECT * FROM news ORDER BY sort_order ASC, published_at DESC, id DESC");
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars(get_html_lang()) ?>">
@@ -42,7 +42,7 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
                     <div class="col-md-6 col-lg-4">
                         <article class="card h-100 content-click-card">
                             <?php if ($image !== ""): ?>
-                                <a class="content-image-link" href="news-detail.php?id=<?= (int)$item["id"] ?>">
+                                <a class="content-image-link" href="news-detail?id=<?= (int)$item["id"] ?>">
                                     <img src="<?= htmlspecialchars($image) ?>" class="content-news-card-image" alt="<?= htmlspecialchars($item["title"] ?? "News") ?>" loading="lazy">
                                     <span class="image-open-hint"><?= htmlspecialchars(__('news_read_more', 'Baca berita →')) ?></span>
                                 </a>
@@ -50,7 +50,7 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
                             <div class="card-body p-4 d-flex flex-column">
                                 <small class="text-muted mb-2"><i class="bi bi-clock me-1"></i><?= date('d M Y', strtotime($item["published_at"] ?? "now")) ?></small>
                                 <h2 class="h5 fw-bold mb-2">
-                                    <a class="content-title-link" href="news-detail.php?id=<?= (int)$item["id"] ?>">
+                                    <a class="content-title-link" href="news-detail?id=<?= (int)$item["id"] ?>">
                                         <?= htmlspecialchars($item["title"] ?? "") ?>
                                     </a>
                                 </h2>
@@ -58,7 +58,7 @@ $news = $conn->query("SELECT * FROM news ORDER BY published_at DESC");
                                     <?= htmlspecialchars(mb_strimwidth(strip_tags($item["content"] ?? ""), 0, 160, "...")) ?>
                                 </p>
                                 <div class="pt-2 border-top">
-                                    <a href="news-detail.php?id=<?= (int)$item["id"] ?>" class="content-more-link">
+                                    <a href="news-detail?id=<?= (int)$item["id"] ?>" class="content-more-link">
                                         <?= htmlspecialchars(__('news_read_more', 'Baca selengkapnya →')) ?>
                                     </a>
                                 </div>

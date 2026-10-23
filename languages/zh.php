@@ -158,4 +158,33 @@ return [
     'prod_airbag' => '乘员保护安全气囊模块',
     'prod_interior' => '座舱与中控内饰树脂件',
     'prod_exterior' => '外观饰件与空气动力学组件',
+
+    // Extended Detail Keys
+    'product_not_found' => '未找到该产品。',
+    'back_to_products' => '返回产品列表',
+    'back_to_product_line' => '返回产品线',
+    'tier1_badge' => '一级OEM汽车零部件',
+    'spec_cert_std' => '质量认证标准',
+    'spec_facility' => '制造基地',
+    'spec_env' => '环保合规',
+    'spec_tolerance' => '精密公差',
+    'cta_rfq_part' => '申请该零部件的B2B报价',
+    'cta_quality_verify' => '验证质量标准',
+
+    // Error Handling Keys
+    'error_403_badge' => '403 · 系统访问受限',
+    'error_403_title' => '目录及系统文件访问受限',
+    'error_403_desc' => '为确保 PT Nihon Plast Indonesia 的数据完整性与系统安全，严禁直接访问系统目录、配置文件或内部脚本。',
+    'error_403_help' => '若您是合法系统管理员，请通过官方管理平台进行身份验证后登录。',
+    'error_404_badge' => '404 · 页面未找到',
+    'error_404_title' => '您访问的页面不存在',
+    'error_404_desc' => '您所请求的页面或资源不可用、已被移除，或者您输入的网址有误。',
+    'error_404_help' => '请检查输入的网址，或使用顶部导航栏继续浏览本站。',
+    'error_500_badge' => '500 · 服务器内部错误',
+    'error_500_title' => '服务器遇到问题',
+    'error_500_desc' => '系统正在进行临时维护或处理过程中遇到意外错误。',
+    'error_500_help' => '技术团队正在处理中，请稍后重试。',
+    'error_countdown_prefix' => '将在',
+    'error_countdown_suffix' => '秒后自动跳转至首页...',
+    'error_btn_catalog' => '产品目录',
 ];

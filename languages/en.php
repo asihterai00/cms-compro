@@ -158,4 +158,33 @@ return [
     'prod_airbag' => 'Airbag Safety Modules',
     'prod_interior' => 'Cockpit & Interior Resins',
     'prod_exterior' => 'Exterior & Aero Trims',
+
+    // Extended Detail Keys
+    'product_not_found' => 'Product not found.',
+    'back_to_products' => 'Back to Products',
+    'back_to_product_line' => 'Back to Product Line',
+    'tier1_badge' => 'TIER-1 OEM AUTOMOTIVE COMPONENT',
+    'spec_cert_std' => 'Quality Certification Standard',
+    'spec_facility' => 'Manufacturing Facility',
+    'spec_env' => 'Environmental Compliance',
+    'spec_tolerance' => 'Precision Tolerance',
+    'cta_rfq_part' => 'Submit B2B RFQ for this Component',
+    'cta_quality_verify' => 'Verify Quality Standards',
+
+    // Error Handling Keys
+    'error_403_badge' => '403 · SYSTEM ACCESS RESTRICTED',
+    'error_403_title' => 'Directory & System File Access Restricted',
+    'error_403_desc' => 'To protect data integrity and system security at PT Nihon Plast Indonesia, direct access to system directories, configuration files, or internal scripts is strictly prohibited.',
+    'error_403_help' => 'If you are an authorized administrator, please sign in through the official management portal.',
+    'error_404_badge' => '404 · PAGE NOT FOUND',
+    'error_404_title' => 'Page Not Found',
+    'error_404_desc' => 'The page or resource you are looking for is unavailable, has been moved, or the URL entered is incorrect.',
+    'error_404_help' => 'Please check the web address or use the navigation menu to explore our website.',
+    'error_500_badge' => '500 · INTERNAL SERVER ERROR',
+    'error_500_title' => 'Internal System Error Occurred',
+    'error_500_desc' => 'Our server encountered an unexpected condition or is temporarily undergoing maintenance.',
+    'error_500_help' => 'Our engineering team has been notified. Please try again shortly.',
+    'error_countdown_prefix' => 'Automatically redirecting to Home in',
+    'error_countdown_suffix' => 'seconds...',
+    'error_btn_catalog' => 'Product Catalog',
 ];

@@ -24,7 +24,7 @@ $_GET['lang'] = 'id';
 ob_start();
 include __DIR__ . "/../index.php";
 $outInactive = ob_get_clean();
-$hasOemInactive = strpos($outInactive, "oem-trust-section") !== false;
+$hasOemInactive = strpos($outInactive, "npi-oem-showcase") !== false;
 echo " - When is_active = 0, oem_trust appears in index.php: " . ($hasOemInactive ? "FAIL (Should be hidden)" : "PASS (Hidden correctly)") . "\n";
 
 // Set oem_trust back to active (1)
@@ -33,7 +33,7 @@ clear_page_sections_cache('home');
 ob_start();
 include __DIR__ . "/../index.php";
 $outActive = ob_get_clean();
-$hasOemActive = strpos($outActive, "oem-trust-section") !== false;
+$hasOemActive = strpos($outActive, "npi-oem-showcase") !== false;
 echo " - When is_active = 1, oem_trust appears in index.php: " . ($hasOemActive ? "PASS (Appears correctly)" : "FAIL (Should be visible)") . "\n";
 
 // 2. Testing RBAC for Superadmin

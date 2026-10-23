@@ -17,13 +17,13 @@ if ($company && function_exists('translate_entity_row')) {
 }
 
 // 2. Core Products (4 Main Pillars)
-$products = $conn->query("SELECT * FROM products ORDER BY id ASC LIMIT 4");
+$products = $conn->query("SELECT * FROM products ORDER BY sort_order ASC, id ASC LIMIT 4");
 
 // 3. Certifications & ISO Standards
 $certifications = $conn->query("SELECT * FROM certifications WHERE status = 'active' ORDER BY sort_order ASC, id ASC");
 
 // 4. Latest News (3 Compact Articles)
-$news = $conn->query("SELECT * FROM news ORDER BY published_at DESC LIMIT 3");
+$news = $conn->query("SELECT * FROM news ORDER BY sort_order ASC, published_at DESC LIMIT 3");
 
 if (!function_exists('sec_active')) {
     function sec_active($key, $default = true) {
@@ -76,7 +76,7 @@ if (!function_exists('homeImagePath')) {
                         $btnPrimaryText = $extra['btn_primary_text'] ?? ($slide['link_label'] ?? __('hero_btn_products', 'Jelajahi Produk Utama'));
                         $btnPrimaryLink = $extra['btn_primary_link'] ?? ($slide['link_url'] ?? '#products-home');
                         $btnSecText = $extra['btn_secondary_text'] ?? __('hero_btn_rfq', 'Permintaan B2B RFQ');
-                        $btnSecLink = $extra['btn_secondary_link'] ?? 'contact.php';
+                        $btnSecLink = $extra['btn_secondary_link'] ?? 'contact';
                         if (function_exists('current_lang') && current_lang() !== 'id') {
                             $btnPrimaryText = __('hero_btn_products', 'Explore Products');
                             $btnSecText = __('hero_btn_rfq', 'Request RFQ');
@@ -184,7 +184,7 @@ if (!function_exists('homeImagePath')) {
                             <a href="<?= htmlspecialchars(sec_val('hero', 'button_link', '#products-home')) ?>" class="btn btn-np-primary">
                                 <?= htmlspecialchars(sec_val('hero', 'button_text', __('hero_btn_products', 'Jelajahi Produk Utama'))) ?> <i class="bi bi-arrow-right"></i>
                             </a>
-                            <a href="contact.php" class="btn btn-np-outline">
+                            <a href="contact" class="btn btn-np-outline">
                                 <i class="bi bi-file-earmark-text"></i> <?= htmlspecialchars(__('hero_btn_rfq', 'Permintaan B2B RFQ')) ?>
                             </a>
                         </div>
@@ -322,7 +322,7 @@ if (!function_exists('homeImagePath')) {
                                     <p class="small text-muted flex-grow-1 mb-3" style="line-height: 1.6;">
                                         <?= htmlspecialchars($product["description"] ?? "") ?>
                                     </p>
-                                    <a href="product-detail.php?id=<?= (int)$product['id'] ?>" class="small fw-bold text-np-green text-decoration-none pt-2 border-top">
+                                    <a href="product-detail?id=<?= (int)$product['id'] ?>" class="small fw-bold text-np-green text-decoration-none pt-2 border-top">
                                         <?= htmlspecialchars(__('view_details', 'Detail Spesifikasi')) ?> <i class="bi bi-chevron-right ms-1"></i>
                                     </a>
                                 </div>
@@ -333,7 +333,7 @@ if (!function_exists('homeImagePath')) {
             </div>
 
             <div class="text-center mt-5">
-                <a href="<?= htmlspecialchars(sec_val('products_grid', 'button_link', 'products.php')) ?>" class="btn btn-np-primary px-4 py-3 fw-bold">
+                <a href="<?= htmlspecialchars(sec_val('products_grid', 'button_link', 'products')) ?>" class="btn btn-np-primary px-4 py-3 fw-bold">
                     <?= htmlspecialchars(sec_val('products_grid', 'button_text', __('products_btn_all', 'Lihat Semua Lini Produk'))) ?> <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -393,7 +393,7 @@ if (!function_exists('homeImagePath')) {
                                 </p>
                             </div>
                             <div class="col-lg-4 text-lg-end">
-                                <a href="facility.php" class="btn btn-light rounded-pill px-4 py-3 fw-bold text-np-green shadow">
+                                <a href="facility" class="btn btn-light rounded-pill px-4 py-3 fw-bold text-np-green shadow">
                                     <i class="bi bi-gear-wide-connected me-1"></i> <?= htmlspecialchars(__('matrix_machines_lab', 'Matriks Mesin & Lab')) ?> <i class="bi bi-arrow-right ms-1"></i>
                                 </a>
                             </div>
@@ -403,7 +403,7 @@ if (!function_exists('homeImagePath')) {
             </div>
 
             <div class="text-center mt-5">
-                <a href="<?= htmlspecialchars(sec_val('facility_preview', 'button_link', 'facility.php')) ?>" class="btn btn-np-outline">
+                <a href="<?= htmlspecialchars(sec_val('facility_preview', 'button_link', 'facility')) ?>" class="btn btn-np-outline">
                     <?= htmlspecialchars(sec_val('facility_preview', 'button_text', __('facility_btn', 'Jelajahi Seluruh Fasilitas Pabrik'))) ?> <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -429,7 +429,7 @@ if (!function_exists('homeImagePath')) {
                     </p>
                 </div>
                 <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                    <a href="<?= htmlspecialchars(sec_val('certifications_grid', 'button_link', 'quality.php')) ?>" class="btn btn-np-primary">
+                    <a href="<?= htmlspecialchars(sec_val('certifications_grid', 'button_link', 'quality')) ?>" class="btn btn-np-primary">
                         <?= htmlspecialchars(sec_val('certifications_grid', 'button_text', __('certifications_btn', 'Pelajari Kebijakan Mutu'))) ?> <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 </div>
@@ -522,10 +522,10 @@ if (!function_exists('homeImagePath')) {
                     </div>
 
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="<?= htmlspecialchars(sec_val('about_intro', 'button_link', 'about.php')) ?>" class="btn btn-np-primary">
+                        <a href="<?= htmlspecialchars(sec_val('about_intro', 'button_link', 'about')) ?>" class="btn btn-np-primary">
                             <?= htmlspecialchars(sec_val('about_intro', 'button_text', __('about_btn_more', 'Profil Selengkapnya'))) ?>
                         </a>
-                        <a href="contact.php" class="btn btn-np-outline"><?= htmlspecialchars(__('contact_us', 'Hubungi Kami')) ?></a>
+                        <a href="contact" class="btn btn-np-outline"><?= htmlspecialchars(__('contact_us', 'Hubungi Kami')) ?></a>
                     </div>
                 </div>
 
@@ -563,7 +563,7 @@ if (!function_exists('homeImagePath')) {
                         <?= htmlspecialchars(sec_val('news_preview', 'title', __('news_title', 'Berita & Informasi Perusahaan'))) ?>
                     </h2>
                 </div>
-                <a href="<?= htmlspecialchars(sec_val('news_preview', 'button_link', 'news.php')) ?>" class="btn btn-sm btn-np-outline">
+                <a href="<?= htmlspecialchars(sec_val('news_preview', 'button_link', 'news')) ?>" class="btn btn-sm btn-np-outline">
                     <?= htmlspecialchars(sec_val('news_preview', 'button_text', __('news_btn', 'Lihat Semua Berita'))) ?> <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -582,7 +582,7 @@ if (!function_exists('homeImagePath')) {
                                     <span class="badge bg-light text-muted border small">Corporate</span>
                                 </div>
                                 <h3 class="h5 fw-bold text-np-green mb-2">
-                                    <a href="news-detail.php?id=<?= (int)$article['id'] ?>" class="text-decoration-none text-np-green">
+                                    <a href="news-detail?id=<?= (int)$article['id'] ?>" class="text-decoration-none text-np-green">
                                         <?= htmlspecialchars($article['title']) ?>
                                     </a>
                                 </h3>
@@ -590,7 +590,7 @@ if (!function_exists('homeImagePath')) {
                                     <?= htmlspecialchars(mb_strimwidth(strip_tags($article['content'] ?? ''), 0, 120, '...')) ?>
                                 </p>
                                 <div class="pt-2 border-top">
-                                    <a href="news-detail.php?id=<?= (int)$article['id'] ?>" class="small fw-bold text-np-green text-decoration-none">
+                                    <a href="news-detail?id=<?= (int)$article['id'] ?>" class="small fw-bold text-np-green text-decoration-none">
                                         <?= htmlspecialchars(__('read_more', 'Baca Selengkapnya')) ?> →
                                     </a>
                                 </div>
@@ -620,13 +620,13 @@ if (!function_exists('homeImagePath')) {
                         <?= htmlspecialchars(sec_val('contact_cta', 'subtitle', __('contact_cta_desc', 'Hubungi tim perwakilan PT Nihon Plast Indonesia untuk kebutuhan pasokan komponen roda kemudi, sistem kantung udara (airbags), dan pencetakan resin interior presisi tinggi bersertifikasi IATF 16949.'))) ?>
                     </p>
                     <div class="d-flex flex-wrap justify-content-center gap-3">
-                        <a href="<?= htmlspecialchars(sec_val('contact_cta', 'button_link', 'contact.php')) ?>" class="btn btn-light rounded-pill px-5 py-3 fw-bold text-np-green shadow">
+                        <a href="<?= htmlspecialchars(sec_val('contact_cta', 'button_link', 'contact')) ?>" class="btn btn-light rounded-pill px-5 py-3 fw-bold text-np-green shadow">
                             <i class="bi bi-file-earmark-text me-1"></i> <?= htmlspecialchars(sec_val('contact_cta', 'button_text', __('contact_cta_btn', 'Ajukan B2B RFQ Inquiry'))) ?>
                         </a>
-                        <a href="contact.php#download-profile" class="btn btn-outline-light rounded-pill px-4 py-3 fw-semibold">
+                        <a href="contact#download-profile" class="btn btn-outline-light rounded-pill px-4 py-3 fw-semibold">
                             <i class="bi bi-download me-1"></i> <?= htmlspecialchars(__('download_spec', 'Unduh Company Profile')) ?>
                         </a>
-                        <a href="career.php" class="btn btn-outline-light rounded-pill px-4 py-3 fw-semibold">
+                        <a href="career" class="btn btn-outline-light rounded-pill px-4 py-3 fw-semibold">
                             <?= htmlspecialchars(__('nav_career', 'Karir')) ?>
                         </a>
                     </div>

@@ -142,7 +142,7 @@ if ($bannerImage !== "") {
                     <span class="text-white-50 small d-none d-sm-inline">&bull;</span>
                     <nav aria-label="breadcrumb" class="d-none d-sm-inline-block">
                         <ol class="breadcrumb mb-0 small">
-                            <li class="breadcrumb-item"><a href="index.php" class="text-white-50 text-decoration-none"><i class="bi bi-house-door me-1"></i>Beranda</a></li>
+                            <li class="breadcrumb-item"><a href="./" class="text-white-50 text-decoration-none"><i class="bi bi-house-door me-1"></i>Beranda</a></li>
                             <li class="breadcrumb-item text-white active" aria-current="page"><?= htmlspecialchars(strtoupper($bannerKey === "home" ? "Company Profile" : $bannerKey)) ?></li>
                         </ol>
                     </nav>
